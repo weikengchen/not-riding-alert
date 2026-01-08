@@ -1,8 +1,11 @@
 {
 	"required": true,
+	"minVersion": "0.8",
 	"package": "com.chenweikeng.nra.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"mixins": [
+	"mixins": [],
+	"client": [
+		"GameOptionsMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

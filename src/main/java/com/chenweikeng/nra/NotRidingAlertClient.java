@@ -32,7 +32,6 @@ public class NotRidingAlertClient implements ClientModInitializer {
             tickCounter++;
             if (tickCounter >= CHECK_INTERVAL) {
                 tickCounter = 0;
-                LOGGER.info("[NotRidingAlert] Checking if player is riding (tick: {})", client.player.age);
                 checkScoreboard(client);
             }
         });
@@ -45,21 +44,15 @@ public class NotRidingAlertClient implements ClientModInitializer {
     
     private void checkScoreboard(MinecraftClient client) {
         if (client.player == null) {
-            LOGGER.info("[NotRidingAlert] Player is null, skipping check");
             return;
         }
         
         // Check if player is riding an entity
         boolean isRiding = client.player.hasVehicle();
         
-        LOGGER.info("[NotRidingAlert] Player is riding: {}", isRiding);
-        
         // Play sound when player is NOT riding (keep playing every check)
         if (!isRiding) {
-            LOGGER.info("[NotRidingAlert] Player is not riding - playing alert sound");
             playSound(client);
-        } else {
-            LOGGER.info("[NotRidingAlert] Player is riding - no alert needed");
         }
     }
     
@@ -79,13 +72,11 @@ public class NotRidingAlertClient implements ClientModInitializer {
                 soundEvent = registry.get(soundIdentifier);
             } catch (Exception e) {
                 // If not found, try common sound events
-                LOGGER.warn("Sound {} not found in registry, trying common sounds", soundId);
             }
             
             // Fallback to default if not found
             if (soundEvent == null) {
                 soundEvent = SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
-                LOGGER.warn("Using default sound instead of {}", soundId);
             }
             
             // Play sound at player's position
@@ -99,9 +90,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
                 1.0f,
                 1.0f
             );
-            LOGGER.info("Played sound: {}", soundId);
         } catch (Exception e) {
-            LOGGER.error("Failed to play sound: {}", config.getSoundId(), e);
             // Fallback to default sound
             if (client.player != null && client.world != null) {
                 SoundEvent fallbackSound = SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;

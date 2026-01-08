@@ -19,6 +19,9 @@
 			"com.chenweikeng.nra.NotRidingAlertClient"
 		]
 	},
+	"mixins": [
+		"not-riding-alert.mixins.json"
+	],
 	"depends": {
 		"fabricloader": ">=0.18.4",
 		"minecraft": "~1.21.11",
