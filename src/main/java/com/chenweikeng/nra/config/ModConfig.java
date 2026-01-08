@@ -14,6 +14,7 @@ public class ModConfig {
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "not-riding-alert.json");
     
     private String soundId = "entity.experience_orb.pickup"; // Default sound
+    private boolean enabled = true; // Default enabled
     
     public String getSoundId() {
         return soundId;
@@ -21,6 +22,15 @@ public class ModConfig {
     
     public void setSoundId(String soundId) {
         this.soundId = soundId;
+        save();
+    }
+    
+    public boolean isEnabled() {
+        return enabled;
+    }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
         save();
     }
     

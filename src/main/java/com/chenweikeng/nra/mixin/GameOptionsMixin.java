@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.sound.SoundCategory;
@@ -16,6 +17,11 @@ public class GameOptionsMixin {
         cancellable = true
     )
     private void suppressVolumeWhenRiding(SoundCategory category, CallbackInfoReturnable<Float> cir) {
+        // Check if the feature is enabled
+        if (!NotRidingAlertClient.getConfig().isEnabled()) {
+            return;
+        }
+        
         MinecraftClient client = MinecraftClient.getInstance();
         
         // Check if player is riding an entity

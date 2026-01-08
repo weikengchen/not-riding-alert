@@ -9,6 +9,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import com.chenweikeng.nra.command.SetSoundCommand;
+import com.chenweikeng.nra.command.ToggleAlertCommand;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,18 +33,24 @@ public class NotRidingAlertClient implements ClientModInitializer {
             tickCounter++;
             if (tickCounter >= CHECK_INTERVAL) {
                 tickCounter = 0;
-                checkScoreboard(client);
+                checkRiding(client);
             }
         });
         
-        // Register command
+        // Register commands
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             SetSoundCommand.register(dispatcher);
+            ToggleAlertCommand.register(dispatcher);
         });
     }
     
-    private void checkScoreboard(MinecraftClient client) {
+    private void checkRiding(MinecraftClient client) {
         if (client.player == null) {
+            return;
+        }
+        
+        // Check if feature is enabled
+        if (!config.isEnabled()) {
             return;
         }
         

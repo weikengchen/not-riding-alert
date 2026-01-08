@@ -9,7 +9,7 @@ import net.minecraft.text.Text;
 
 public class SetSoundCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("nonridesound")
+        dispatcher.register(ClientCommandManager.literal("setalertsound")
             .then(ClientCommandManager.argument("soundId", StringArgumentType.string())
                 .executes(context -> {
                     String soundId = StringArgumentType.getString(context, "soundId");
