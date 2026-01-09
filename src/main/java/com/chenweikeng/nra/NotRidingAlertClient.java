@@ -10,6 +10,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import com.chenweikeng.nra.command.SetSoundCommand;
 import com.chenweikeng.nra.command.ToggleAlertCommand;
+import com.chenweikeng.nra.command.ToggleBlindWhenRidingCommand;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,15 +21,22 @@ public class NotRidingAlertClient implements ClientModInitializer {
     private static ModConfig config;
     private int tickCounter = 0;
     private static final int CHECK_INTERVAL = 200; // Check every 200 ticks (10 seconds)
+    private static boolean isRiding = false; // Cached riding state
     
     @Override
     public void onInitializeClient() {
         config = ModConfig.load();
         LOGGER.info("Not Riding Alert client initialized");
         
-        // Register tick event to check if player is riding periodically
+        // Register tick event to update cached riding state and check periodically (for sound alert)
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player == null) return;
+            if (client.player == null) {
+                isRiding = false;
+                return;
+            }
+            
+            // Update cached riding state every tick
+            isRiding = client.player.hasVehicle();
             
             tickCounter++;
             if (tickCounter >= CHECK_INTERVAL) {
@@ -41,6 +49,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             SetSoundCommand.register(dispatcher);
             ToggleAlertCommand.register(dispatcher);
+            ToggleBlindWhenRidingCommand.register(dispatcher);
         });
     }
     
@@ -53,9 +62,6 @@ public class NotRidingAlertClient implements ClientModInitializer {
         if (!config.isEnabled()) {
             return;
         }
-        
-        // Check if player is riding an entity
-        boolean isRiding = client.player.hasVehicle();
         
         // Play sound when player is NOT riding (keep playing every check)
         if (!isRiding) {
@@ -117,6 +123,10 @@ public class NotRidingAlertClient implements ClientModInitializer {
     
     public static ModConfig getConfig() {
         return config;
+    }
+    
+    public static boolean isRiding() {
+        return isRiding;
     }
 }
 

@@ -15,6 +15,7 @@ public class ModConfig {
     
     private String soundId = "entity.experience_orb.pickup"; // Default sound
     private boolean enabled = true; // Default enabled
+    private boolean blindWhenRiding = false; // Default disabled
     
     public String getSoundId() {
         return soundId;
@@ -31,6 +32,15 @@ public class ModConfig {
     
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+        save();
+    }
+    
+    public boolean isBlindWhenRiding() {
+        return blindWhenRiding;
+    }
+    
+    public void setBlindWhenRiding(boolean blindWhenRiding) {
+        this.blindWhenRiding = blindWhenRiding;
         save();
     }
     
