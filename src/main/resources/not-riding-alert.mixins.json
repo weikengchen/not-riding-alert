@@ -6,7 +6,10 @@
 	"mixins": [],
 	"client": [
 		"GameOptionsMixin",
-		"LivingEntityMixin"
+		"LivingEntityMixin",
+		"ClientPlayNetworkHandlerMixin",
+		"InGameHudMixin",
+		"MessageHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -1,8 +1,13 @@
 package com.chenweikeng.nra;
 
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.ride.RideCountManager;
+import com.chenweikeng.nra.strategy.StrategyHudRenderer;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -11,6 +16,8 @@ import net.minecraft.util.Identifier;
 import com.chenweikeng.nra.command.SetSoundCommand;
 import com.chenweikeng.nra.command.ToggleAlertCommand;
 import com.chenweikeng.nra.command.ToggleBlindWhenRidingCommand;
+import com.chenweikeng.nra.command.SeasonalRideCommand;
+import com.chenweikeng.nra.command.HideRideCommand;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +29,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
     private int tickCounter = 0;
     private static final int CHECK_INTERVAL = 200; // Check every 200 ticks (10 seconds)
     private static boolean isRiding = false; // Cached riding state
+    private long absoluteTickCounter = 0; // Absolute tick counter (never resets)
+    private long lastPlayerMovementTick = -1; // Last absolute tick when player moved via keyboard
+    private static final int MOVEMENT_SUPPRESSION_TICKS = 600; // Suppress sound for 600 ticks (30 seconds) after movement
     
     @Override
     public void onInitializeClient() {
@@ -38,6 +48,15 @@ public class NotRidingAlertClient implements ClientModInitializer {
             // Update cached riding state every tick
             isRiding = client.player.hasVehicle();
             
+            // Increment absolute tick counter
+            absoluteTickCounter++;
+            
+            // Track player keyboard movement (WASD keys)
+            trackPlayerMovement(client);
+            
+            // Check and save ride counts if needed (every tick, but manager handles 15s interval)
+            RideCountManager.getInstance().checkAndSaveIfNeeded();
+            
             tickCounter++;
             if (tickCounter >= CHECK_INTERVAL) {
                 tickCounter = 0;
@@ -50,7 +69,52 @@ public class NotRidingAlertClient implements ClientModInitializer {
             SetSoundCommand.register(dispatcher);
             ToggleAlertCommand.register(dispatcher);
             ToggleBlindWhenRidingCommand.register(dispatcher);
+            SeasonalRideCommand.register(dispatcher);
+            HideRideCommand.register(dispatcher);
         });
+
+        Identifier beforeChatId = Identifier.of(NotRidingAlertClient.MOD_ID, "before_chat");
+        if (beforeChatId != null) {
+            HudElementRegistry.attachElementBefore(
+                VanillaHudElements.CHAT,
+                beforeChatId,
+                StrategyHudRenderer::render);
+        }
+    }
+    
+    /**
+     * Tracks if player is moving via keyboard input (WASD keys).
+     * Updates lastPlayerMovementTick when movement keys are pressed.
+     */
+    private void trackPlayerMovement(MinecraftClient client) {
+        if (client.options == null) {
+            return;
+        }
+        
+        // Check if any movement keys are pressed
+        boolean isMoving = client.options.forwardKey.isPressed() ||
+                          client.options.backKey.isPressed() ||
+                          client.options.leftKey.isPressed() ||
+                          client.options.rightKey.isPressed() ||
+                          client.options.jumpKey.isPressed() ||
+                          client.options.sneakKey.isPressed();
+        
+        if (isMoving) {
+            lastPlayerMovementTick = absoluteTickCounter;
+        }
+    }
+    
+    /**
+     * Checks if player has moved recently (within MOVEMENT_SUPPRESSION_TICKS).
+     */
+    private boolean hasPlayerMovedRecently() {
+        // If player has never moved, return false
+        if (lastPlayerMovementTick < 0) {
+            return false;
+        }
+        
+        long ticksSinceLastMovement = absoluteTickCounter - lastPlayerMovementTick;
+        return ticksSinceLastMovement < MOVEMENT_SUPPRESSION_TICKS;
     }
     
     private void checkRiding(MinecraftClient client) {
@@ -63,8 +127,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
             return;
         }
         
-        // Play sound when player is NOT riding (keep playing every check)
-        if (!isRiding) {
+        // Play sound when player is NOT riding, but suppress if player has been moving recently
+        if (!isRiding && !hasPlayerMovedRecently()) {
             playSound(client);
         }
     }

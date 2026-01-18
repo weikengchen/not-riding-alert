@@ -16,6 +16,8 @@ public class ModConfig {
     private String soundId = "entity.experience_orb.pickup"; // Default sound
     private boolean enabled = true; // Default enabled
     private boolean blindWhenRiding = false; // Default disabled
+    private boolean seasonalRidesEnabled = true; // Default enabled
+    private java.util.List<String> hiddenRides = new java.util.ArrayList<>(); // List of hidden ride display names
     
     public String getSoundId() {
         return soundId;
@@ -41,6 +43,37 @@ public class ModConfig {
     
     public void setBlindWhenRiding(boolean blindWhenRiding) {
         this.blindWhenRiding = blindWhenRiding;
+        save();
+    }
+    
+    public boolean isSeasonalRidesEnabled() {
+        return seasonalRidesEnabled;
+    }
+    
+    public void setSeasonalRidesEnabled(boolean seasonalRidesEnabled) {
+        this.seasonalRidesEnabled = seasonalRidesEnabled;
+        save();
+    }
+    
+    public java.util.List<String> getHiddenRides() {
+        return hiddenRides;
+    }
+    
+    public void setHiddenRides(java.util.List<String> hiddenRides) {
+        this.hiddenRides = hiddenRides != null ? hiddenRides : new java.util.ArrayList<>();
+        save();
+    }
+    
+    public boolean isRideHidden(String rideDisplayName) {
+        return hiddenRides.contains(rideDisplayName);
+    }
+    
+    public void toggleRideHidden(String rideDisplayName) {
+        if (hiddenRides.contains(rideDisplayName)) {
+            hiddenRides.remove(rideDisplayName);
+        } else {
+            hiddenRides.add(rideDisplayName);
+        }
         save();
     }
     
