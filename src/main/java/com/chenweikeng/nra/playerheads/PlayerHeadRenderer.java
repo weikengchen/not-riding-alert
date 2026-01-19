@@ -1,6 +1,9 @@
 package com.chenweikeng.nra.playerheads;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.joml.Matrix4f;
 
 import net.minecraft.client.MinecraftClient;
@@ -25,6 +28,9 @@ public class PlayerHeadRenderer {
 
     private static final int CONTROL_X = 63;
     private static final int CONTROL_Y = 1;
+
+    private static final String NEW_NAMESPACE = "processed_images";
+    private static final Map<Identifier, Identifier> processedTextures = new HashMap<>();
 
     public static boolean render(
         Identifier skinTexture,
@@ -60,12 +66,54 @@ public class PlayerHeadRenderer {
         int controlA = (controlPixel >> 24) & 0xFF;
 
         renderCustomSkull(direction, light, yaw, matrixStack, skinTexture,
+            image,
             controlA,
             controlR,
             controlG,
             controlB
         );
         return true;
+    }
+
+    public static Identifier getNewImage(Identifier original, NativeImage input) {
+        if(processedTextures.containsKey(original)) {
+            return processedTextures.get(original);
+        }
+
+        NativeImage output = new NativeImage(
+            input.getWidth(),
+            input.getHeight(),
+            true // ensure RGBA
+        );
+
+        for (int y = 0; y < input.getHeight(); y++) {
+            for (int x = 0; x < input.getWidth(); x++) {
+                int rgba = input.getColorArgb(x, y);
+
+                int r = (rgba >> 16) & 0xFF;
+                int g = (rgba >> 8) & 0xFF;
+                int b = (rgba >> 0) & 0xFF;
+
+                int a = (r == 2 && g == 1 && b == 3) ? 0 : 255;
+
+                int newRGBA =
+                        (a << 24) |
+                        (r << 16) |
+                        (g << 8) |
+                        b;
+                output.setColorArgb(x, y, newRGBA);
+            }
+        }
+
+        Identifier newId = Identifier.of(
+            NEW_NAMESPACE,
+            original.getNamespace() + "/" + original.getPath()
+        );
+
+        NativeImageBackedTexture texture = new NativeImageBackedTexture(newId::toString, output);
+        MinecraftClient.getInstance().getTextureManager().registerTexture(newId, texture);
+        processedTextures.put(original, newId);
+        return newId;
     }
 
     /**
@@ -82,6 +130,7 @@ public class PlayerHeadRenderer {
         float yaw,
         MatrixStack matrixStack,
         Identifier skinTexture,
+        NativeImage image,
         int controlA,
         int controlR,
         int controlG,
@@ -99,12 +148,6 @@ public class PlayerHeadRenderer {
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
         matrixStack.scale(-1.0F, -1.0F, 1.0F);
 
-        Immediate bufferSource = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderLayers.entityTranslucentEmissive(skinTexture));
-
-        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
-        MatrixStack.Entry pose = matrixStack.peek();
-
         int overlay = OverlayTexture.DEFAULT_UV;
         
         float scaleX = 0;
@@ -118,41 +161,52 @@ public class PlayerHeadRenderer {
             scaleY = (float)controlG / 16.0F - 0.0625F;
         }
 
+        Identifier actualIdentifier = null;
+        if(controlB != 0) {
+            actualIdentifier = getNewImage(skinTexture, image);
+        } else {
+            actualIdentifier = skinTexture;
+        }
+
         // UV coordinates - skip the leftmost pixel column (contains control data)
         float minU = 0.0F;
         float maxU = 63.0F / 64.0F; // stop one column short
 
         float z = 0.0f;
 
+        Immediate bufferSource = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderLayers.entityCutoutNoCull(actualIdentifier));
+
+        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
+        MatrixStack.Entry pose = matrixStack.peek();
+
         vertexConsumer.vertex(matrix4f, -scaleX, scaleY, z)
-                .color(255, 255, 255, 255)
-                .texture(minU, maxU)
-                .overlay(overlay)
-                .light(light)
-                .normal(pose, 0, 0, -1);
+            .color(255, 255, 255, 255)
+            .texture(minU, 0)
+            .overlay(overlay)
+            .light(light)
+            .normal(pose, 0, 0, -1);
         
         vertexConsumer.vertex(matrix4f, scaleX, scaleY, z)
-                .color(255, 255, 255, 255)
-                .texture(minU, maxU)
-                .overlay(overlay)
-                .light(light)
-                .normal(pose, 0, 0, -1);
+            .color(255, 255, 255, 255)
+            .texture(maxU, 0)
+            .overlay(overlay)
+            .light(light)
+            .normal(pose, 0, 0, -1);
         
         vertexConsumer.vertex(matrix4f, scaleX, -scaleY, z)
-                .color(255, 255, 255, 255)
-                .texture(minU, maxU)
-                .overlay(overlay)
-                .light(light)
-                .normal(pose, 0, 0, -1);
+            .color(255, 255, 255, 255)
+            .texture(maxU, 1)
+            .overlay(overlay)
+            .light(light)
+            .normal(pose, 0, 0, -1);
         
         vertexConsumer.vertex(matrix4f, -scaleX, -scaleY, z)
-                .color(255, 255, 255, 255)
-                .texture(minU, maxU)
-                .overlay(overlay)
-                .light(light)
-                .normal(pose, 0, 0, -1);
-
-        bufferSource.draw();
+            .color(255, 255, 255, 255)
+            .texture(minU, 1)
+            .overlay(overlay)
+            .light(light)
+            .normal(pose, 0, 0, -1);
 
         matrixStack.pop();
     }
