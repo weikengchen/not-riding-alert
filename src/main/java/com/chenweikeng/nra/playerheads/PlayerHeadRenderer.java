@@ -143,10 +143,8 @@ public class PlayerHeadRenderer {
         } else {
             matrixStack.translate(0.5F - direction.getOffsetX() * 0.25F, 0.25F, 0.5F - direction.getOffsetZ() * 0.25F);
         }
-
-        // Apply rotation based on skull direction
+		matrixStack.scale(-1.0F, -1.0F, 1.0F);
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
-        matrixStack.scale(-1.0F, -1.0F, 1.0F);
 
         int overlay = OverlayTexture.DEFAULT_UV;
         
@@ -180,28 +178,28 @@ public class PlayerHeadRenderer {
         Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
         MatrixStack.Entry pose = matrixStack.peek();
 
-        vertexConsumer.vertex(matrix4f, -scaleX, scaleY, z)
+        vertexConsumer.vertex(matrix4f, -scaleX, -scaleY, z)
             .color(255, 255, 255, 255)
             .texture(minU, 0)
             .overlay(overlay)
             .light(light)
             .normal(pose, 0, 0, -1);
         
-        vertexConsumer.vertex(matrix4f, scaleX, scaleY, z)
+        vertexConsumer.vertex(matrix4f, scaleX, -scaleY, z)
             .color(255, 255, 255, 255)
             .texture(maxU, 0)
             .overlay(overlay)
             .light(light)
             .normal(pose, 0, 0, -1);
         
-        vertexConsumer.vertex(matrix4f, scaleX, -scaleY, z)
+        vertexConsumer.vertex(matrix4f, scaleX, scaleY, z)
             .color(255, 255, 255, 255)
             .texture(maxU, 1)
             .overlay(overlay)
             .light(light)
             .normal(pose, 0, 0, -1);
         
-        vertexConsumer.vertex(matrix4f, -scaleX, -scaleY, z)
+        vertexConsumer.vertex(matrix4f, -scaleX, scaleY, z)
             .color(255, 255, 255, 255)
             .texture(minU, 1)
             .overlay(overlay)
