@@ -9,7 +9,12 @@
 		"LivingEntityMixin",
 		"ClientPlayNetworkHandlerMixin",
 		"InGameHudMixin",
-		"MessageHandlerMixin"
+		"MessageHandlerMixin",
+		"SkullBlockEntityRendererMixin",
+		"HeadFeatureRendererMixin",
+		"PlayerHeadModelRendererMixin",
+		"RenderLayerAccessor",
+		"RenderSetupAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
