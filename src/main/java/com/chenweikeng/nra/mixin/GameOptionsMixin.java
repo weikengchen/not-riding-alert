@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.ride.CurrentRideHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.sound.SoundCategory;
@@ -24,8 +25,9 @@ public class GameOptionsMixin {
         
         MinecraftClient client = MinecraftClient.getInstance();
         
-        // Check if player is riding an entity
-        if (client != null && client.player != null && client.player.hasVehicle()) {
+        // Check if player is riding an entity (Minecraft's hasVehicle) or on a ride (CurrentRideHolder)
+        if (client != null && client.player != null 
+            && (client.player.hasVehicle() || CurrentRideHolder.getCurrentRide() != null)) {
             // Return 0 volume when riding
             cir.setReturnValue(0.0f);
         }

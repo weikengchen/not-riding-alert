@@ -69,6 +69,7 @@ public enum RideName {
     GUARDIANS_OF_THE_GALAXY_MONSTERS_AFTER_DARK("Guardians of the Galaxy: Monsters After Dark", 123),
     THE_SUGARPINE_EXPRESS("The Sugarpine Express", 132),
     THE_SUGARPINE_MERRY_GO_ROUND("The Sugarpine Merry-Go-Round", 76),
+    HYPERSPACE_MOUNTAIN("Hyperspace Mountain", 180),
     
     // Unknown ride (for rides not in the enum)
     UNKNOWN("Unknown", 99999);
@@ -121,7 +122,8 @@ public enum RideName {
         return this == HAUNTED_MANSION_HOLIDAY ||
                this == GUARDIANS_OF_THE_GALAXY_MONSTERS_AFTER_DARK ||
                this == THE_SUGARPINE_EXPRESS ||
-               this == THE_SUGARPINE_MERRY_GO_ROUND;
+               this == THE_SUGARPINE_MERRY_GO_ROUND ||
+               this == HYPERSPACE_MOUNTAIN;
     }
     
     /**
@@ -149,6 +151,10 @@ public enum RideName {
                 best = r;
                 bestLen = r.displayName.length();
             }
+        }
+        // Special case for Rise of the Resistance (sidebar shows "Rise of the Resistance" without "Star Wars:")
+        if (best == UNKNOWN && "Rise of the Resistance".startsWith(cleaned)) {
+            return STAR_WARS_RISE_OF_THE_RESISTANCE;
         }
         return best;
     }

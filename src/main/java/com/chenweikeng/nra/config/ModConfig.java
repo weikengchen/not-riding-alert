@@ -18,6 +18,7 @@ public class ModConfig {
     private boolean blindWhenRiding = false; // Default disabled
     private boolean seasonalRidesEnabled = true; // Default enabled
     private java.util.List<String> hiddenRides = new java.util.ArrayList<>(); // List of hidden ride display names
+    private int rideDisplayCount = 16; // Default number of rides to display
     
     public String getSoundId() {
         return soundId;
@@ -74,6 +75,15 @@ public class ModConfig {
         } else {
             hiddenRides.add(rideDisplayName);
         }
+        save();
+    }
+    
+    public int getRideDisplayCount() {
+        return rideDisplayCount;
+    }
+    
+    public void setRideDisplayCount(int rideDisplayCount) {
+        this.rideDisplayCount = Math.max(1, rideDisplayCount); // Ensure at least 1
         save();
     }
     

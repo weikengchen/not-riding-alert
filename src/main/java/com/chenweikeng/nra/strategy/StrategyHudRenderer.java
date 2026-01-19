@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.strategy;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
 import net.minecraft.client.MinecraftClient;
@@ -26,7 +27,8 @@ public class StrategyHudRenderer {
         updateCounter++;
         if (updateCounter >= UPDATE_INTERVAL_TICKS) {
             updateCounter = 0;
-            topGoals = StrategyCalculator.getTopGoals(8);
+            int displayCount = NotRidingAlertClient.getConfig().getRideDisplayCount();
+            topGoals = StrategyCalculator.getTopGoals(displayCount);
         }
     }
     
@@ -57,7 +59,8 @@ public class StrategyHudRenderer {
             return;
         }
         
-        int x = 50;
+        int xLeft = 50;
+        int xRight = 450; // Right column x position
         int y = 50;
         int lineHeight = 10;
         int colorRed = 0xFFFF0000; // Red
@@ -66,7 +69,7 @@ public class StrategyHudRenderer {
         
         // Render error at the top if present
         if (currentError != null && !currentError.isEmpty()) {
-            context.drawText(client.textRenderer, "ERROR: " + currentError, x, y, errorColor, false);
+            context.drawText(client.textRenderer, "ERROR: " + currentError, xLeft, y, errorColor, false);
             y += lineHeight; // Move down for the goals
         }
         
@@ -74,22 +77,53 @@ public class StrategyHudRenderer {
         if (topGoals.isEmpty() && currentRide == null) {
             return;
         }
-        boolean currentRideInTop8 = currentRide != null && topGoals.stream().anyMatch(g -> g.getRide() == currentRide);
+        int displayCount = NotRidingAlertClient.getConfig().getRideDisplayCount();
+        boolean currentRideInTop = currentRide != null && topGoals.stream().anyMatch(g -> g.getRide() == currentRide);
 
-        // Render top 8 goals
-        for (int i = 0; i < topGoals.size(); i++) {
-            RideGoal goal = topGoals.get(i);
+        // Split goals into columns based on display count
+        List<RideGoal> leftGoals;
+        List<RideGoal> rightGoals = new ArrayList<>();
+        
+        if (displayCount < 8) {
+            // Single column: all goals on the left
+            leftGoals = topGoals;
+        } else {
+            // Two columns: left gets one more if odd, otherwise split evenly
+            int leftCount = (displayCount + 1) / 2; // Left gets one more if odd
+            leftGoals = topGoals.size() > leftCount ? topGoals.subList(0, leftCount) : topGoals;
+            if (topGoals.size() > leftCount) {
+                rightGoals = topGoals.subList(leftCount, Math.min(displayCount, topGoals.size()));
+            }
+        }
+
+        // Render left column
+        for (int i = 0; i < leftGoals.size(); i++) {
+            RideGoal goal = leftGoals.get(i);
             String text = String.format("%s - %d rides needed, %s",
                 goal.getRide().getDisplayName(),
                 goal.getRidesNeeded(),
                 formatTime(goal.getTimeNeededSeconds()));
             int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
-            context.drawText(client.textRenderer, text, x, y + (i * lineHeight), color, false);
+            context.drawText(client.textRenderer, text, xLeft, y + (i * lineHeight), color, false);
         }
 
-        // If currently riding and that ride is not in the top 8, show it after a blank line in green
-        if (currentRide != null && !currentRideInTop8) {
-            int extraY = y + (topGoals.size() * lineHeight) + lineHeight; // blank line, then current ride
+        // Render right column (only if displayCount >= 8)
+        if (displayCount >= 8) {
+            for (int i = 0; i < rightGoals.size(); i++) {
+                RideGoal goal = rightGoals.get(i);
+                String text = String.format("%s - %d rides needed, %s",
+                    goal.getRide().getDisplayName(),
+                    goal.getRidesNeeded(),
+                    formatTime(goal.getTimeNeededSeconds()));
+                int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
+                context.drawText(client.textRenderer, text, xRight, y + (i * lineHeight), color, false);
+            }
+        }
+
+        // If currently riding and that ride is not in the displayed goals, show it after a blank line in green
+        if (currentRide != null && !currentRideInTop) {
+            int maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
+            int extraY = y + (maxColumnHeight * lineHeight) + lineHeight; // blank line, then current ride
             RideGoal currentGoal = StrategyCalculator.getGoalForRide(currentRide);
             String text = currentGoal != null
                 ? String.format("%s - %d rides needed, %s",
@@ -97,7 +131,7 @@ public class StrategyHudRenderer {
                     currentGoal.getRidesNeeded(),
                     formatTime(currentGoal.getTimeNeededSeconds()))
                 : "Riding: " + currentRide.getDisplayName();
-            context.drawText(client.textRenderer, text, x, extraY, colorGreen, false);
+            context.drawText(client.textRenderer, text, xLeft, extraY, colorGreen, false);
         }
     }
     

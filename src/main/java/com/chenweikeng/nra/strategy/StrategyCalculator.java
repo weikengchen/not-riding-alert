@@ -12,8 +12,8 @@ import java.util.List;
  * Calculates the best strategy for reaching ride count goals.
  */
 public class StrategyCalculator {
-    private static final int[] GOALS = {1, 10, 100, 500, 1000, 5000, 10000, 20000};
-    private static final int MAX_GOAL = 20000;
+    private static final int[] GOALS = {1, 10, 100, 500, 1000, 5000, 10000};
+    private static final int MAX_GOAL = 10000;
     
     /**
      * Calculates the top N easiest goals (goals that take the least time to reach).
