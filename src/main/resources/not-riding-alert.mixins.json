@@ -11,8 +11,6 @@
 		"InGameHudMixin",
 		"MessageHandlerMixin",
 		"SkullBlockEntityRendererMixin",
-		"HeadFeatureRendererMixin",
-		"PlayerHeadModelRendererMixin",
 		"RenderLayerAccessor",
 		"RenderSetupAccessor"
 	],

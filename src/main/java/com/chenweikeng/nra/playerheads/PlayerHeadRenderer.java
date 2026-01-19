@@ -1,12 +1,7 @@
 package com.chenweikeng.nra.playerheads;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.joml.Matrix4f;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;

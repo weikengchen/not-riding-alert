@@ -1,11 +1,8 @@
 package com.chenweikeng.nra.mixin;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,69 +10,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.chenweikeng.nra.playerheads.PlayerHeadRenderer;
 
-import net.minecraft.block.SkullBlock;
 import net.minecraft.client.render.block.entity.SkullBlockEntityRenderer;
-import net.minecraft.client.render.block.entity.state.SkullBlockEntityRenderState;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.texture.PlayerSkinCache;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderSetup;
 
 // Code from Camzanno
 @Mixin(SkullBlockEntityRenderer.class)
 public abstract class SkullBlockEntityRendererMixin {
-    @Shadow
-    private PlayerSkinCache skinCache;
-    
     @Unique
-    private static final Set<String> imaginefun$loggedStaticRenderCallers = new HashSet<>();
-    
-    @Unique
-    private static final Set<Class<?>> imaginefun$loggedTextureSpecClasses = new HashSet<>();
-    
-    @Unique
-    private static final Set<String> imaginefun$loggedReflectionErrors = new HashSet<>();
-    
-    @Inject(
-        method = "render(Lnet/minecraft/client/render/block/entity/state/SkullBlockEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V",
-        at = @At("HEAD"),
-        cancellable = true
-    )
-    private void onRender(
-		SkullBlockEntityRenderState skullBlockEntityRenderState,
-		MatrixStack matrixStack,
-		OrderedRenderCommandQueue orderedRenderCommandQueue,
-		CameraRenderState cameraRenderState,
-        CallbackInfo ci
-    ) {
-        if(skullBlockEntityRenderState.skullType != SkullBlock.Type.PLAYER) return;        
-        
-        RenderLayer renderLayer = skullBlockEntityRenderState.renderLayer;
-        if(renderLayer == null) return;
-
-        RenderLayerAccessor playerSkinCacheEntryAccessor = (RenderLayerAccessor) renderLayer;
-        RenderSetup renderSetup = playerSkinCacheEntryAccessor.getRenderSetup();
-        if (renderSetup == null) return;
-
-        Identifier texture = getTextureLocation(renderSetup, "Sampler0");
-        if (texture == null) return;
-
-        boolean success = PlayerHeadRenderer.render(
-            texture,
-            matrixStack,
-            skullBlockEntityRenderState.facing,
-            skullBlockEntityRenderState.lightmapCoordinates,
-            skullBlockEntityRenderState.yaw
-        );
-
-        if(success) ci.cancel();
-    }
-
-    @Unique
-    private Identifier getTextureLocation(RenderSetup renderSetup, String textureKey) {
+    private static Identifier getTextureLocation(RenderSetup renderSetup, String textureKey) {
         Map<String, ?> textures = ((RenderSetupAccessor) (Object) renderSetup).getTextures();
         Object textureSpec = textures.get(textureKey);
         if (textureSpec == null) {
@@ -89,5 +33,43 @@ public abstract class SkullBlockEntityRendererMixin {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    @Inject(
+        method = "render(Lnet/minecraft/util/math/Direction;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;ILnet/minecraft/client/render/block/entity/SkullBlockEntityModel;Lnet/minecraft/client/render/RenderLayer;ILnet/minecraft/client/render/command/ModelCommandRenderer$CrumblingOverlayCommand;)V",
+        at = @At("HEAD"),
+        cancellable = true
+    )
+    private static void onStaticRender(
+        net.minecraft.util.math.Direction facing,
+        float yaw,
+        float poweredTicks,
+        MatrixStack matrices,
+        net.minecraft.client.render.command.OrderedRenderCommandQueue queue,
+        int light,
+        net.minecraft.client.render.block.entity.SkullBlockEntityModel model,
+        net.minecraft.client.render.RenderLayer renderLayer,
+        int outlineColor,
+        net.minecraft.client.render.command.ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlay,
+        CallbackInfo ci
+    ) {
+        if(renderLayer == null) return;
+
+        RenderLayerAccessor playerSkinCacheEntryAccessor = (RenderLayerAccessor) renderLayer;
+        RenderSetup renderSetup = playerSkinCacheEntryAccessor.getRenderSetup();
+        if (renderSetup == null) return;
+
+        Identifier texture = getTextureLocation(renderSetup, "Sampler0");
+        if (texture == null) return;
+
+        boolean success = PlayerHeadRenderer.render(
+            texture,
+            matrices,
+            facing,
+            light,
+            yaw
+        );
+
+        if(success) ci.cancel();
     }
 }
