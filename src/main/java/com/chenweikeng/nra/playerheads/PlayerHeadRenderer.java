@@ -31,7 +31,7 @@ public class PlayerHeadRenderer {
 
     private static final String NEW_NAMESPACE = "processed_images";
     private static final Map<Identifier, Identifier> processedTextures = new HashMap<>();
-
+    
     public static boolean render(
         Identifier skinTexture,
         MatrixStack matrixStack, 
@@ -143,9 +143,9 @@ public class PlayerHeadRenderer {
         } else {
             matrixStack.translate(0.5F - direction.getOffsetX() * 0.25F, 0.25F, 0.5F - direction.getOffsetZ() * 0.25F);
         }
-		matrixStack.scale(-1.0F, -1.0F, 1.0F);
+		matrixStack.scale(-1.1875F, -1.1875F, 1.1875F);
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
-        matrixStack.translate(0.0F, 0.0F, -0.25F);
+        matrixStack.translate(0.0F, -0.211F, -0.211F);
 
         int overlay = OverlayTexture.DEFAULT_UV;
         

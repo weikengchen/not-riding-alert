@@ -227,7 +227,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
     
     
     private void playSound(MinecraftClient client) {
-        if (client.player == null || client.world == null) return;
+        if (client.player == null) return;
+        if (client.world == null) return;
         
         try {
             String soundId = config.getSoundId();

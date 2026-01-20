@@ -1,6 +1,5 @@
 package com.chenweikeng.nra.mixin;
 
-import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
