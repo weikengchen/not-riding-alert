@@ -145,6 +145,7 @@ public class PlayerHeadRenderer {
         }
 		matrixStack.scale(-1.0F, -1.0F, 1.0F);
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
+        matrixStack.translate(0.0F, 0.0F, -0.25F);
 
         int overlay = OverlayTexture.DEFAULT_UV;
         
