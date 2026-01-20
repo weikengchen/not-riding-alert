@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 
 public class ToggleBlindWhenRidingCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("nra:blindwhenriding")
+        dispatcher.register(ClientCommandManager.literal("nra:blind")
             .executes(context -> {
                 boolean currentState = NotRidingAlertClient.getConfig().isBlindWhenRiding();
                 boolean newState = !currentState;

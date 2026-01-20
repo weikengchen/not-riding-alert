@@ -3,7 +3,7 @@
 	"id": "not-riding-alert",
 	"version": "${version}",
 	"name": "Not Riding Alert",
-	"description": "A QOL mod for ImagineFun server to grind rides.",
+	"description": "A mod for the ImagineFun server that helps with players who want to grind for ride counts on certain rides in that server.",
 	"authors": [
 		"Weikeng Chen"
 	],

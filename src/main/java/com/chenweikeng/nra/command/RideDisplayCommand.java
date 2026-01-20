@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 
 public class RideDisplayCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("nra:ridedisplay")
+        dispatcher.register(ClientCommandManager.literal("nra:display")
             .then(ClientCommandManager.argument("num", IntegerArgumentType.integer(1))
                 .executes(context -> {
                     int num = IntegerArgumentType.getInteger(context, "num");
@@ -22,7 +22,7 @@ public class RideDisplayCommand {
             .executes(context -> {
                 int current = NotRidingAlertClient.getConfig().getRideDisplayCount();
                 context.getSource().sendFeedback(Component.literal("Current ride display count: " + current));
-                context.getSource().sendFeedback(Component.literal("Usage: /nra:ridedisplay <num> (minimum 1)"));
+                context.getSource().sendFeedback(Component.literal("Usage: /nra:display <num> (minimum 1)"));
                 return 1;
             })
         );

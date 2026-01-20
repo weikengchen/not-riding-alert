@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 
 public class ToggleAlertCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("nra:notridealert")
+        dispatcher.register(ClientCommandManager.literal("nra:togglealert")
             .executes(context -> {
                 boolean currentState = NotRidingAlertClient.getConfig().isEnabled();
                 boolean newState = !currentState;

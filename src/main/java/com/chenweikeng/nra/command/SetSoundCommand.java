@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 
 public class SetSoundCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("nra:setalertsound")
+        dispatcher.register(ClientCommandManager.literal("nra:setsound")
             .then(ClientCommandManager.argument("soundId", StringArgumentType.string())
                 .executes(context -> {
                     String soundId = StringArgumentType.getString(context, "soundId");
