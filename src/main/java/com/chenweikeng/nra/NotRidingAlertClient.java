@@ -10,17 +10,21 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+
 import com.chenweikeng.nra.command.SetSoundCommand;
 import com.chenweikeng.nra.command.ToggleAlertCommand;
 import com.chenweikeng.nra.command.ToggleBlindWhenRidingCommand;
 import com.chenweikeng.nra.command.SeasonalRideCommand;
 import com.chenweikeng.nra.command.HideRideCommand;
 import com.chenweikeng.nra.command.RideDisplayCommand;
+import com.chenweikeng.nra.command.HideScoreboardCommand;
+import com.chenweikeng.nra.command.HideChatCommand;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +62,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
             }
             
             // Update cached riding state every tick
-            // Check both Minecraft's hasVehicle() and CurrentRideHolder
-            isRiding = client.player.hasVehicle() || CurrentRideHolder.getCurrentRide() != null;
+            isRiding = client.player.isPassenger() || CurrentRideHolder.getCurrentRide() != null;
             
             // Increment absolute tick counter
             absoluteTickCounter++;
@@ -91,9 +94,11 @@ public class NotRidingAlertClient implements ClientModInitializer {
             SeasonalRideCommand.register(dispatcher);
             HideRideCommand.register(dispatcher);
             RideDisplayCommand.register(dispatcher);
+            HideScoreboardCommand.register(dispatcher);
+            HideChatCommand.register(dispatcher);
         });
 
-        Identifier beforeChatId = Identifier.of(NotRidingAlertClient.MOD_ID, "before_chat");
+        Identifier beforeChatId = Identifier.fromNamespaceAndPath(NotRidingAlertClient.MOD_ID, "before_chat");
         if (beforeChatId != null) {
             HudElementRegistry.attachElementBefore(
                 VanillaHudElements.CHAT,
@@ -106,18 +111,18 @@ public class NotRidingAlertClient implements ClientModInitializer {
      * Tracks if player is moving via keyboard input (WASD keys).
      * Updates lastPlayerMovementTick when movement keys are pressed.
      */
-    private void trackPlayerMovement(MinecraftClient client) {
+    private void trackPlayerMovement(Minecraft client) {
         if (client.options == null) {
             return;
         }
         
         // Check if any movement keys are pressed
-        boolean isMoving = client.options.forwardKey.isPressed() ||
-                          client.options.backKey.isPressed() ||
-                          client.options.leftKey.isPressed() ||
-                          client.options.rightKey.isPressed() ||
-                          client.options.jumpKey.isPressed() ||
-                          client.options.sneakKey.isPressed();
+        boolean isMoving = client.options.keyUp.isDown() ||
+                          client.options.keyDown.isDown() ||
+                          client.options.keyLeft.isDown() ||
+                          client.options.keyRight.isDown() ||
+                          client.options.keyJump.isDown() ||
+                          client.options.keyShift.isDown();
         
         if (isMoving) {
             lastPlayerMovementTick = absoluteTickCounter;
@@ -148,8 +153,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
      * Tracks vehicle state. Updates the counter while the player has a vehicle to ensure
      * at least 5 seconds of suppression after they stop having a vehicle.
      */
-    private void trackVehicleState(MinecraftClient client) {
-        if (client.player != null && client.player.hasVehicle()) {
+    private void trackVehicleState(Minecraft client) {
+        if (client.player != null && client.player.isPassenger()) {
             lastVehicleTick = absoluteTickCounter;
         }
     }
@@ -196,7 +201,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     /**
      * Checks if player is within the suppression location radius.
      */
-    private boolean isNearSuppressionLocation(MinecraftClient client) {
+    private boolean isNearSuppressionLocation(Minecraft client) {
         if (client.player == null) {
             return false;
         }
@@ -209,7 +214,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
         return distance <= SUPPRESSION_LOCATION_RADIUS;
     }
     
-    private void checkRiding(MinecraftClient client) {
+    private void checkRiding(Minecraft client) {
         if (client.player == null) {
             return;
         }
@@ -226,51 +231,51 @@ public class NotRidingAlertClient implements ClientModInitializer {
     }
     
     
-    private void playSound(MinecraftClient client) {
+    private void playSound(Minecraft client) {
         if (client.player == null) return;
-        if (client.world == null) return;
+        if (client.level == null) return;
         
         try {
             String soundId = config.getSoundId();
-            Identifier soundIdentifier = Identifier.of(soundId);
+            Identifier soundIdentifier = Identifier.parse(soundId);
             
             // Try to get the sound event from the registry
             SoundEvent soundEvent = null;
             try {
                 // Try to get from sound registry
-                var registry = client.world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.SOUND_EVENT);
-                soundEvent = registry.get(soundIdentifier);
+                var registry = client.level.registryAccess().lookupOrThrow(Registries.SOUND_EVENT);
+                soundEvent = registry.getValue(soundIdentifier);
             } catch (Exception e) {
                 // If not found, try common sound events
             }
             
             // Fallback to default if not found
             if (soundEvent == null) {
-                soundEvent = SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
+                soundEvent = SoundEvents.EXPERIENCE_ORB_PICKUP;
             }
             
             // Play sound at player's position
-            client.world.playSound(
+            client.level.playSound(
                 client.player,
                 client.player.getX(),
                 client.player.getY(),
                 client.player.getZ(),
                 soundEvent,
-                SoundCategory.MASTER,
+                SoundSource.MASTER,
                 1.0f,
                 1.0f
             );
         } catch (Exception e) {
             // Fallback to default sound
-            if (client.player != null && client.world != null) {
-                SoundEvent fallbackSound = SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
-                client.world.playSound(
+            if (client.player != null && client.level != null) {
+                SoundEvent fallbackSound = SoundEvents.EXPERIENCE_ORB_PICKUP;
+                client.level.playSound(
                     client.player,
                     client.player.getX(),
                     client.player.getY(),
                     client.player.getZ(),
                     fallbackSound,
-                    SoundCategory.MASTER,
+                    SoundSource.MASTER,
                     1.0f,
                     1.0f
                 );

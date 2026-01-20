@@ -7,7 +7,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class HideRideCommand {
         };
     
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("hideride")
+        dispatcher.register(ClientCommandManager.literal("nra:hideride")
             .then(ClientCommandManager.argument("rideName", StringArgumentType.greedyString())
                 .suggests(RIDE_SUGGESTIONS)
                 .executes(context -> {
@@ -33,7 +33,7 @@ public class HideRideCommand {
                     // Check if ride exists
                     RideName ride = RideName.fromString(rideName);
                     if (ride == RideName.UNKNOWN) {
-                        context.getSource().sendFeedback(Text.literal("Unknown ride: " + rideName));
+                        context.getSource().sendFeedback(Component.literal("Unknown ride: " + rideName));
                         return 0;
                     }
                     
@@ -43,14 +43,14 @@ public class HideRideCommand {
                     boolean isNowHidden = NotRidingAlertClient.getConfig().isRideHidden(rideName);
                     
                     String action = isNowHidden ? "hidden" : "unhidden";
-                    context.getSource().sendFeedback(Text.literal("Ride \"" + rideName + "\" is now " + action));
+                    context.getSource().sendFeedback(Component.literal("Ride \"" + rideName + "\" is now " + action));
                     NotRidingAlertClient.LOGGER.info("Ride {} is now {}", rideName, action);
                     return 1;
                 })
             )
             .executes(context -> {
-                context.getSource().sendFeedback(Text.literal("Usage: /hideride <rideName>"));
-                context.getSource().sendFeedback(Text.literal("Use Tab to autocomplete ride names"));
+                context.getSource().sendFeedback(Component.literal("Usage: /nra:hideride <rideName>"));
+                context.getSource().sendFeedback(Component.literal("Use Tab to autocomplete ride names"));
                 return 1;
             })
         );

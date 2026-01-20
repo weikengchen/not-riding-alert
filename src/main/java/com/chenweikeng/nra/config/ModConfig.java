@@ -19,6 +19,8 @@ public class ModConfig {
     private boolean seasonalRidesEnabled = true; // Default enabled
     private java.util.List<String> hiddenRides = new java.util.ArrayList<>(); // List of hidden ride display names
     private int rideDisplayCount = 16; // Default number of rides to display
+    private boolean hideScoreboard = false; // Default disabled
+    private boolean hideChat = false; // Default disabled
     
     public String getSoundId() {
         return soundId;
@@ -84,6 +86,24 @@ public class ModConfig {
     
     public void setRideDisplayCount(int rideDisplayCount) {
         this.rideDisplayCount = Math.max(1, rideDisplayCount); // Ensure at least 1
+        save();
+    }
+    
+    public boolean isHideScoreboard() {
+        return hideScoreboard;
+    }
+    
+    public void setHideScoreboard(boolean hideScoreboard) {
+        this.hideScoreboard = hideScoreboard;
+        save();
+    }
+    
+    public boolean isHideChat() {
+        return hideChat;
+    }
+    
+    public void setHideChat(boolean hideChat) {
+        this.hideChat = hideChat;
         save();
     }
     

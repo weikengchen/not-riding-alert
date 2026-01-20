@@ -3,9 +3,10 @@ package com.chenweikeng.nra.strategy;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
+
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,11 +52,11 @@ public class StrategyHudRenderer {
      * Renders the strategy recommendations on the HUD.
      * @param context The GUI graphics context
      */
-    public static void render(DrawContext context, RenderTickCounter tickCounter){
+    public static void render(GuiGraphics context, DeltaTracker tickCounter){
         update();
         
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null || client.player == null || client.textRenderer == null) {
+        Minecraft client = Minecraft.getInstance();
+        if (client == null || client.player == null || client.font == null) {
             return;
         }
         
@@ -69,7 +70,7 @@ public class StrategyHudRenderer {
         
         // Render error at the top if present
         if (currentError != null && !currentError.isEmpty()) {
-            context.drawText(client.textRenderer, "ERROR: " + currentError, xLeft, y, errorColor, false);
+            context.drawString(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
             y += lineHeight; // Move down for the goals
         }
         
@@ -99,24 +100,40 @@ public class StrategyHudRenderer {
         // Render left column
         for (int i = 0; i < leftGoals.size(); i++) {
             RideGoal goal = leftGoals.get(i);
+            String rideName = goal.getRide().getDisplayName();
+            // Add progress percentage if this is the current ride and progress is available
+            if (currentRide != null && goal.getRide() == currentRide) {
+                Integer progress = CurrentRideHolder.getCurrentProgressPercent();
+                if (progress != null) {
+                    rideName += " (" + progress + "%)";
+                }
+            }
             String text = String.format("%s - %d rides needed, %s",
-                goal.getRide().getDisplayName(),
+                rideName,
                 goal.getRidesNeeded(),
                 formatTime(goal.getTimeNeededSeconds()));
             int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
-            context.drawText(client.textRenderer, text, xLeft, y + (i * lineHeight), color, false);
+            context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
         }
 
         // Render right column (only if displayCount >= 8)
         if (displayCount >= 8) {
             for (int i = 0; i < rightGoals.size(); i++) {
                 RideGoal goal = rightGoals.get(i);
+                String rideName = goal.getRide().getDisplayName();
+                // Add progress percentage if this is the current ride and progress is available
+                if (currentRide != null && goal.getRide() == currentRide) {
+                    Integer progress = CurrentRideHolder.getCurrentProgressPercent();
+                    if (progress != null) {
+                        rideName += " (" + progress + "%)";
+                    }
+                }
                 String text = String.format("%s - %d rides needed, %s",
-                    goal.getRide().getDisplayName(),
+                    rideName,
                     goal.getRidesNeeded(),
                     formatTime(goal.getTimeNeededSeconds()));
                 int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
-                context.drawText(client.textRenderer, text, xRight, y + (i * lineHeight), color, false);
+                context.drawString(client.font, text, xRight, y + (i * lineHeight), color, false);
             }
         }
 
@@ -125,13 +142,19 @@ public class StrategyHudRenderer {
             int maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
             int extraY = y + (maxColumnHeight * lineHeight) + lineHeight; // blank line, then current ride
             RideGoal currentGoal = StrategyCalculator.getGoalForRide(currentRide);
+            String rideName = currentRide.getDisplayName();
+            // Add progress percentage if available
+            Integer progress = CurrentRideHolder.getCurrentProgressPercent();
+            if (progress != null) {
+                rideName += " (" + progress + "%)";
+            }
             String text = currentGoal != null
                 ? String.format("%s - %d rides needed, %s",
-                    currentGoal.getRide().getDisplayName(),
+                    rideName,
                     currentGoal.getRidesNeeded(),
                     formatTime(currentGoal.getTimeNeededSeconds()))
-                : "Riding: " + currentRide.getDisplayName();
-            context.drawText(client.textRenderer, text, xLeft, extraY, colorGreen, false);
+                : "Riding: " + rideName;
+            context.drawString(client.font, text, xLeft, extraY, colorGreen, false);
         }
     }
     

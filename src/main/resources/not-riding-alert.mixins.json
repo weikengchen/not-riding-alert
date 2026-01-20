@@ -5,14 +5,11 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [],
 	"client": [
-		"GameOptionsMixin",
+		"OptionsMixin",
 		"LivingEntityMixin",
-		"ClientPlayNetworkHandlerMixin",
-		"InGameHudMixin",
-		"MessageHandlerMixin",
-		"SkullBlockEntityRendererMixin",
-		"RenderLayerAccessor",
-		"RenderSetupAccessor"
+		"ClientPacketListenerMixin",
+		"GuiMixin",
+		"ChatListenerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

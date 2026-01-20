@@ -1,11 +1,13 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.registry.entry.RegistryEntry;
+
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,30 +16,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
     @Inject(
-        method = "hasStatusEffect(Lnet/minecraft/registry/entry/RegistryEntry;)Z",
+        method = "hasEffect(Lnet/minecraft/core/Holder;)Z",
         at = @At("RETURN"),
         cancellable = true
     )
-    private void injectBlindnessWhenRiding(RegistryEntry<StatusEffect> effect, CallbackInfoReturnable<Boolean> cir) {
+    private void injectBlindnessWhenRiding(Holder<MobEffect> effect, CallbackInfoReturnable<Boolean> cir) {
         if (NotRidingAlertClient.getConfig().isBlindWhenRiding() 
-            && effect == StatusEffects.BLINDNESS 
+            && effect == MobEffects.BLINDNESS 
             && NotRidingAlertClient.isRiding()) {
             cir.setReturnValue(true);
         }
     }
     
     @Inject(
-        method = "getStatusEffect(Lnet/minecraft/registry/entry/RegistryEntry;)Lnet/minecraft/entity/effect/StatusEffectInstance;",
+        method = "getEffect(Lnet/minecraft/core/Holder;)Lnet/minecraft/world/effect/MobEffectInstance;",
         at = @At("RETURN"),
         cancellable = true
     )
-    private void injectBlindnessInstanceWhenRiding(RegistryEntry<StatusEffect> effect, CallbackInfoReturnable<StatusEffectInstance> cir) {
+    private void injectBlindnessInstanceWhenRiding(Holder<MobEffect> effect, CallbackInfoReturnable<MobEffectInstance> cir) {
         if (NotRidingAlertClient.getConfig().isBlindWhenRiding() 
-            && effect == StatusEffects.BLINDNESS 
+            && effect == MobEffects.BLINDNESS 
             && NotRidingAlertClient.isRiding()) {
             if (cir.getReturnValue() == null) {
-                cir.setReturnValue(new StatusEffectInstance(
-                    StatusEffects.BLINDNESS,
+                cir.setReturnValue(new MobEffectInstance(
+                    MobEffects.BLINDNESS,
                     -1
                 ));
             }
