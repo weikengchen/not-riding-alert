@@ -5,11 +5,11 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [],
 	"client": [
-		"OptionsMixin",
 		"LivingEntityMixin",
 		"ClientPacketListenerMixin",
 		"GuiMixin",
-		"ChatListenerMixin"
+		"ChatListenerMixin",
+		"ClientLevelMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
