@@ -195,7 +195,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.0.1
+- **Version**: 2.1.0
 
 ## License
 
