@@ -135,11 +135,14 @@ public enum RideName {
         if (s == null) return UNKNOWN;
         String cleaned = s.trim();
         if (cleaned.isEmpty()) return UNKNOWN;
-        // Remove common prefix
+        // Remove common prefixes
         if (cleaned.startsWith("⏐ ")) cleaned = cleaned.substring(2).trim();
+        // Remove leading pipe (handle both ASCII | and Unicode full-width |)
+        if (cleaned.startsWith("| ")) cleaned = cleaned.substring(2).trim();
         // Remove "..." suffix (truncation)
         if (cleaned.endsWith("...")) cleaned = cleaned.substring(0, cleaned.length() - 3).trim();
         // Exact match first
+        cleaned = cleaned.trim();
         RideName exact = fromString(cleaned);
         if (exact != UNKNOWN) return exact;
         // Find displayName that starts with cleaned (truncated match)
