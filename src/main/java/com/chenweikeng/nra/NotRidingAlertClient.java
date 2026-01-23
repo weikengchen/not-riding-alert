@@ -25,6 +25,8 @@ import com.chenweikeng.nra.command.HideRideCommand;
 import com.chenweikeng.nra.command.RideDisplayCommand;
 import com.chenweikeng.nra.command.HideScoreboardCommand;
 import com.chenweikeng.nra.command.HideChatCommand;
+import com.chenweikeng.nra.command.RideGoalCommand;
+import com.chenweikeng.nra.command.MinFilterCommand;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +98,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
             RideDisplayCommand.register(dispatcher);
             HideScoreboardCommand.register(dispatcher);
             HideChatCommand.register(dispatcher);
+            RideGoalCommand.register(dispatcher);
+            MinFilterCommand.register(dispatcher);
         });
 
         Identifier beforeChatId = Identifier.fromNamespaceAndPath(NotRidingAlertClient.MOD_ID, "before_chat");

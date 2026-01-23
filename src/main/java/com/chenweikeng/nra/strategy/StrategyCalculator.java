@@ -26,7 +26,8 @@ public class StrategyCalculator {
         
         // Get config for filtering
         boolean seasonalRidesEnabled = NotRidingAlertClient.getConfig().isSeasonalRidesEnabled();
-        
+        Integer minRideTimeMinutes = NotRidingAlertClient.getConfig().getMinRideTimeMinutes();
+
         // Calculate goals for each ride
         for (RideName ride : RideName.values()) {
             // Skip UNKNOWN ride
@@ -61,11 +62,19 @@ public class StrategyCalculator {
             // Calculate rides needed and time
             int ridesNeeded = nextGoal - currentCount;
             int rideTimeSeconds = ride.getRideTime();
-            
+
             // Skip if ride time is invalid (99999 means not provided)
             if (rideTimeSeconds >= 99999) {
                 StrategyHudRenderer.setError("Ride time not provided for: " + ride.getDisplayName());
                 continue;
+            }
+
+            // Skip if ride time is below minimum filter
+            if (minRideTimeMinutes != null) {
+                int rideTimeMinutes = rideTimeSeconds / 60;
+                if (rideTimeMinutes < minRideTimeMinutes) {
+                    continue;
+                }
             }
             
             long timeNeededSeconds = (long) ridesNeeded * rideTimeSeconds;

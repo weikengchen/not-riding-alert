@@ -3,6 +3,7 @@ package com.chenweikeng.nra.strategy;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
+import com.chenweikeng.nra.util.TimeFormatUtil;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -111,7 +112,7 @@ public class StrategyHudRenderer {
             String text = String.format("%s - %d rides needed, %s",
                 rideName,
                 goal.getRidesNeeded(),
-                formatTime(goal.getTimeNeededSeconds()));
+                TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
             int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
             context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
         }
@@ -131,7 +132,7 @@ public class StrategyHudRenderer {
                 String text = String.format("%s - %d rides needed, %s",
                     rideName,
                     goal.getRidesNeeded(),
-                    formatTime(goal.getTimeNeededSeconds()));
+                    TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
                 int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
                 context.drawString(client.font, text, xRight, y + (i * lineHeight), color, false);
             }
@@ -152,38 +153,12 @@ public class StrategyHudRenderer {
                 ? String.format("%s - %d rides needed, %s",
                     rideName,
                     currentGoal.getRidesNeeded(),
-                    formatTime(currentGoal.getTimeNeededSeconds()))
+                    TimeFormatUtil.formatDuration(currentGoal.getTimeNeededSeconds()))
                 : "Riding: " + rideName;
             context.drawString(client.font, text, xLeft, extraY, colorGreen, false);
         }
     }
-    
-    /**
-     * Formats time in seconds to a readable string.
-     */
-    private static String formatTime(long seconds) {
-        if (seconds < 60) {
-            return seconds + "s";
-        } else if (seconds < 3600) {
-            long minutes = seconds / 60;
-            long remainingSeconds = seconds % 60;
-            if (remainingSeconds == 0) {
-                return minutes + "m";
-            }
-            return minutes + "m " + remainingSeconds + "s";
-        } else {
-            long hours = seconds / 3600;
-            long remainingMinutes = (seconds % 3600) / 60;
-            if (remainingMinutes == 0) {
-                return hours + "h";
-            }
-            return hours + "h " + remainingMinutes + "m";
-        }
-    }
-    
-    /**
-     * Gets the current top goals (for testing/debugging).
-     */
+
     public static List<RideGoal> getTopGoals() {
         return new ArrayList<>(topGoals);
     }

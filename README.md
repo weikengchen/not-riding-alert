@@ -124,6 +124,29 @@ Toggles chat visibility.
 /nra:hidechat
 ```
 
+### Ride Goal Commands (/nra:1k, /nra:5k, /nra:10k)
+Calculate the total time needed to reach specific ride count goals for all non-seasonal rides.
+
+| Command | Goal | Usage | Example Output |
+|---------|------|-------|----------------|
+| `/nra:1k` | 1000 rides | `/nra:1k` | ` rides to reach 1000: 15`<br>`Total time needed: 3d 5h 12m 34s` |
+| `/nra:5k` | 5000 rides | `/nra:5k` | ` rides to reach 5000: 10`<br>`Total time needed: 12d 8h 45m 20s` |
+| `/nra:10k` | 10000 rides | `/nra:10k` | ` rides to reach 10000: 8`<br>`Total time needed: 25d 14h 30m 10s` |
+
+### `/nra:minfilter [minutes]`
+Filters rides in the strategy display based on minimum ride time (in minutes). If no argument is provided, clears the filter.
+
+**Usage:**
+```
+/nra:minfilter <minutes>
+/nra:minfilter 10
+/nra:minfilter
+```
+
+**Examples:**
+- `/nra:minfilter 5` - Show only rides that take 5+ minutes
+- `/nra:minfilter` - Clear the filter and show all rides
+
 ## Configuration
 
 The mod automatically creates a configuration file at:
@@ -140,6 +163,7 @@ You can edit this file directly or use the in-game commands. The configuration i
 - `rideDisplayCount`: Number of rides to show in the HUD
 - `hideScoreboard`: Whether to hide the scoreboard
 - `hideChat`: Whether to hide the chat
+- `minRideTimeMinutes`: Minimum ride time filter in minutes (null = no filter)
 
 ## Requirements
 
@@ -195,7 +219,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.1.1
+- **Version**: 2.1.2
 
 ## License
 

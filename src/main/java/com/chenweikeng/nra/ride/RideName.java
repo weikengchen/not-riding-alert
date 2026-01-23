@@ -159,6 +159,10 @@ public enum RideName {
         if (best == UNKNOWN && "Rise of the Resistance".startsWith(cleaned)) {
             return STAR_WARS_RISE_OF_THE_RESISTANCE;
         }
+        // Special case for Tower of Terror (sidebar shows "Tower of Terror" without "The Twilight Zone:")
+        if (best == UNKNOWN && "Tower of Terror".startsWith(cleaned)) {
+            return THE_TWILIGHT_ZONE_TOWER_OF_TERROR;
+        }
         return best;
     }
 

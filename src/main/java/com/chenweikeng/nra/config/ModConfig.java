@@ -21,6 +21,7 @@ public class ModConfig {
     private int rideDisplayCount = 16; // Default number of rides to display
     private boolean hideScoreboard = false; // Default disabled
     private boolean hideChat = false; // Default disabled
+    private Integer minRideTimeMinutes = null; // Minimum ride time filter in minutes (null = no filter)
     
     public String getSoundId() {
         return soundId;
@@ -106,7 +107,16 @@ public class ModConfig {
         this.hideChat = hideChat;
         save();
     }
-    
+
+    public Integer getMinRideTimeMinutes() {
+        return minRideTimeMinutes;
+    }
+
+    public void setMinRideTimeMinutes(Integer minRideTimeMinutes) {
+        this.minRideTimeMinutes = minRideTimeMinutes;
+        save();
+    }
+
     public static ModConfig load() {
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
