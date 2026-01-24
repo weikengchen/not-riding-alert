@@ -13,7 +13,6 @@ public class RideGoalCommand {
     private static void calculateAndSendFeedback(FabricClientCommandSource source, int goal) {
         RideCountManager countManager = RideCountManager.getInstance();
         long totalSecondsNeeded = 0;
-        int rideCount = 0;
 
         for (RideName ride : RideName.values()) {
             if (ride == RideName.UNKNOWN) {
@@ -38,12 +37,9 @@ public class RideGoalCommand {
             }
 
             totalSecondsNeeded += (long) ridesNeeded * rideTimeSeconds;
-            rideCount++;
         }
 
-        source.sendFeedback(Component.literal(" rides to reach " + goal + ": " + rideCount));
         source.sendFeedback(Component.literal("Total time needed: " + TimeFormatUtil.formatDuration(totalSecondsNeeded)));
-        NotRidingAlertClient.LOGGER.info("{} command: {} rides, {} seconds needed", goal, rideCount, totalSecondsNeeded);
     }
 
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
