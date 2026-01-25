@@ -7,19 +7,21 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.chat.Component;
 
 public class ToggleBlindWhenRidingCommand {
-    public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("nra:blind")
-            .executes(context -> {
-                boolean currentState = NotRidingAlertClient.getConfig().isBlindWhenRiding();
-                boolean newState = !currentState;
-                NotRidingAlertClient.getConfig().setBlindWhenRiding(newState);
-                
-                String status = newState ? "enabled" : "disabled";
-                context.getSource().sendFeedback(Component.literal("Blind when riding is now " + status));
-                NotRidingAlertClient.LOGGER.info("Blind when riding toggled to: {}", status);
-                return 1;
-            })
-        );
-    }
-}
+  public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+    dispatcher.register(
+        ClientCommandManager.literal("nra:blind")
+            .executes(
+                context -> {
+                  boolean currentState = NotRidingAlertClient.getConfig().isBlindWhenRiding();
+                  boolean newState = !currentState;
+                  NotRidingAlertClient.getConfig().setBlindWhenRiding(newState);
 
+                  String status = newState ? "enabled" : "disabled";
+                  context
+                      .getSource()
+                      .sendFeedback(Component.literal("Blind when riding is now " + status));
+                  NotRidingAlertClient.LOGGER.info("Blind when riding toggled to: {}", status);
+                  return 1;
+                }));
+  }
+}

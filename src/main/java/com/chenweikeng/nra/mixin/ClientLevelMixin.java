@@ -14,32 +14,41 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientLevel.class)
 public class ClientLevelMixin {
-    private static final Identifier RIDE_COMPLETE_SOUND = Identifier.fromNamespaceAndPath("minecraft", "ride.complete");
-    
-    @Inject(
-        method = "playSound",
-        at = @At("HEAD"),
-        cancellable = true
-    )
-    private void onPlaySound(double d, double e, double f, SoundEvent soundEvent, SoundSource soundSource, float g, float h, boolean bl, long l, CallbackInfo ci) {
-        if (soundEvent != null) {
-            // Don't suppress the ride complete sound
-            Identifier soundId = soundEvent.location();
-            if (soundId != null && soundId.equals(RIDE_COMPLETE_SOUND)) {
-                return; // Let the ride complete sound play
-            }
-            
-            // Suppress other sounds when riding
-            if (NotRidingAlertClient.getConfig().isEnabled()) {
-                Minecraft client = Minecraft.getInstance();
-                
-                // Check if player is riding an entity (Minecraft's hasVehicle) or on a ride (CurrentRideHolder)
-                if (client != null && client.player != null 
-                    && (client.player.isPassenger() || CurrentRideHolder.getCurrentRide() != null)) {
-                    // Cancel sound when riding (except ride.complete)
-                    ci.cancel();
-                }
-            }
+  private static final Identifier RIDE_COMPLETE_SOUND =
+      Identifier.fromNamespaceAndPath("minecraft", "ride.complete");
+
+  @Inject(method = "playSound", at = @At("HEAD"), cancellable = true)
+  private void onPlaySound(
+      double d,
+      double e,
+      double f,
+      SoundEvent soundEvent,
+      SoundSource soundSource,
+      float g,
+      float h,
+      boolean bl,
+      long l,
+      CallbackInfo ci) {
+    if (soundEvent != null) {
+      // Don't suppress the ride complete sound
+      Identifier soundId = soundEvent.location();
+      if (soundId != null && soundId.equals(RIDE_COMPLETE_SOUND)) {
+        return; // Let the ride complete sound play
+      }
+
+      // Suppress other sounds when riding
+      if (NotRidingAlertClient.getConfig().isEnabled()) {
+        Minecraft client = Minecraft.getInstance();
+
+        // Check if player is riding an entity (Minecraft's hasVehicle) or on a ride
+        // (CurrentRideHolder)
+        if (client != null
+            && client.player != null
+            && (client.player.isPassenger() || CurrentRideHolder.getCurrentRide() != null)) {
+          // Cancel sound when riding (except ride.complete)
+          ci.cancel();
         }
+      }
     }
+  }
 }

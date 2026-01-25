@@ -1,12 +1,22 @@
 package com.chenweikeng.nra;
 
+import com.chenweikeng.nra.command.HideChatCommand;
+import com.chenweikeng.nra.command.HideRideCommand;
+import com.chenweikeng.nra.command.HideScoreboardCommand;
+import com.chenweikeng.nra.command.MinFilterCommand;
+import com.chenweikeng.nra.command.RideDisplayCommand;
+import com.chenweikeng.nra.command.RideGoalCommand;
+import com.chenweikeng.nra.command.SeasonalRideCommand;
+import com.chenweikeng.nra.command.SetSoundCommand;
+import com.chenweikeng.nra.command.ToggleAlertCommand;
+import com.chenweikeng.nra.command.ToggleBlindWhenRidingCommand;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.strategy.StrategyHudRenderer;
-
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
@@ -16,284 +26,270 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-
-import com.chenweikeng.nra.command.SetSoundCommand;
-import com.chenweikeng.nra.command.ToggleAlertCommand;
-import com.chenweikeng.nra.command.ToggleBlindWhenRidingCommand;
-import com.chenweikeng.nra.command.SeasonalRideCommand;
-import com.chenweikeng.nra.command.HideRideCommand;
-import com.chenweikeng.nra.command.RideDisplayCommand;
-import com.chenweikeng.nra.command.HideScoreboardCommand;
-import com.chenweikeng.nra.command.HideChatCommand;
-import com.chenweikeng.nra.command.RideGoalCommand;
-import com.chenweikeng.nra.command.MinFilterCommand;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NotRidingAlertClient implements ClientModInitializer {
-    public static final String MOD_ID = "not-riding-alert";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private static ModConfig config;
-    private int tickCounter = 0;
-    private static final int CHECK_INTERVAL = 200; // Check every 200 ticks (10 seconds)
-    private static boolean isRiding = false; // Cached riding state
-    private long absoluteTickCounter = 0; // Absolute tick counter (never resets)
-    private long lastPlayerMovementTick = -1; // Last absolute tick when player moved via keyboard
-    private static final int MOVEMENT_SUPPRESSION_TICKS = 600; // Suppress sound for 600 ticks (30 seconds) after movement
-    private long lastRideTick = -1; // Last absolute tick when player was on a ride
-    private static final int RIDE_COMPLETION_SUPPRESSION_TICKS = 100; // Suppress sound for 100 ticks (5 seconds) after ride completion
-    private long lastVehicleTick = -1; // Last absolute tick when player had a vehicle
-    private static final int VEHICLE_SUPPRESSION_TICKS = 100; // Suppress sound for 100 ticks (5 seconds) after having a vehicle
-    private RideName previousRide = null; // Track previous ride state to detect completion
-    private static final double SUPPRESSION_LOCATION_X = 674.0;
-    private static final double SUPPRESSION_LOCATION_Y = 65.0;
-    private static final double SUPPRESSION_LOCATION_Z = 984.0;
-    private static final double SUPPRESSION_LOCATION_RADIUS = 4.0; // Block distance of 4
-    
-    @Override
-    public void onInitializeClient() {
-        config = ModConfig.load();
-        LOGGER.info("Not Riding Alert client initialized");
-        
-        // Register tick event to update cached riding state and check periodically (for sound alert)
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player == null) {
-                isRiding = false;
-                return;
-            }
-            
-            // Update cached riding state every tick
-            isRiding = client.player.isPassenger() || CurrentRideHolder.getCurrentRide() != null;
-            
-            // Increment absolute tick counter
-            absoluteTickCounter++;
-            
-            // Track player keyboard movement (WASD keys)
-            trackPlayerMovement(client);
-            
-            // Track ride completion (when currentRide changes from non-null to null)
-            trackRideCompletion();
-            
-            // Track vehicle state (update tick while player has vehicle)
-            trackVehicleState(client);
-            
-            // Check and save ride counts if needed (every tick, but manager handles 15s interval)
-            RideCountManager.getInstance().checkAndSaveIfNeeded();
-            
-            tickCounter++;
-            if (tickCounter >= CHECK_INTERVAL) {
-                tickCounter = 0;
-                checkRiding(client);
-            }
-        });
-        
-        // Register commands
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            SetSoundCommand.register(dispatcher);
-            ToggleAlertCommand.register(dispatcher);
-            ToggleBlindWhenRidingCommand.register(dispatcher);
-            SeasonalRideCommand.register(dispatcher);
-            HideRideCommand.register(dispatcher);
-            RideDisplayCommand.register(dispatcher);
-            HideScoreboardCommand.register(dispatcher);
-            HideChatCommand.register(dispatcher);
-            RideGoalCommand.register(dispatcher);
-            MinFilterCommand.register(dispatcher);
+  public static final String MOD_ID = "not-riding-alert";
+  public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+  private static ModConfig config;
+  private int tickCounter = 0;
+  private static final int CHECK_INTERVAL = 200; // Check every 200 ticks (10 seconds)
+  private static boolean isRiding = false; // Cached riding state
+  private long absoluteTickCounter = 0; // Absolute tick counter (never resets)
+  private long lastPlayerMovementTick = -1; // Last absolute tick when player moved via keyboard
+  private static final int MOVEMENT_SUPPRESSION_TICKS =
+      600; // Suppress sound for 600 ticks (30 seconds) after movement
+  private long lastRideTick = -1; // Last absolute tick when player was on a ride
+  private static final int RIDE_COMPLETION_SUPPRESSION_TICKS =
+      100; // Suppress sound for 100 ticks (5 seconds) after ride completion
+  private long lastVehicleTick = -1; // Last absolute tick when player had a vehicle
+  private static final int VEHICLE_SUPPRESSION_TICKS =
+      100; // Suppress sound for 100 ticks (5 seconds) after having a vehicle
+  private RideName previousRide = null; // Track previous ride state to detect completion
+  private static final double SUPPRESSION_LOCATION_X = 674.0;
+  private static final double SUPPRESSION_LOCATION_Y = 65.0;
+  private static final double SUPPRESSION_LOCATION_Z = 984.0;
+  private static final double SUPPRESSION_LOCATION_RADIUS = 4.0; // Block distance of 4
+
+  @Override
+  public void onInitializeClient() {
+    config = ModConfig.load();
+    LOGGER.info("Not Riding Alert client initialized");
+
+    // Register tick event to update cached riding state and check periodically (for sound alert)
+    ClientTickEvents.END_CLIENT_TICK.register(
+        client -> {
+          if (client.player == null) {
+            isRiding = false;
+            return;
+          }
+
+          // Update cached riding state every tick
+          isRiding = client.player.isPassenger() || CurrentRideHolder.getCurrentRide() != null;
+
+          // Increment absolute tick counter
+          absoluteTickCounter++;
+
+          // Track player keyboard movement (WASD keys)
+          trackPlayerMovement(client);
+
+          // Track ride completion (when currentRide changes from non-null to null)
+          trackRideCompletion();
+
+          // Track vehicle state (update tick while player has vehicle)
+          trackVehicleState(client);
+
+          // Check and save ride counts if needed (every tick, but manager handles 15s interval)
+          RideCountManager.getInstance().checkAndSaveIfNeeded();
+
+          tickCounter++;
+          if (tickCounter >= CHECK_INTERVAL) {
+            tickCounter = 0;
+            checkRiding(client);
+          }
         });
 
-        Identifier beforeChatId = Identifier.fromNamespaceAndPath(NotRidingAlertClient.MOD_ID, "before_chat");
-        if (beforeChatId != null) {
-            HudElementRegistry.attachElementBefore(
-                VanillaHudElements.CHAT,
-                beforeChatId,
-                StrategyHudRenderer::render);
-        }
+    // Register commands
+    ClientCommandRegistrationCallback.EVENT.register(
+        (dispatcher, registryAccess) -> {
+          SetSoundCommand.register(dispatcher);
+          ToggleAlertCommand.register(dispatcher);
+          ToggleBlindWhenRidingCommand.register(dispatcher);
+          SeasonalRideCommand.register(dispatcher);
+          HideRideCommand.register(dispatcher);
+          RideDisplayCommand.register(dispatcher);
+          HideScoreboardCommand.register(dispatcher);
+          HideChatCommand.register(dispatcher);
+          RideGoalCommand.register(dispatcher);
+          MinFilterCommand.register(dispatcher);
+        });
+
+    Identifier beforeChatId =
+        Identifier.fromNamespaceAndPath(NotRidingAlertClient.MOD_ID, "before_chat");
+    if (beforeChatId != null) {
+      HudElementRegistry.attachElementBefore(
+          VanillaHudElements.CHAT, beforeChatId, StrategyHudRenderer::render);
     }
-    
-    /**
-     * Tracks if player is moving via keyboard input (WASD keys).
-     * Updates lastPlayerMovementTick when movement keys are pressed.
-     */
-    private void trackPlayerMovement(Minecraft client) {
-        if (client.options == null) {
-            return;
-        }
-        
-        // Check if any movement keys are pressed
-        boolean isMoving = client.options.keyUp.isDown() ||
-                          client.options.keyDown.isDown() ||
-                          client.options.keyLeft.isDown() ||
-                          client.options.keyRight.isDown() ||
-                          client.options.keyJump.isDown() ||
-                          client.options.keyShift.isDown();
-        
-        if (isMoving) {
-            lastPlayerMovementTick = absoluteTickCounter;
-        }
+  }
+
+  /**
+   * Tracks if player is moving via keyboard input (WASD keys). Updates lastPlayerMovementTick when
+   * movement keys are pressed.
+   */
+  private void trackPlayerMovement(Minecraft client) {
+    if (client.options == null) {
+      return;
     }
-    
-    /**
-     * Tracks when a ride is completed (currentRide changes from non-null to null).
-     * Also updates the counter while the player is on a ride to ensure at least 5 seconds
-     * of suppression even for rides where the player is not sitting.
-     */
-    private void trackRideCompletion() {
-        RideName currentRide = CurrentRideHolder.getCurrentRide();
-        
-        // If player is currently on a ride, update the counter to ensure suppression
-        if (currentRide != null) {
-            lastRideTick = absoluteTickCounter;
-        }
-        // If previous ride was non-null and current ride is null, ride was just completed
-        else if (previousRide != null && currentRide == null) {
-            lastRideTick = absoluteTickCounter;
-        }
-        
-        previousRide = currentRide;
+
+    // Check if any movement keys are pressed
+    boolean isMoving =
+        client.options.keyUp.isDown()
+            || client.options.keyDown.isDown()
+            || client.options.keyLeft.isDown()
+            || client.options.keyRight.isDown()
+            || client.options.keyJump.isDown()
+            || client.options.keyShift.isDown();
+
+    if (isMoving) {
+      lastPlayerMovementTick = absoluteTickCounter;
     }
-    
-    /**
-     * Tracks vehicle state. Updates the counter while the player has a vehicle to ensure
-     * at least 5 seconds of suppression after they stop having a vehicle.
-     */
-    private void trackVehicleState(Minecraft client) {
-        if (client.player != null && client.player.isPassenger()) {
-            lastVehicleTick = absoluteTickCounter;
-        }
+  }
+
+  /**
+   * Tracks when a ride is completed (currentRide changes from non-null to null). Also updates the
+   * counter while the player is on a ride to ensure at least 5 seconds of suppression even for
+   * rides where the player is not sitting.
+   */
+  private void trackRideCompletion() {
+    RideName currentRide = CurrentRideHolder.getCurrentRide();
+
+    // If player is currently on a ride, update the counter to ensure suppression
+    if (currentRide != null) {
+      lastRideTick = absoluteTickCounter;
     }
-    
-    /**
-     * Checks if player has moved recently (within MOVEMENT_SUPPRESSION_TICKS).
-     */
-    private boolean hasPlayerMovedRecently() {
-        // If player has never moved, return false
-        if (lastPlayerMovementTick < 0) {
-            return false;
-        }
-        
-        long ticksSinceLastMovement = absoluteTickCounter - lastPlayerMovementTick;
-        return ticksSinceLastMovement < MOVEMENT_SUPPRESSION_TICKS;
+    // If previous ride was non-null and current ride is null, ride was just completed
+    else if (previousRide != null && currentRide == null) {
+      lastRideTick = absoluteTickCounter;
     }
-    
-    /**
-     * Checks if player has been on a ride recently (within RIDE_COMPLETION_SUPPRESSION_TICKS).
-     */
-    private boolean hasRidenRecently() {
-        // If player has never been on a ride, return false
-        if (lastRideTick < 0) {
-            return false;
-        }
-        
-        long ticksSinceLastRide = absoluteTickCounter - lastRideTick;
-        return ticksSinceLastRide < RIDE_COMPLETION_SUPPRESSION_TICKS;
+
+    previousRide = currentRide;
+  }
+
+  /**
+   * Tracks vehicle state. Updates the counter while the player has a vehicle to ensure at least 5
+   * seconds of suppression after they stop having a vehicle.
+   */
+  private void trackVehicleState(Minecraft client) {
+    if (client.player != null && client.player.isPassenger()) {
+      lastVehicleTick = absoluteTickCounter;
     }
-    
-    /**
-     * Checks if player had a vehicle recently (within VEHICLE_SUPPRESSION_TICKS).
-     */
-    private boolean hasVehicleRecently() {
-        // If player has never had a vehicle, return false
-        if (lastVehicleTick < 0) {
-            return false;
-        }
-        
-        long ticksSinceLastVehicle = absoluteTickCounter - lastVehicleTick;
-        return ticksSinceLastVehicle < VEHICLE_SUPPRESSION_TICKS;
+  }
+
+  /** Checks if player has moved recently (within MOVEMENT_SUPPRESSION_TICKS). */
+  private boolean hasPlayerMovedRecently() {
+    // If player has never moved, return false
+    if (lastPlayerMovementTick < 0) {
+      return false;
     }
-    
-    /**
-     * Checks if player is within the suppression location radius.
-     */
-    private boolean isNearSuppressionLocation(Minecraft client) {
-        if (client.player == null) {
-            return false;
-        }
-        
-        double dx = client.player.getX() - SUPPRESSION_LOCATION_X;
-        double dy = client.player.getY() - SUPPRESSION_LOCATION_Y;
-        double dz = client.player.getZ() - SUPPRESSION_LOCATION_Z;
-        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        
-        return distance <= SUPPRESSION_LOCATION_RADIUS;
+
+    long ticksSinceLastMovement = absoluteTickCounter - lastPlayerMovementTick;
+    return ticksSinceLastMovement < MOVEMENT_SUPPRESSION_TICKS;
+  }
+
+  /** Checks if player has been on a ride recently (within RIDE_COMPLETION_SUPPRESSION_TICKS). */
+  private boolean hasRidenRecently() {
+    // If player has never been on a ride, return false
+    if (lastRideTick < 0) {
+      return false;
     }
-    
-    private void checkRiding(Minecraft client) {
-        if (client.player == null) {
-            return;
-        }
-        
-        // Check if feature is enabled
-        if (!config.isEnabled()) {
-            return;
-        }
-        
-        // Play sound when player is NOT riding, but suppress if player has been moving recently, just completed a ride, had a vehicle recently, or is near suppression location
-        if (!isRiding && !hasPlayerMovedRecently() && !hasRidenRecently() && !hasVehicleRecently() && !isNearSuppressionLocation(client)) {
-            playSound(client);
-        }
+
+    long ticksSinceLastRide = absoluteTickCounter - lastRideTick;
+    return ticksSinceLastRide < RIDE_COMPLETION_SUPPRESSION_TICKS;
+  }
+
+  /** Checks if player had a vehicle recently (within VEHICLE_SUPPRESSION_TICKS). */
+  private boolean hasVehicleRecently() {
+    // If player has never had a vehicle, return false
+    if (lastVehicleTick < 0) {
+      return false;
     }
-    
-    
-    private void playSound(Minecraft client) {
-        if (client.player == null) return;
-        if (client.level == null) return;
-        
-        try {
-            String soundId = config.getSoundId();
-            Identifier soundIdentifier = Identifier.parse(soundId);
-            
-            // Try to get the sound event from the registry
-            SoundEvent soundEvent = null;
-            try {
-                // Try to get from sound registry
-                var registry = client.level.registryAccess().lookupOrThrow(Registries.SOUND_EVENT);
-                soundEvent = registry.getValue(soundIdentifier);
-            } catch (Exception e) {
-                // If not found, try common sound events
-            }
-            
-            // Fallback to default if not found
-            if (soundEvent == null) {
-                soundEvent = SoundEvents.EXPERIENCE_ORB_PICKUP;
-            }
-            
-            // Play sound at player's position
-            client.level.playSound(
-                client.player,
-                client.player.getX(),
-                client.player.getY(),
-                client.player.getZ(),
-                soundEvent,
-                SoundSource.MASTER,
-                1.0f,
-                1.0f
-            );
-        } catch (Exception e) {
-            // Fallback to default sound
-            if (client.player != null && client.level != null) {
-                SoundEvent fallbackSound = SoundEvents.EXPERIENCE_ORB_PICKUP;
-                client.level.playSound(
-                    client.player,
-                    client.player.getX(),
-                    client.player.getY(),
-                    client.player.getZ(),
-                    fallbackSound,
-                    SoundSource.MASTER,
-                    1.0f,
-                    1.0f
-                );
-            }
-        }
+
+    long ticksSinceLastVehicle = absoluteTickCounter - lastVehicleTick;
+    return ticksSinceLastVehicle < VEHICLE_SUPPRESSION_TICKS;
+  }
+
+  /** Checks if player is within the suppression location radius. */
+  private boolean isNearSuppressionLocation(Minecraft client) {
+    if (client.player == null) {
+      return false;
     }
-    
-    public static ModConfig getConfig() {
-        return config;
+
+    double dx = client.player.getX() - SUPPRESSION_LOCATION_X;
+    double dy = client.player.getY() - SUPPRESSION_LOCATION_Y;
+    double dz = client.player.getZ() - SUPPRESSION_LOCATION_Z;
+    double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    return distance <= SUPPRESSION_LOCATION_RADIUS;
+  }
+
+  private void checkRiding(Minecraft client) {
+    if (client.player == null) {
+      return;
     }
-    
-    public static boolean isRiding() {
-        // Check both cached state and CurrentRideHolder for real-time updates
-        return isRiding || CurrentRideHolder.getCurrentRide() != null;
+
+    // Check if feature is enabled
+    if (!config.isEnabled()) {
+      return;
     }
+
+    // Play sound when player is NOT riding, but suppress if player has been moving recently, just
+    // completed a ride, had a vehicle recently, or is near suppression location
+    if (!isRiding
+        && !hasPlayerMovedRecently()
+        && !hasRidenRecently()
+        && !hasVehicleRecently()
+        && !isNearSuppressionLocation(client)) {
+      playSound(client);
+    }
+  }
+
+  private void playSound(Minecraft client) {
+    if (client.player == null) return;
+    if (client.level == null) return;
+
+    try {
+      String soundId = config.getSoundId();
+      Identifier soundIdentifier = Identifier.parse(soundId);
+
+      // Try to get the sound event from the registry
+      SoundEvent soundEvent = null;
+      try {
+        // Try to get from sound registry
+        var registry = client.level.registryAccess().lookupOrThrow(Registries.SOUND_EVENT);
+        soundEvent = registry.getValue(soundIdentifier);
+      } catch (Exception e) {
+        // If not found, try common sound events
+      }
+
+      // Fallback to default if not found
+      if (soundEvent == null) {
+        soundEvent = SoundEvents.EXPERIENCE_ORB_PICKUP;
+      }
+
+      // Play sound at player's position
+      client.level.playSound(
+          client.player,
+          client.player.getX(),
+          client.player.getY(),
+          client.player.getZ(),
+          soundEvent,
+          SoundSource.MASTER,
+          1.0f,
+          1.0f);
+    } catch (Exception e) {
+      // Fallback to default sound
+      if (client.player != null && client.level != null) {
+        SoundEvent fallbackSound = SoundEvents.EXPERIENCE_ORB_PICKUP;
+        client.level.playSound(
+            client.player,
+            client.player.getX(),
+            client.player.getY(),
+            client.player.getZ(),
+            fallbackSound,
+            SoundSource.MASTER,
+            1.0f,
+            1.0f);
+      }
+    }
+  }
+
+  public static ModConfig getConfig() {
+    return config;
+  }
+
+  public static boolean isRiding() {
+    // Check both cached state and CurrentRideHolder for real-time updates
+    return isRiding || CurrentRideHolder.getCurrentRide() != null;
+  }
 }
-
