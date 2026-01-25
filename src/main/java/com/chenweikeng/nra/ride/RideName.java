@@ -163,6 +163,10 @@ public enum RideName {
         if (best == UNKNOWN && "Tower of Terror".startsWith(cleaned)) {
             return THE_TWILIGHT_ZONE_TOWER_OF_TERROR;
         }
+        // Special case for Chip 'N' Dale's Gadget Coaster (sidebar shows "Chip N Dale's Gadget Coaster" without apostrophe in N)
+        if (best == UNKNOWN && "Chip N Dale's Gadget Coaster".startsWith(cleaned)) {
+            return CHIP_N_DALES_GADGET_COASTER;
+        }
         return best;
     }
 
