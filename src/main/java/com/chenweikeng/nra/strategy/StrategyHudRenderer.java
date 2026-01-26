@@ -97,7 +97,7 @@ public class StrategyHudRenderer {
       RideGoal goal = leftGoals.get(i);
       String rideName = goal.getRide().getDisplayName();
       // Add progress percentage if this is the current ride and progress is available
-      if (currentRide != null && goal.getRide() == currentRide) {
+      if (currentRide != null && currentRide != RideName.UNKNOWN && goal.getRide() == currentRide) {
         Integer progress = CurrentRideHolder.getCurrentProgressPercent();
         if (progress != null) {
           rideName += " (" + progress + "%)";
@@ -119,7 +119,9 @@ public class StrategyHudRenderer {
         RideGoal goal = rightGoals.get(i);
         String rideName = goal.getRide().getDisplayName();
         // Add progress percentage if this is the current ride and progress is available
-        if (currentRide != null && goal.getRide() == currentRide) {
+        if (currentRide != null
+            && currentRide != RideName.UNKNOWN
+            && goal.getRide() == currentRide) {
           Integer progress = CurrentRideHolder.getCurrentProgressPercent();
           if (progress != null) {
             rideName += " (" + progress + "%)";
@@ -138,7 +140,7 @@ public class StrategyHudRenderer {
 
     // If currently riding and that ride is not in the displayed goals, show it after a blank line
     // in green
-    if (currentRide != null && !currentRideInTop) {
+    if (currentRide != null && currentRide != RideName.UNKNOWN && !currentRideInTop) {
       int maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
       int extraY = y + (maxColumnHeight * lineHeight) + lineHeight; // blank line, then current ride
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(currentRide);
