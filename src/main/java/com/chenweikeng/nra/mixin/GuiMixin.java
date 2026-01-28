@@ -22,6 +22,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GuiMixin {
   @Shadow private static Comparator<?> SCORE_DISPLAY_ORDER;
 
+  /** Helper class to store team information */
+  private static class TeamInfo {
+    private final String teamName;
+    private final String prefixStr;
+
+    public TeamInfo(String teamName, String prefixStr) {
+      this.teamName = teamName;
+      this.prefixStr = prefixStr;
+    }
+
+    public String getTeamName() {
+      return teamName;
+    }
+
+    public String getPrefixStr() {
+      return prefixStr;
+    }
+  }
+
   @Inject(
       at = @At("HEAD"),
       method =
@@ -34,9 +53,8 @@ public abstract class GuiMixin {
     @SuppressWarnings("unchecked")
     Comparator<Object> comparator = (Comparator<Object>) SCORE_DISPLAY_ORDER;
 
-    final String[] prefix8 = {null};
-    final String[] prefix9 = {null};
-    final String[] prefixA = {null};
+    // Extract team information into a sorted array
+    java.util.List<TeamInfo> teamInfos = new java.util.ArrayList<>();
     scoreboard.listPlayerScores(objective).stream()
         .filter(score -> !score.isHidden())
         .sorted(comparator)
@@ -45,29 +63,46 @@ public abstract class GuiMixin {
             scoreboardEntry -> {
               PlayerTeam team = scoreboard.getPlayersTeam(scoreboardEntry.owner());
               if (team == null) return;
-              String name = team.getName();
+              String teamName = team.getName();
               Component prefixText = team.getPlayerPrefix();
               String prefixStr = prefixText != null ? prefixText.getString() : "null";
-              if ("§8".equals(name)) prefix8[0] = prefixStr;
-              else if ("§9".equals(name)) prefix9[0] = prefixStr;
-              else if ("§a".equals(name)) prefixA[0] = prefixStr;
+              teamInfos.add(new TeamInfo(teamName, prefixStr));
             });
 
-    // Only analyze when §8 prefix contains "Current Ride"
-    if (prefix8[0] == null) {
-      CurrentRideHolder.setCurrentRide(null);
-    } else if (!prefix8[0].contains("Current Ride")) {
-      CurrentRideHolder.setCurrentRide(null);
-    } else if (prefix9[0] == null) {
+    // Sort by team name to ensure consistent ordering
+    teamInfos.sort(java.util.Comparator.comparing(TeamInfo::getTeamName));
+
+    // Find the team with "Current Ride"
+    int currentRideIndex = -1;
+    for (int i = 0; i < teamInfos.size(); i++) {
+      if (teamInfos.get(i).getPrefixStr().contains("Current Ride")) {
+        currentRideIndex = i;
+        break;
+      }
+    }
+
+    // Extract ride name and time from subsequent rows
+    String currentRidePrefix = null;
+    String timePrefix = null;
+
+    if (currentRideIndex >= 0 && currentRideIndex + 1 < teamInfos.size()) {
+      currentRidePrefix = teamInfos.get(currentRideIndex + 1).getPrefixStr();
+      if (currentRideIndex + 2 < teamInfos.size()) {
+        timePrefix = teamInfos.get(currentRideIndex + 2).getPrefixStr();
+      }
+    }
+
+    // Process the current ride information
+    if (currentRidePrefix == null) {
       CurrentRideHolder.setCurrentRide(null);
     } else {
-      RideName resolved = RideName.fromTruncatedString(prefix9[0]);
+      RideName resolved = RideName.fromTruncatedString(currentRidePrefix);
       CurrentRideHolder.setCurrentRide(resolved);
       LastRideHolder.setLastRide(resolved);
 
-      // Calculate progress from §A team if available and ride is not excluded
-      if (resolved != RideName.DAVY_CROCKETTS_EXPLORER_CANOES && prefixA[0] != null) {
-        int elapsedSeconds = parseTimeString(prefixA[0]);
+      // Calculate progress from time prefix if available and ride is not excluded
+      if (resolved != RideName.DAVY_CROCKETTS_EXPLORER_CANOES && timePrefix != null) {
+        int elapsedSeconds = parseTimeString(timePrefix);
         if (elapsedSeconds >= 0) {
           int rideTimeSeconds = resolved.getRideTime();
           if (rideTimeSeconds > 0) {
