@@ -12,6 +12,8 @@ public class RideGoalCommand {
   private static void calculateAndSendFeedback(FabricClientCommandSource source, int goal) {
     RideCountManager countManager = RideCountManager.getInstance();
     long totalSecondsNeeded = 0;
+    long totalSecondsFromZero = 0;
+    long completedSeconds = 0;
 
     for (RideName ride : RideName.values()) {
       if (ride == RideName.UNKNOWN) {
@@ -23,24 +25,37 @@ public class RideGoalCommand {
       }
 
       int currentCount = countManager.getRideCount(ride);
-
-      if (currentCount >= goal) {
-        continue;
-      }
-
-      int ridesNeeded = goal - currentCount;
       int rideTimeSeconds = ride.getRideTime();
 
       if (rideTimeSeconds >= 99999) {
         continue;
       }
 
-      totalSecondsNeeded += (long) ridesNeeded * rideTimeSeconds;
+      // Calculate total time needed if starting from 0
+      totalSecondsFromZero += (long) goal * rideTimeSeconds;
+
+      if (currentCount >= goal) {
+        // Player has completed this ride goal, add all time to completed
+        completedSeconds += (long) goal * rideTimeSeconds;
+      } else {
+        // Player has partially completed this ride
+        completedSeconds += (long) currentCount * rideTimeSeconds;
+        int ridesNeeded = goal - currentCount;
+        totalSecondsNeeded += (long) ridesNeeded * rideTimeSeconds;
+      }
+    }
+
+    // Calculate progress percentage
+    double progressPercentage = 0.0;
+    if (totalSecondsFromZero > 0) {
+      progressPercentage = ((double) completedSeconds / totalSecondsFromZero) * 100.0;
     }
 
     source.sendFeedback(
         Component.literal(
-            "Total time needed: " + TimeFormatUtil.formatDuration(totalSecondsNeeded)));
+            String.format(
+                "Progress: %.2f%% - Time remaining: %s",
+                progressPercentage, TimeFormatUtil.formatDuration(totalSecondsNeeded))));
   }
 
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {

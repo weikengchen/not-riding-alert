@@ -125,7 +125,7 @@ Toggles chat visibility.
 ```
 
 ### Ride Goal Commands (/nra:1k, /nra:5k, /nra:10k)
-Calculate the total time needed to reach specific ride count goals for all non-seasonal rides.
+Calculate the total time needed to reach specific ride count goals for all non-seasonal rides, as well as the player's progress so far.
 
 | Command | Goal | Usage | Example Output |
 |---------|------|-------|----------------|
@@ -219,7 +219,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.1.2
+- **Version**: 2.1.3
 
 ## License
 
