@@ -25,13 +25,11 @@ public class RideDisplayCommand {
                         }))
             .executes(
                 context -> {
-                  int current = NotRidingAlertClient.getConfig().getRideDisplayCount();
+                  NotRidingAlertClient.getConfig().setRideDisplayCount(0);
                   context
                       .getSource()
-                      .sendFeedback(Component.literal("Current ride display count: " + current));
-                  context
-                      .getSource()
-                      .sendFeedback(Component.literal("Usage: /nra:display <num> (minimum 1)"));
+                      .sendFeedback(Component.literal("Ride display count set to 0 (hidden)"));
+                  NotRidingAlertClient.LOGGER.info("Ride display count set to 0 (hidden)");
                   return 1;
                 }));
   }

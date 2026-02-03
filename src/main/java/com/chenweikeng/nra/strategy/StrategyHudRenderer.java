@@ -68,11 +68,12 @@ public class StrategyHudRenderer {
       y += lineHeight; // Move down for the goals
     }
 
-    RideName currentRide = CurrentRideHolder.getCurrentRide();
-    if (topGoals.isEmpty() && currentRide == null) {
+    int displayCount = NotRidingAlertClient.getConfig().getRideDisplayCount();
+    if (displayCount == 0) {
       return;
     }
-    int displayCount = NotRidingAlertClient.getConfig().getRideDisplayCount();
+
+    RideName currentRide = CurrentRideHolder.getCurrentRide();
     boolean currentRideInTop =
         currentRide != null && topGoals.stream().anyMatch(g -> g.getRide() == currentRide);
 

@@ -114,8 +114,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
   }
 
   /**
-   * Tracks if player is moving via keyboard input (WASD keys). Updates lastPlayerMovementTick when
-   * movement keys are pressed.
+   * Tracks if player is moving via keyboard input (WASD keys) or mouse clicks. Updates
+   * lastPlayerMovementTick when movement keys are pressed or mouse is clicked.
    */
   private void trackPlayerMovement(Minecraft client) {
     if (client.options == null) {
@@ -131,7 +131,11 @@ public class NotRidingAlertClient implements ClientModInitializer {
             || client.options.keyJump.isDown()
             || client.options.keyShift.isDown();
 
-    if (isMoving) {
+    // Check if mouse buttons are pressed (left or right click)
+    boolean isMouseClicking =
+        client.mouseHandler.isLeftPressed() || client.mouseHandler.isRightPressed();
+
+    if (isMoving || isMouseClicking) {
       lastPlayerMovementTick = absoluteTickCounter;
     }
   }
