@@ -14,7 +14,7 @@ public enum RideName {
   CHIP_N_DALES_GADGET_COASTER("Chip 'N' Dale's Gadget Coaster", 44),
   DAVY_CROCKETTS_EXPLORER_CANOES("Davy Crockett's Explorer Canoes", 150),
   DISNEYLAND_MONORAIL("Disneyland Monorail", 485),
-  DISNEYLAND_RAILROAD("Disneyland Railroad", 1025),
+  DISNEYLAND_RAILROAD("Disneyland Railroad", 1008),
   DUMBO_THE_FLYING_ELEPHANT("Dumbo the Flying Elephant", 105),
   ENCHANTED_TIKI_ROOM("Enchanted Tiki Room", 750),
   FINDING_NEMO_SUBMARINE_VOYAGE("Finding Nemo Submarine Voyage", 790),
@@ -28,8 +28,8 @@ public enum RideName {
   MATTERHORN_BOBSLEDS("Matterhorn Bobsleds", 120),
   MICKEY_AND_FRIENDS_PARKING_TRAM("Mickey & Friends Parking Tram", 550),
   MR_TOADS_WILD_RIDE("Mr Toad's Wild Ride", 109),
-  PEOPLEMOVER("Peoplemover", 695),
-  PETER_PANS_FLIGHT("Peter Pan's Flight", 124),
+  PEOPLEMOVER("Peoplemover", 717),
+  PETER_PANS_FLIGHT("Peter Pan's Flight", 139),
   PINOCCHIOS_DARING_JOURNEY("Pinocchio's Daring Journey", 168),
   PIRATES_OF_THE_CARIBBEAN("Pirates of the Caribbean", 841),
   ROGER_RABBITS_CAR_TOON_SPIN("Roger Rabbit's Car-Toon Spin", 168),
@@ -53,9 +53,9 @@ public enum RideName {
   LUIGIS_ROLICKIN_ROADSTERS("Luigi's Rollickin' Roadsters", 94),
   MATERS_JUNKYARD_JAMBOREE("Mater's Junkyard Jamboree", 90),
   MONSTERS_INC_MIKE_AND_SULLEY_TO_THE_RESCUE("Monster's Inc. Mike & Sulley to the Rescue!", 230),
-  PIXAR_PAL_AROUND("Pixar Pal-A-Round", 547),
+  PIXAR_PAL_AROUND("Pixar Pal-A-Round", 551),
   RADIATOR_SPRINGS_RACERS("Radiator Springs Racers", 267),
-  RED_CAR_TROLLEY("Red Car Trolley", 307),
+  RED_CAR_TROLLEY("Red Car Trolley", 300),
   SILLY_SYMPHONY_SWINGS("Silly Symphony Swings", 87),
   THE_LITTLE_MERMAID_ARIELS_UNDERSEA_ADVENTURE(
       "The Little Mermaid: Ariel's Undersea Adventure", 369),
@@ -63,7 +63,7 @@ public enum RideName {
   // Retro
   FLIKS_FLYERS("Flik's Flyers", 98),
   HEIMLICHS_CHEW_CHEW_TRAIN("Heimlich's Chew Chew Train", 102),
-  THE_TWILIGHT_ZONE_TOWER_OF_TERROR("The Twilight Zone Tower of Terror", 139),
+  THE_TWILIGHT_ZONE_TOWER_OF_TERROR("The Twilight Zone Tower of Terror", 125),
 
   // Seasonal
   HAUNTED_MANSION_HOLIDAY("Haunted Mansion Holiday", 445),

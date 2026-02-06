@@ -148,12 +148,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private void trackRideCompletion() {
     RideName currentRide = CurrentRideHolder.getCurrentRide();
 
-    // If player is currently on a ride, update the counter to ensure suppression
-    if (currentRide != null) {
-      lastRideTick = absoluteTickCounter;
-    }
-    // If previous ride was non-null and current ride is null, ride was just completed
-    else if (previousRide != null && currentRide == null) {
+    // Update counter when player is on a ride or just completed one
+    if (currentRide != null || previousRide != null) {
       lastRideTick = absoluteTickCounter;
     }
 
