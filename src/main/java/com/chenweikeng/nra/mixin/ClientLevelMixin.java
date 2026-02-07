@@ -29,6 +29,9 @@ public class ClientLevelMixin {
       boolean bl,
       long l,
       CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     if (soundEvent != null) {
       // Don't suppress the ride complete sound
       Identifier soundId = soundEvent.location();

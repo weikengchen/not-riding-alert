@@ -48,6 +48,9 @@ public abstract class GuiMixin {
       cancellable = true)
   private void onRenderScoreboardSidebar(
       GuiGraphics context, Objective objective, CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     Scoreboard scoreboard = objective.getScoreboard();
 
     @SuppressWarnings("unchecked")
@@ -131,6 +134,9 @@ public abstract class GuiMixin {
           "renderChat(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V",
       cancellable = true)
   private void onRenderChat(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     // Check if chat should be hidden
     if (NotRidingAlertClient.getConfig().isHideChat()) {
       ci.cancel();

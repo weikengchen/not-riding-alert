@@ -16,6 +16,7 @@ public class ModConfig {
   private String soundId = "entity.experience_orb.pickup"; // Default sound
   private boolean enabled = true; // Default enabled
   private boolean blindWhenRiding = false; // Default disabled
+  private boolean defocusCursor = true; // Default enabled
   private boolean seasonalRidesEnabled = true; // Default enabled
   private java.util.List<String> hiddenRides =
       new java.util.ArrayList<>(); // List of hidden ride display names
@@ -49,6 +50,15 @@ public class ModConfig {
 
   public void setBlindWhenRiding(boolean blindWhenRiding) {
     this.blindWhenRiding = blindWhenRiding;
+    save();
+  }
+
+  public boolean isDefocusCursor() {
+    return defocusCursor;
+  }
+
+  public void setDefocusCursor(boolean defocusCursor) {
+    this.defocusCursor = defocusCursor;
     save();
   }
 
@@ -88,7 +98,7 @@ public class ModConfig {
   }
 
   public void setRideDisplayCount(int rideDisplayCount) {
-    this.rideDisplayCount = Math.max(1, rideDisplayCount); // Ensure at least 1
+    this.rideDisplayCount = Math.max(0, rideDisplayCount); // Ensure at least 0
     save();
   }
 

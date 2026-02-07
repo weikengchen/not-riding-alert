@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.strategy.StrategyHudRenderer;
@@ -27,6 +28,9 @@ public class ClientPacketListenerMixin {
   @Inject(at = @At("HEAD"), method = "handleContainerContent")
   public void onInventory(
       ClientboundContainerSetContentPacket inventoryS2CPacket, CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     var player = Minecraft.getInstance().player;
     if (player != null) {
       List<ItemStack> itemStacks = inventoryS2CPacket.items();
@@ -98,6 +102,9 @@ public class ClientPacketListenerMixin {
 
   @Inject(at = @At("HEAD"), method = "handleContainerSetSlot")
   public void onScreenHandlerSlotUpdate(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     var player = Minecraft.getInstance().player;
     if (player != null) {
       // ScreenHandlerSlotUpdateS2CPacket contains a single ItemStack (stack field)

@@ -25,6 +25,7 @@ public class HideRideCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:hideride")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .then(
                 ClientCommandManager.argument("rideName", StringArgumentType.greedyString())
                     .suggests(RIDE_SUGGESTIONS)

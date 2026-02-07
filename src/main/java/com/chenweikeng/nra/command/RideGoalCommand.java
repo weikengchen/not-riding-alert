@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.command;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
@@ -61,6 +62,7 @@ public class RideGoalCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:1k")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   calculateAndSendFeedback(context.getSource(), 1000);
@@ -69,6 +71,7 @@ public class RideGoalCommand {
 
     dispatcher.register(
         ClientCommandManager.literal("nra:5k")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   calculateAndSendFeedback(context.getSource(), 5000);
@@ -77,6 +80,7 @@ public class RideGoalCommand {
 
     dispatcher.register(
         ClientCommandManager.literal("nra:10k")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   calculateAndSendFeedback(context.getSource(), 10000);

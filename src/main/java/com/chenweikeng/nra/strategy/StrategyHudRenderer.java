@@ -47,6 +47,10 @@ public class StrategyHudRenderer {
    * @param context The GUI graphics context
    */
   public static void render(GuiGraphics context, DeltaTracker tickCounter) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
+
     update();
 
     Minecraft client = Minecraft.getInstance();

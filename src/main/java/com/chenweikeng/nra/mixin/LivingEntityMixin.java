@@ -19,6 +19,9 @@ public abstract class LivingEntityMixin {
       cancellable = true)
   private void injectBlindnessWhenRiding(
       Holder<MobEffect> effect, CallbackInfoReturnable<Boolean> cir) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
         && effect == MobEffects.BLINDNESS
         && NotRidingAlertClient.isRiding()) {
@@ -33,6 +36,9 @@ public abstract class LivingEntityMixin {
       cancellable = true)
   private void injectBlindnessInstanceWhenRiding(
       Holder<MobEffect> effect, CallbackInfoReturnable<MobEffectInstance> cir) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
         && effect == MobEffects.BLINDNESS
         && NotRidingAlertClient.isRiding()) {

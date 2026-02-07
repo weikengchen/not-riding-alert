@@ -11,6 +11,7 @@ public class RideDisplayCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:display")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .then(
                 ClientCommandManager.argument("num", IntegerArgumentType.integer(1))
                     .executes(

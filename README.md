@@ -38,6 +38,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Ride Filtering**: Hide specific rides from the strategy display
 
 ### ⚙️ Additional Features
+- **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding. 
 - **Blindness Effect**: Optional blindness effect when riding (to reduce distractions)
 - **Sound Suppression**: Automatically suppresses game sounds when riding
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
@@ -77,6 +78,14 @@ Toggles the blindness effect when riding on/off.
 **Usage:**
 ```
 /nra:blind
+```
+
+### `/nra:defocus`
+Toggles the defocus cursor feature on/off. When enabled, automatically releases the mouse cursor when you start riding and grabs it back when you stop riding.
+
+**Usage:**
+```
+/nra:defocus
 ```
 
 ### `/nra:seasonalride`
@@ -157,6 +166,7 @@ The mod automatically creates a configuration file at:
 You can edit this file directly or use the in-game commands. The configuration includes:
 - `enabled`: Whether the alert system is enabled
 - `soundId`: The sound to play for alerts
+- `defocusCursor`: Whether to automatically release/grab the cursor when riding
 - `blindWhenRiding`: Whether to apply blindness when riding
 - `seasonalRidesEnabled`: Whether seasonal rides appear in recommendations
 - `hiddenRides`: List of rides to hide from the display
@@ -209,6 +219,7 @@ The mod detects when you're on a ride through:
 3. **Adjust Display Count**: If you want to see more or fewer recommendations, use `/nra:display`
 4. **Customize Your Sound**: Find a sound that's noticeable but not annoying for long grinding sessions
 5. **Hide UI Elements**: Use `/nra:hidescoreboard` and `/nra:hidechat` for a cleaner interface
+6. **Enable Defocus Cursor**: Use `/nra:defocus` to prevent Minecraft from stealing window focus while on rides, allowing you to multitask more easily
 
 ## Known Limitations
 
@@ -219,7 +230,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.1.5
+- **Version**: 2.1.6
 
 ## License
 

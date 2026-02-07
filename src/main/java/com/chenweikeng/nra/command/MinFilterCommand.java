@@ -11,6 +11,7 @@ public class MinFilterCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:minfilter")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .then(
                 ClientCommandManager.argument("minutes", IntegerArgumentType.integer(1))
                     .executes(

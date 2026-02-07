@@ -11,6 +11,7 @@ public class SetSoundCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:setsound")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .then(
                 ClientCommandManager.argument("soundId", StringArgumentType.string())
                     .executes(

@@ -10,6 +10,7 @@ public class ToggleBlindWhenRidingCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:blind")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   boolean currentState = NotRidingAlertClient.getConfig().isBlindWhenRiding();

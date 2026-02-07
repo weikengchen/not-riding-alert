@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
@@ -18,6 +19,9 @@ public class ChatListenerMixin {
 
   @Inject(at = @At("HEAD"), method = "handleSystemMessage")
   private void onGameMessage(Component message, boolean overlay, CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     if (message == null) return;
     String msg = message.getString();
     if (!msg.contains(RIDE_OVERVIEW_MARKER) && !msg.contains(ATTRACTION_OVERVIEW_MARKER)) return;

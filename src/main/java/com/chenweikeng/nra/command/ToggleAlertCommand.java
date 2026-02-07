@@ -10,6 +10,7 @@ public class ToggleAlertCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:togglealert")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   boolean currentState = NotRidingAlertClient.getConfig().isEnabled();

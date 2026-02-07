@@ -9,7 +9,8 @@
 		"ClientPacketListenerMixin",
 		"GuiMixin",
 		"ChatListenerMixin",
-		"ClientLevelMixin"
+		"ClientLevelMixin",
+		"MinecraftMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

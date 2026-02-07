@@ -10,6 +10,7 @@ public class SeasonalRideCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra:seasonalride")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   boolean currentState = NotRidingAlertClient.getConfig().isSeasonalRidesEnabled();

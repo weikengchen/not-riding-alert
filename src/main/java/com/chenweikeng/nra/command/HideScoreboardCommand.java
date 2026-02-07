@@ -11,6 +11,7 @@ public class HideScoreboardCommand {
     // Register both /nra:hidescoreboard and /nra:hidesb
     dispatcher.register(
         ClientCommandManager.literal("nra:hidescoreboard")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   boolean currentState = NotRidingAlertClient.getConfig().isHideScoreboard();
@@ -27,6 +28,7 @@ public class HideScoreboardCommand {
 
     dispatcher.register(
         ClientCommandManager.literal("nra:hidesb")
+            .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
                   boolean currentState = NotRidingAlertClient.getConfig().isHideScoreboard();
