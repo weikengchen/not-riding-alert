@@ -35,7 +35,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 ### 🎨 Visual Customization
 - **Hide Scoreboard**: Option to hide the scoreboard while still tracking ride data
 - **Hide Chat**: Option to hide the chat for a cleaner interface
-- **Hide Player Health**: Option to hide the player health bar for a cleaner interface (default: enabled)
+- **Hide Health**: Option to hide the health bar (both player and vehicle) for a cleaner interface (default: enabled)
 - **Ride Filtering**: Hide specific rides from the strategy display
 
 ### ⚙️ Additional Features
@@ -135,7 +135,7 @@ Toggles chat visibility.
 ```
 
 ### `/nra:hidehp`
-Toggles player health bar visibility. This is enabled by default to provide a cleaner interface.
+Toggles health bar visibility (both player and vehicle). This is enabled by default to provide a cleaner interface.
 
 **Usage:**
 ```
@@ -182,7 +182,7 @@ You can edit this file directly or use the in-game commands. The configuration i
 - `rideDisplayCount`: Number of rides to show in the HUD
 - `hideScoreboard`: Whether to hide the scoreboard
 - `hideChat`: Whether to hide the chat
-- `hidePlayerHealth`: Whether to hide the player health bar (default: true)
+- `hideHealth`: Whether to hide the health bar (default: true)
 - `minRideTimeMinutes`: Minimum ride time filter in minutes (null = no filter)
 
 ## Requirements

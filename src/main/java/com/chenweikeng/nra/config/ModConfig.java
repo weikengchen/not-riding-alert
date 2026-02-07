@@ -23,7 +23,7 @@ public class ModConfig {
   private int rideDisplayCount = 16; // Default number of rides to display
   private boolean hideScoreboard = false; // Default disabled
   private boolean hideChat = false; // Default disabled
-  private boolean hidePlayerHealth = true; // Default enabled
+  private boolean hideHealth = true; // Default enabled
   private Integer minRideTimeMinutes =
       null; // Minimum ride time filter in minutes (null = no filter)
 
@@ -121,12 +121,12 @@ public class ModConfig {
     save();
   }
 
-  public boolean isHidePlayerHealth() {
-    return hidePlayerHealth;
+  public boolean isHideHealth() {
+    return hideHealth;
   }
 
-  public void setHidePlayerHealth(boolean hidePlayerHealth) {
-    this.hidePlayerHealth = hidePlayerHealth;
+  public void setHideHealth(boolean hideHealth) {
+    this.hideHealth = hideHealth;
     save();
   }
 

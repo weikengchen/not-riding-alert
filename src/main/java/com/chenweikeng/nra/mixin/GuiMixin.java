@@ -149,7 +149,18 @@ public abstract class GuiMixin {
       return;
     }
     // Check if player health should be hidden
-    if (NotRidingAlertClient.getConfig().isHidePlayerHealth()) {
+    if (NotRidingAlertClient.getConfig().isHideHealth()) {
+      ci.cancel();
+    }
+  }
+
+  @Inject(at = @At("HEAD"), method = "renderVehicleHealth", cancellable = true)
+  private void onRenderVehicleHealth(GuiGraphics guiGraphics, CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
+    // Check if vehicle health should be hidden
+    if (NotRidingAlertClient.getConfig().isHideHealth()) {
       ci.cancel();
     }
   }

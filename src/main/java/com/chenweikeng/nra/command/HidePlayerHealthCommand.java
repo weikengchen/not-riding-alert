@@ -13,9 +13,9 @@ public class HidePlayerHealthCommand {
             .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
-                  boolean currentState = NotRidingAlertClient.getConfig().isHidePlayerHealth();
+                  boolean currentState = NotRidingAlertClient.getConfig().isHideHealth();
                   boolean newState = !currentState;
-                  NotRidingAlertClient.getConfig().setHidePlayerHealth(newState);
+                  NotRidingAlertClient.getConfig().setHideHealth(newState);
 
                   String status = newState ? "hidden" : "visible";
                   context
