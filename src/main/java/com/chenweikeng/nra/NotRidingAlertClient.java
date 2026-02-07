@@ -95,16 +95,17 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
           // Handle cursor lock/unlock based on riding state (if defocus cursor is enabled)
           if (config.isDefocusCursor()) {
-            if (!wasRiding && isRiding) {
+            if (client.screen != null) {
+              automaticallyReleasedCursor = false;
+            } else if (!wasRiding && isRiding) {
               client.mouseHandler.releaseMouse();
               automaticallyReleasedCursor = true;
-            } else if (wasRiding && !isRiding && client.screen == null) {
+            } else if (wasRiding && !isRiding) {
               client.mouseHandler.grabMouse();
               automaticallyReleasedCursor = false;
             } else if (automaticallyReleasedCursor
                 && isRiding
-                && client.mouseHandler.isRightPressed()
-                && client.screen == null) {
+                && client.mouseHandler.isRightPressed()) {
               client.mouseHandler.releaseMouse();
             }
           }
