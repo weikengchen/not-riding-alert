@@ -35,6 +35,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 ### 🎨 Visual Customization
 - **Hide Scoreboard**: Option to hide the scoreboard while still tracking ride data
 - **Hide Chat**: Option to hide the chat for a cleaner interface
+- **Hide Player Health**: Option to hide the player health bar for a cleaner interface (default: enabled)
 - **Ride Filtering**: Hide specific rides from the strategy display
 
 ### ⚙️ Additional Features
@@ -133,6 +134,14 @@ Toggles chat visibility.
 /nra:hidechat
 ```
 
+### `/nra:hidehp`
+Toggles player health bar visibility. This is enabled by default to provide a cleaner interface.
+
+**Usage:**
+```
+/nra:hidehp
+```
+
 ### Ride Goal Commands (/nra:1k, /nra:5k, /nra:10k)
 Calculate the total time needed to reach specific ride count goals for all non-seasonal rides, as well as the player's progress so far.
 
@@ -173,6 +182,7 @@ You can edit this file directly or use the in-game commands. The configuration i
 - `rideDisplayCount`: Number of rides to show in the HUD
 - `hideScoreboard`: Whether to hide the scoreboard
 - `hideChat`: Whether to hide the chat
+- `hidePlayerHealth`: Whether to hide the player health bar (default: true)
 - `minRideTimeMinutes`: Minimum ride time filter in minutes (null = no filter)
 
 ## Requirements
@@ -218,7 +228,7 @@ The mod detects when you're on a ride through:
 2. **Hide Completed Rides**: Use `/nra:hideride` to hide rides you've already completed to focus on new goals
 3. **Adjust Display Count**: If you want to see more or fewer recommendations, use `/nra:display`
 4. **Customize Your Sound**: Find a sound that's noticeable but not annoying for long grinding sessions
-5. **Hide UI Elements**: Use `/nra:hidescoreboard` and `/nra:hidechat` for a cleaner interface
+5. **Hide UI Elements**: Use `/nra:hidescoreboard`, `/nra:hidechat`, and `/nra:hidehp` for a cleaner interface
 6. **Enable Defocus Cursor**: Use `/nra:defocus` to prevent Minecraft from stealing window focus while on rides, allowing you to multitask more easily
 
 ## Known Limitations
@@ -230,7 +240,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.1.6
+- **Version**: 2.1.7
 
 ## License
 

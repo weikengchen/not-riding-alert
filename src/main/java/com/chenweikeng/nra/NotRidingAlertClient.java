@@ -1,6 +1,7 @@
 package com.chenweikeng.nra;
 
 import com.chenweikeng.nra.command.HideChatCommand;
+import com.chenweikeng.nra.command.HidePlayerHealthCommand;
 import com.chenweikeng.nra.command.HideRideCommand;
 import com.chenweikeng.nra.command.HideScoreboardCommand;
 import com.chenweikeng.nra.command.MinFilterCommand;
@@ -100,6 +101,11 @@ public class NotRidingAlertClient implements ClientModInitializer {
             } else if (wasRiding && !isRiding && client.screen == null) {
               client.mouseHandler.grabMouse();
               automaticallyReleasedCursor = false;
+            } else if (automaticallyReleasedCursor
+                && isRiding
+                && client.mouseHandler.isRightPressed()
+                && client.screen == null) {
+              client.mouseHandler.releaseMouse();
             }
           }
           wasRiding = isRiding;
@@ -141,6 +147,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
           RideDisplayCommand.register(dispatcher);
           HideScoreboardCommand.register(dispatcher);
           HideChatCommand.register(dispatcher);
+          HidePlayerHealthCommand.register(dispatcher);
           RideGoalCommand.register(dispatcher);
           MinFilterCommand.register(dispatcher);
         });

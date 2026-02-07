@@ -143,6 +143,17 @@ public abstract class GuiMixin {
     }
   }
 
+  @Inject(at = @At("HEAD"), method = "renderPlayerHealth", cancellable = true)
+  private void onRenderPlayerHealth(GuiGraphics guiGraphics, CallbackInfo ci) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
+    // Check if player health should be hidden
+    if (NotRidingAlertClient.getConfig().isHidePlayerHealth()) {
+      ci.cancel();
+    }
+  }
+
   /**
    * Parses a time string like "⏐ Time: 5s", "⏐ Time: 1m", "⏐ Time: 1m 5s" to seconds. Returns -1 if
    * parsing fails.
