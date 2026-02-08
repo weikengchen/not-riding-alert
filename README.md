@@ -54,10 +54,13 @@ Autograbbing detection is a smart feature that automatically detects when you en
 3. **Suppress the alert system** - since the mod knows you're waiting for a ride to start
 
 **Supported Rides with Autograbbing Detection:**
+- **Alice in Wonderland**
+- **Big Thunder Mountain Railroad**
+- **Disneyland Monorail**
+- **Disneyland Railroad**
+- **Jungle Cruise**
 - **Roger Rabbit's Car Toon Spin**
 - **Space Mountain**
-- **Jungle Cruise**
-- **Disneyland Railroad**
 
 **Note:** Autograbbing detection can be toggled on/off using `/nra:autograb`. When disabled, region-based ride detection will not occur.
 
