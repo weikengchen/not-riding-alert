@@ -40,7 +40,7 @@ public class ClientLevelMixin {
       }
 
       // Suppress other sounds when riding
-      if (NotRidingAlertClient.getConfig().isEnabled()) {
+      if (NotRidingAlertClient.getConfig().isSilent()) {
         Minecraft client = Minecraft.getInstance();
 
         // Check if player is riding an entity (Minecraft's hasVehicle) or on a ride

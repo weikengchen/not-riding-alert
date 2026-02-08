@@ -10,10 +10,13 @@ import com.chenweikeng.nra.command.RideGoalCommand;
 import com.chenweikeng.nra.command.SeasonalRideCommand;
 import com.chenweikeng.nra.command.SetSoundCommand;
 import com.chenweikeng.nra.command.ToggleAlertCommand;
+import com.chenweikeng.nra.command.ToggleAutograbCommand;
 import com.chenweikeng.nra.command.ToggleBlindWhenRidingCommand;
 import com.chenweikeng.nra.command.ToggleDefocusCommand;
+import com.chenweikeng.nra.command.ToggleSilentCommand;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
+import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.strategy.StrategyHudRenderer;
@@ -91,16 +94,23 @@ public class NotRidingAlertClient implements ClientModInitializer {
           }
 
           // Update cached riding state every tick
-          isRiding = client.player.isPassenger() || CurrentRideHolder.getCurrentRide() != null;
+          RideName regionRide =
+              config.isAutograb() ? RegionHolder.getRideAtLocation(client.player) : null;
+          isRiding =
+              client.player.isPassenger()
+                  || CurrentRideHolder.getCurrentRide() != null
+                  || regionRide != null;
 
           // Handle cursor lock/unlock based on riding state (if defocus cursor is enabled)
           if (config.isDefocusCursor()) {
             if (!wasRiding && isRiding) {
               client.mouseHandler.releaseMouse();
               automaticallyReleasedCursor = true;
-            } else if (wasRiding && !isRiding && client.screen == null) {
-              client.mouseHandler.grabMouse();
+            } else if (wasRiding && !isRiding) {
               automaticallyReleasedCursor = false;
+              if (client.screen == null) {
+                client.mouseHandler.grabMouse();
+              }
             } else if (automaticallyReleasedCursor
                 && isRiding
                 && client.mouseHandler.isRightPressed()
@@ -131,7 +141,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
           tickCounter++;
           if (tickCounter >= CHECK_INTERVAL) {
             tickCounter = 0;
-            checkRiding(client);
+            checkNotRidingAlert(client);
           }
         });
 
@@ -150,6 +160,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
           HidePlayerHealthCommand.register(dispatcher);
           RideGoalCommand.register(dispatcher);
           MinFilterCommand.register(dispatcher);
+          ToggleAutograbCommand.register(dispatcher);
+          ToggleSilentCommand.register(dispatcher);
         });
 
     Identifier beforeChatId =
@@ -298,7 +310,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
         && z <= LINCOLN_SUPPRESSION_Z_MAX;
   }
 
-  private void checkRiding(Minecraft client) {
+  private void checkNotRidingAlert(Minecraft client) {
     if (client.player == null) {
       return;
     }
@@ -374,9 +386,12 @@ public class NotRidingAlertClient implements ClientModInitializer {
     return config;
   }
 
-  public static boolean isRiding() {
-    // Check both cached state and CurrentRideHolder for real-time updates
-    return isRiding || CurrentRideHolder.getCurrentRide() != null;
+  public static boolean isRiding(net.minecraft.client.player.LocalPlayer player) {
+    if (player == null) {
+      return isRiding || CurrentRideHolder.getCurrentRide() != null;
+    }
+    RideName regionRide = config.isAutograb() ? RegionHolder.getRideAtLocation(player) : null;
+    return isRiding || CurrentRideHolder.getCurrentRide() != null || regionRide != null;
   }
 
   public static boolean isImagineFunServer() {

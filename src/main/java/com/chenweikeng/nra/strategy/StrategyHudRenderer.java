@@ -2,6 +2,7 @@ package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
+import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import java.util.ArrayList;
@@ -78,8 +79,13 @@ public class StrategyHudRenderer {
     }
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
+    RideName regionRide =
+        NotRidingAlertClient.getConfig().isAutograb()
+            ? RegionHolder.getRideAtLocation(client.player)
+            : null;
+    RideName effectiveRide = currentRide != null ? currentRide : regionRide;
     boolean currentRideInTop =
-        currentRide != null && topGoals.stream().anyMatch(g -> g.getRide() == currentRide);
+        effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
 
     // Split goals into columns based on display count
     List<RideGoal> leftGoals;
@@ -100,21 +106,15 @@ public class StrategyHudRenderer {
     // Render left column
     for (int i = 0; i < leftGoals.size(); i++) {
       RideGoal goal = leftGoals.get(i);
-      String rideName = goal.getRide().getDisplayName();
-      // Add progress percentage if this is the current ride and progress is available
-      if (currentRide != null && currentRide != RideName.UNKNOWN && goal.getRide() == currentRide) {
-        Integer progress = CurrentRideHolder.getCurrentProgressPercent();
-        if (progress != null) {
-          rideName += " (" + progress + "%)";
-        }
-      }
+      String rideName = formatRideName(goal.getRide(), currentRide, regionRide);
       String text =
           String.format(
               "%s - %d rides needed, %s",
               rideName,
               goal.getRidesNeeded(),
               TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
-      int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
+      int color =
+          (effectiveRide != null && goal.getRide() == effectiveRide) ? colorGreen : colorRed;
       context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
     }
 
@@ -122,39 +122,27 @@ public class StrategyHudRenderer {
     if (displayCount >= 8) {
       for (int i = 0; i < rightGoals.size(); i++) {
         RideGoal goal = rightGoals.get(i);
-        String rideName = goal.getRide().getDisplayName();
-        // Add progress percentage if this is the current ride and progress is available
-        if (currentRide != null
-            && currentRide != RideName.UNKNOWN
-            && goal.getRide() == currentRide) {
-          Integer progress = CurrentRideHolder.getCurrentProgressPercent();
-          if (progress != null) {
-            rideName += " (" + progress + "%)";
-          }
-        }
+        String rideName = formatRideName(goal.getRide(), currentRide, regionRide);
         String text =
             String.format(
                 "%s - %d rides needed, %s",
                 rideName,
                 goal.getRidesNeeded(),
                 TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
-        int color = (currentRide != null && goal.getRide() == currentRide) ? colorGreen : colorRed;
+        int color =
+            (effectiveRide != null && goal.getRide() == effectiveRide) ? colorGreen : colorRed;
         context.drawString(client.font, text, xRight, y + (i * lineHeight), color, false);
       }
     }
 
-    // If currently riding and that ride is not in the displayed goals, show it after a blank line
-    // in green
-    if (currentRide != null && currentRide != RideName.UNKNOWN && !currentRideInTop) {
+    // If currently riding (or in region) and that ride is not in the displayed goals, show it after
+    // a
+    // blank line in green
+    if (effectiveRide != null && effectiveRide != RideName.UNKNOWN && !currentRideInTop) {
       int maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
       int extraY = y + (maxColumnHeight * lineHeight) + lineHeight; // blank line, then current ride
-      RideGoal currentGoal = StrategyCalculator.getGoalForRide(currentRide);
-      String rideName = currentRide.getDisplayName();
-      // Add progress percentage if available
-      Integer progress = CurrentRideHolder.getCurrentProgressPercent();
-      if (progress != null) {
-        rideName += " (" + progress + "%)";
-      }
+      RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
+      String rideName = formatRideName(effectiveRide, currentRide, regionRide);
       String text =
           currentGoal != null
               ? String.format(
@@ -169,5 +157,18 @@ public class StrategyHudRenderer {
 
   public static List<RideGoal> getTopGoals() {
     return new ArrayList<>(topGoals);
+  }
+
+  private static String formatRideName(RideName ride, RideName currentRide, RideName regionRide) {
+    String rideName = ride.getDisplayName();
+    if (currentRide != null && ride == currentRide) {
+      Integer progress = CurrentRideHolder.getCurrentProgressPercent();
+      if (progress != null) {
+        rideName += " (" + progress + "%)";
+      }
+    } else if (currentRide == null && regionRide != null && ride == regionRide) {
+      rideName += " (Autograbbing...)";
+    }
+    return rideName;
   }
 }

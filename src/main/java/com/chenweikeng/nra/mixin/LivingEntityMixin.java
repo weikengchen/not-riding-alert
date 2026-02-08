@@ -22,10 +22,13 @@ public abstract class LivingEntityMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
-        && effect == MobEffects.BLINDNESS
-        && NotRidingAlertClient.isRiding()) {
-      cir.setReturnValue(true);
+    LivingEntity entity = (LivingEntity) (Object) this;
+    if (entity instanceof net.minecraft.client.player.LocalPlayer player) {
+      if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
+          && effect == MobEffects.BLINDNESS
+          && NotRidingAlertClient.isRiding(player)) {
+        cir.setReturnValue(true);
+      }
     }
   }
 
@@ -39,11 +42,14 @@ public abstract class LivingEntityMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
-        && effect == MobEffects.BLINDNESS
-        && NotRidingAlertClient.isRiding()) {
-      if (cir.getReturnValue() == null) {
-        cir.setReturnValue(new MobEffectInstance(MobEffects.BLINDNESS, -1));
+    LivingEntity entity = (LivingEntity) (Object) this;
+    if (entity instanceof net.minecraft.client.player.LocalPlayer player) {
+      if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
+          && effect == MobEffects.BLINDNESS
+          && NotRidingAlertClient.isRiding(player)) {
+        if (cir.getReturnValue() == null) {
+          cir.setReturnValue(new MobEffectInstance(MobEffects.BLINDNESS, -1));
+        }
       }
     }
   }

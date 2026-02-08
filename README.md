@@ -39,11 +39,27 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Ride Filtering**: Hide specific rides from the strategy display
 
 ### ⚙️ Additional Features
+- **Autograbbing Detection**: When enabled, entering predefined ride regions automatically releases the cursor and marks you as ready to ride. This allows you to multitask without needing to manually interact with the ride vehicle while waiting for rides to start.
 - **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding. 
 - **Blindness Effect**: Optional blindness effect when riding (to reduce distractions)
 - **Sound Suppression**: Automatically suppresses game sounds when riding
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
 - **Configurable Sound**: Customize the alert sound to your preference
+
+### 🎯 Autograbbing Detection
+Autograbbing detection is a smart feature that automatically detects when you enter a ride's waiting area and prepares the game for your ride session. When you enter a predefined region for a supported ride, the mod will:
+
+1. **Release the mouse cursor** - allowing you to use other applications without Minecraft stealing focus
+2. **Mark you as "ready to ride"** - the strategy HUD will display the ride name with "(Autograbbing...)" status
+3. **Suppress the alert system** - since the mod knows you're waiting for a ride to start
+
+**Supported Rides with Autograbbing Detection:**
+- **Roger Rabbit's Car Toon Spin**
+- **Space Mountain**
+- **Jungle Cruise**
+- **Disneyland Railroad**
+
+**Note:** Autograbbing detection can be toggled on/off using `/nra:autograb`. When disabled, region-based ride detection will not occur.
 
 ## Commands
 
@@ -51,12 +67,12 @@ Note: You need to open /scoreboard to enable the mod to capture ride data. You c
 
 All commands use the `nra:` namespace prefix.
 
-### `/nra:togglealert`
+### `/nra:alert`
 Toggles the alert system on/off.
 
 **Usage:**
 ```
-/nra:togglealert
+/nra:alert
 ```
 
 ### `/nra:setsound <soundId>`
@@ -142,6 +158,22 @@ Toggles health bar visibility (both player and vehicle). This is enabled by defa
 /nra:hidehp
 ```
 
+### `/nra:silent`
+Toggles whether ride sounds are suppressed while riding. When enabled, all game sounds are suppressed except for the ride completion sound. Default: enabled.
+
+**Usage:**
+```
+/nra:silent
+```
+
+### `/nra:autograb`
+Toggles autograbbing detection for rides. When enabled, entering a predefined region for a ride will automatically release the cursor and mark you as ready to ride. Default: enabled.
+
+**Usage:**
+```
+/nra:autograb
+```
+
 ### Ride Goal Commands (/nra:1k, /nra:5k, /nra:10k)
 Calculate the total time needed to reach specific ride count goals for all non-seasonal rides, as well as the player's progress so far.
 
@@ -176,6 +208,8 @@ You can edit this file directly or use the in-game commands. The configuration i
 - `enabled`: Whether the alert system is enabled
 - `soundId`: The sound to play for alerts
 - `defocusCursor`: Whether to automatically release/grab the cursor when riding
+- `autograb`: Whether autograbbing detection is enabled (default: true)
+- `silent`: Whether ride sounds are suppressed while riding (default: true)
 - `blindWhenRiding`: Whether to apply blindness when riding
 - `seasonalRidesEnabled`: Whether seasonal rides appear in recommendations
 - `hiddenRides`: List of rides to hide from the display

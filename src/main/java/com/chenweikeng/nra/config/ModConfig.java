@@ -24,6 +24,8 @@ public class ModConfig {
   private boolean hideScoreboard = false; // Default disabled
   private boolean hideChat = false; // Default disabled
   private boolean hideHealth = true; // Default enabled
+  private boolean autograb = true; // Default enabled
+  private boolean silent = true; // Default enabled
   private Integer minRideTimeMinutes =
       null; // Minimum ride time filter in minutes (null = no filter)
 
@@ -136,6 +138,24 @@ public class ModConfig {
 
   public void setMinRideTimeMinutes(Integer minRideTimeMinutes) {
     this.minRideTimeMinutes = minRideTimeMinutes;
+    save();
+  }
+
+  public boolean isAutograb() {
+    return autograb;
+  }
+
+  public void setAutograb(boolean autograb) {
+    this.autograb = autograb;
+    save();
+  }
+
+  public boolean isSilent() {
+    return silent;
+  }
+
+  public void setSilent(boolean silent) {
+    this.silent = silent;
     save();
   }
 

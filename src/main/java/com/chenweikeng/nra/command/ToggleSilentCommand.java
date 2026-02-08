@@ -6,22 +6,22 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.network.chat.Component;
 
-public class ToggleAlertCommand {
+public class ToggleSilentCommand {
   public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
-        ClientCommandManager.literal("nra:alert")
+        ClientCommandManager.literal("nra:silent")
             .requires(src -> NotRidingAlertClient.isImagineFunServer())
             .executes(
                 context -> {
-                  boolean currentState = NotRidingAlertClient.getConfig().isEnabled();
+                  boolean currentState = NotRidingAlertClient.getConfig().isSilent();
                   boolean newState = !currentState;
-                  NotRidingAlertClient.getConfig().setEnabled(newState);
+                  NotRidingAlertClient.getConfig().setSilent(newState);
 
                   String status = newState ? "enabled" : "disabled";
                   context
                       .getSource()
-                      .sendFeedback(Component.literal("Not Riding Alert is now " + status));
-                  NotRidingAlertClient.LOGGER.info("Not Riding Alert toggled to: {}", status);
+                      .sendFeedback(Component.literal("Silent mode is now " + status));
+                  NotRidingAlertClient.LOGGER.info("Silent mode toggled to: {}", status);
                   return 1;
                 }));
   }
