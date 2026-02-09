@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -40,7 +41,7 @@ public class ClientLevelMixin {
       }
 
       // Suppress other sounds when riding
-      if (NotRidingAlertClient.getConfig().isSilent()) {
+      if (ModConfig.getInstance().silent) {
         Minecraft client = Minecraft.getInstance();
 
         // Check if player is riding an entity (Minecraft's hasVehicle) or on a ride

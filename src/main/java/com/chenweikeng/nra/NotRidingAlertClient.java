@@ -1,19 +1,6 @@
 package com.chenweikeng.nra;
 
-import com.chenweikeng.nra.command.HideChatCommand;
-import com.chenweikeng.nra.command.HidePlayerHealthCommand;
-import com.chenweikeng.nra.command.HideRideCommand;
-import com.chenweikeng.nra.command.HideScoreboardCommand;
-import com.chenweikeng.nra.command.MinFilterCommand;
-import com.chenweikeng.nra.command.RideDisplayCommand;
-import com.chenweikeng.nra.command.RideGoalCommand;
-import com.chenweikeng.nra.command.SeasonalRideCommand;
-import com.chenweikeng.nra.command.SetSoundCommand;
-import com.chenweikeng.nra.command.ToggleAlertCommand;
-import com.chenweikeng.nra.command.ToggleAutograbCommand;
-import com.chenweikeng.nra.command.ToggleBlindWhenRidingCommand;
-import com.chenweikeng.nra.command.ToggleDefocusCommand;
-import com.chenweikeng.nra.command.ToggleSilentCommand;
+import com.chenweikeng.nra.command.NraCommand;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
@@ -26,6 +13,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -38,7 +26,6 @@ import org.slf4j.LoggerFactory;
 public class NotRidingAlertClient implements ClientModInitializer {
   public static final String MOD_ID = "not-riding-alert";
   public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-  private static ModConfig config;
   private static boolean isImagineFunServer = false;
   private int tickCounter = 0;
   private static final int CHECK_INTERVAL = 200; // Check every 200 ticks (10 seconds)
@@ -69,8 +56,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
   @Override
   public void onInitializeClient() {
-    config = ModConfig.load();
     LOGGER.info("Not Riding Alert client initialized");
+
+    WorldRenderEvents.AFTER_ENTITIES.register(context -> RegionHolder.render(context));
 
     ClientPlayConnectionEvents.JOIN.register(
         (handler, sender, client) -> {
@@ -95,14 +83,16 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
           // Update cached riding state every tick
           RideName regionRide =
-              config.isAutograb() ? RegionHolder.getRideAtLocation(client.player) : null;
+              ModConfig.getInstance().autograb
+                  ? RegionHolder.getRideAtLocation(client.player)
+                  : null;
           isRiding =
               client.player.isPassenger()
                   || CurrentRideHolder.getCurrentRide() != null
                   || regionRide != null;
 
           // Handle cursor lock/unlock based on riding state (if defocus cursor is enabled)
-          if (config.isDefocusCursor()) {
+          if (ModConfig.getInstance().defocusCursor) {
             if (!wasRiding && isRiding) {
               client.mouseHandler.releaseMouse();
               automaticallyReleasedCursor = true;
@@ -148,20 +138,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     // Register commands
     ClientCommandRegistrationCallback.EVENT.register(
         (dispatcher, registryAccess) -> {
-          SetSoundCommand.register(dispatcher);
-          ToggleAlertCommand.register(dispatcher);
-          ToggleBlindWhenRidingCommand.register(dispatcher);
-          ToggleDefocusCommand.register(dispatcher);
-          SeasonalRideCommand.register(dispatcher);
-          HideRideCommand.register(dispatcher);
-          RideDisplayCommand.register(dispatcher);
-          HideScoreboardCommand.register(dispatcher);
-          HideChatCommand.register(dispatcher);
-          HidePlayerHealthCommand.register(dispatcher);
-          RideGoalCommand.register(dispatcher);
-          MinFilterCommand.register(dispatcher);
-          ToggleAutograbCommand.register(dispatcher);
-          ToggleSilentCommand.register(dispatcher);
+          NraCommand.register(dispatcher);
         });
 
     Identifier beforeChatId =
@@ -316,7 +293,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     }
 
     // Check if feature is enabled
-    if (!config.isEnabled()) {
+    if (!ModConfig.getInstance().enabled) {
       return;
     }
 
@@ -337,7 +314,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     if (client.level == null) return;
 
     try {
-      String soundId = config.getSoundId();
+      String soundId = ModConfig.getInstance().soundId;
       Identifier soundIdentifier = Identifier.parse(soundId);
 
       // Try to get the sound event from the registry
@@ -382,15 +359,12 @@ public class NotRidingAlertClient implements ClientModInitializer {
     }
   }
 
-  public static ModConfig getConfig() {
-    return config;
-  }
-
   public static boolean isRiding(net.minecraft.client.player.LocalPlayer player) {
     if (player == null) {
       return isRiding || CurrentRideHolder.getCurrentRide() != null;
     }
-    RideName regionRide = config.isAutograb() ? RegionHolder.getRideAtLocation(player) : null;
+    RideName regionRide =
+        ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(player) : null;
     return isRiding || CurrentRideHolder.getCurrentRide() != null || regionRide != null;
   }
 

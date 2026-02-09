@@ -1,182 +1,102 @@
 package com.chenweikeng.nra.config;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import net.fabricmc.loader.api.FabricLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
 
 public class ModConfig {
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-  private static final File CONFIG_FILE =
-      new File(FabricLoader.getInstance().getConfigDir().toFile(), "not-riding-alert.json");
+  private static final Path CONFIG_PATH = Path.of("config/not-riding-alert.json");
+  private static ModConfig instance;
 
-  private String soundId = "entity.experience_orb.pickup"; // Default sound
-  private boolean enabled = true; // Default enabled
-  private boolean blindWhenRiding = false; // Default disabled
-  private boolean defocusCursor = true; // Default enabled
-  private boolean seasonalRidesEnabled = true; // Default enabled
-  private java.util.List<String> hiddenRides =
-      new java.util.ArrayList<>(); // List of hidden ride display names
-  private int rideDisplayCount = 16; // Default number of rides to display
-  private boolean hideScoreboard = false; // Default disabled
-  private boolean hideChat = false; // Default disabled
-  private boolean hideHealth = true; // Default enabled
-  private boolean autograb = true; // Default enabled
-  private boolean silent = true; // Default enabled
-  private Integer minRideTimeMinutes =
-      null; // Minimum ride time filter in minutes (null = no filter)
+  public boolean enabled = true;
+  public String soundId = "entity.experience_orb.pickup";
+  public boolean blindWhenRiding = false;
+  public boolean defocusCursor = true;
+  public boolean silent = true;
+  public boolean autograb = true;
+  public Integer minRideTimeMinutes = null;
+  public int rideDisplayCount = 16;
+  public List<String> hiddenRides = Lists.newArrayList();
+  public boolean hideScoreboard = false;
+  public boolean hideChat = false;
+  public boolean hideHealth = true;
+  public boolean onlyAutograbbing = false;
 
-  public String getSoundId() {
-    return soundId;
-  }
-
-  public void setSoundId(String soundId) {
-    this.soundId = soundId;
-    save();
-  }
-
-  public boolean isEnabled() {
-    return enabled;
-  }
-
-  public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
-    save();
-  }
-
-  public boolean isBlindWhenRiding() {
-    return blindWhenRiding;
-  }
-
-  public void setBlindWhenRiding(boolean blindWhenRiding) {
-    this.blindWhenRiding = blindWhenRiding;
-    save();
-  }
-
-  public boolean isDefocusCursor() {
-    return defocusCursor;
-  }
-
-  public void setDefocusCursor(boolean defocusCursor) {
-    this.defocusCursor = defocusCursor;
-    save();
-  }
-
-  public boolean isSeasonalRidesEnabled() {
-    return seasonalRidesEnabled;
-  }
-
-  public void setSeasonalRidesEnabled(boolean seasonalRidesEnabled) {
-    this.seasonalRidesEnabled = seasonalRidesEnabled;
-    save();
-  }
-
-  public java.util.List<String> getHiddenRides() {
-    return hiddenRides;
-  }
-
-  public void setHiddenRides(java.util.List<String> hiddenRides) {
-    this.hiddenRides = hiddenRides != null ? hiddenRides : new java.util.ArrayList<>();
-    save();
-  }
-
-  public boolean isRideHidden(String rideDisplayName) {
-    return hiddenRides.contains(rideDisplayName);
-  }
-
-  public void toggleRideHidden(String rideDisplayName) {
-    if (hiddenRides.contains(rideDisplayName)) {
-      hiddenRides.remove(rideDisplayName);
-    } else {
-      hiddenRides.add(rideDisplayName);
+  public static ModConfig getInstance() {
+    if (instance == null) {
+      instance = load();
     }
-    save();
-  }
-
-  public int getRideDisplayCount() {
-    return rideDisplayCount;
-  }
-
-  public void setRideDisplayCount(int rideDisplayCount) {
-    this.rideDisplayCount = Math.max(0, rideDisplayCount); // Ensure at least 0
-    save();
-  }
-
-  public boolean isHideScoreboard() {
-    return hideScoreboard;
-  }
-
-  public void setHideScoreboard(boolean hideScoreboard) {
-    this.hideScoreboard = hideScoreboard;
-    save();
-  }
-
-  public boolean isHideChat() {
-    return hideChat;
-  }
-
-  public void setHideChat(boolean hideChat) {
-    this.hideChat = hideChat;
-    save();
-  }
-
-  public boolean isHideHealth() {
-    return hideHealth;
-  }
-
-  public void setHideHealth(boolean hideHealth) {
-    this.hideHealth = hideHealth;
-    save();
-  }
-
-  public Integer getMinRideTimeMinutes() {
-    return minRideTimeMinutes;
-  }
-
-  public void setMinRideTimeMinutes(Integer minRideTimeMinutes) {
-    this.minRideTimeMinutes = minRideTimeMinutes;
-    save();
-  }
-
-  public boolean isAutograb() {
-    return autograb;
-  }
-
-  public void setAutograb(boolean autograb) {
-    this.autograb = autograb;
-    save();
-  }
-
-  public boolean isSilent() {
-    return silent;
-  }
-
-  public void setSilent(boolean silent) {
-    this.silent = silent;
-    save();
+    return instance;
   }
 
   public static ModConfig load() {
-    if (CONFIG_FILE.exists()) {
-      try (FileReader reader = new FileReader(CONFIG_FILE)) {
-        return GSON.fromJson(reader, ModConfig.class);
-      } catch (IOException e) {
-        com.chenweikeng.nra.NotRidingAlertClient.LOGGER.error("Failed to load config", e);
-      }
+    File configFile = CONFIG_PATH.toFile();
+    if (!configFile.exists()) {
+      return new ModConfig();
     }
-    ModConfig config = new ModConfig();
-    config.save();
-    return config;
+
+    try (FileReader reader = new FileReader(configFile)) {
+      return GSON.fromJson(reader, ModConfig.class);
+    } catch (IOException e) {
+      return new ModConfig();
+    }
   }
 
   public void save() {
-    try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-      GSON.toJson(this, writer);
+    try {
+      Files.createDirectories(CONFIG_PATH.getParent());
+      try (FileWriter writer = new FileWriter(CONFIG_PATH.toFile())) {
+        GSON.toJson(this, writer);
+      }
     } catch (IOException e) {
-      com.chenweikeng.nra.NotRidingAlertClient.LOGGER.error("Failed to save config", e);
+      e.printStackTrace();
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ModConfig modConfig = (ModConfig) o;
+    return enabled == modConfig.enabled
+        && blindWhenRiding == modConfig.blindWhenRiding
+        && defocusCursor == modConfig.defocusCursor
+        && silent == modConfig.silent
+        && autograb == modConfig.autograb
+        && rideDisplayCount == modConfig.rideDisplayCount
+        && hideScoreboard == modConfig.hideScoreboard
+        && hideChat == modConfig.hideChat
+        && hideHealth == modConfig.hideHealth
+        && onlyAutograbbing == modConfig.onlyAutograbbing
+        && Objects.equals(soundId, modConfig.soundId)
+        && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
+        && Objects.equals(hiddenRides, modConfig.hiddenRides);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        enabled,
+        soundId,
+        blindWhenRiding,
+        defocusCursor,
+        silent,
+        autograb,
+        minRideTimeMinutes,
+        rideDisplayCount,
+        hiddenRides,
+        hideScoreboard,
+        hideChat,
+        hideHealth,
+        onlyAutograbbing);
   }
 }

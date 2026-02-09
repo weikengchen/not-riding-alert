@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
@@ -18,12 +19,36 @@ public class StrategyHudRenderer {
   private static final int UPDATE_INTERVAL_TICKS = 40; // Update every 2 seconds (40 ticks)
   private static String currentError = null; // Stores the latest error message
 
+  private enum RideStatus {
+    NORMAL,
+    RIDING,
+    AUTOGRABBING
+  }
+
+  private static class FormattedRide {
+    private final String name;
+    private final RideStatus status;
+
+    FormattedRide(String name, RideStatus status) {
+      this.name = name;
+      this.status = status;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    RideStatus getStatus() {
+      return status;
+    }
+  }
+
   /** Updates the top goals to display. Should be called periodically. */
   public static void update() {
     updateCounter++;
     if (updateCounter >= UPDATE_INTERVAL_TICKS) {
       updateCounter = 0;
-      int displayCount = NotRidingAlertClient.getConfig().getRideDisplayCount();
+      int displayCount = ModConfig.getInstance().rideDisplayCount;
       topGoals = StrategyCalculator.getTopGoals(displayCount);
     }
   }
@@ -65,6 +90,7 @@ public class StrategyHudRenderer {
     int lineHeight = 10;
     int colorRed = 0xFFFF0000; // Red
     int colorGreen = 0xFF00FF00; // Green (for goal matching current ride)
+    int colorPurple = 0xFF800080; // Purple (for autograbbing)
     int errorColor = 0xFFFF6600; // Orange for errors
 
     // Render error at the top if present
@@ -73,16 +99,14 @@ public class StrategyHudRenderer {
       y += lineHeight; // Move down for the goals
     }
 
-    int displayCount = NotRidingAlertClient.getConfig().getRideDisplayCount();
+    int displayCount = ModConfig.getInstance().rideDisplayCount;
     if (displayCount == 0) {
       return;
     }
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName regionRide =
-        NotRidingAlertClient.getConfig().isAutograb()
-            ? RegionHolder.getRideAtLocation(client.player)
-            : null;
+        ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(client.player) : null;
     RideName effectiveRide = currentRide != null ? currentRide : regionRide;
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
@@ -106,15 +130,14 @@ public class StrategyHudRenderer {
     // Render left column
     for (int i = 0; i < leftGoals.size(); i++) {
       RideGoal goal = leftGoals.get(i);
-      String rideName = formatRideName(goal.getRide(), currentRide, regionRide);
+      FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
       String text =
           String.format(
               "%s - %d rides needed, %s",
-              rideName,
+              formattedRide.getName(),
               goal.getRidesNeeded(),
               TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
-      int color =
-          (effectiveRide != null && goal.getRide() == effectiveRide) ? colorGreen : colorRed;
+      int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
       context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
     }
 
@@ -122,15 +145,14 @@ public class StrategyHudRenderer {
     if (displayCount >= 8) {
       for (int i = 0; i < rightGoals.size(); i++) {
         RideGoal goal = rightGoals.get(i);
-        String rideName = formatRideName(goal.getRide(), currentRide, regionRide);
+        FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
         String text =
             String.format(
                 "%s - %d rides needed, %s",
-                rideName,
+                formattedRide.getName(),
                 goal.getRidesNeeded(),
                 TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
-        int color =
-            (effectiveRide != null && goal.getRide() == effectiveRide) ? colorGreen : colorRed;
+        int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
         context.drawString(client.font, text, xRight, y + (i * lineHeight), color, false);
       }
     }
@@ -142,16 +164,17 @@ public class StrategyHudRenderer {
       int maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
       int extraY = y + (maxColumnHeight * lineHeight) + lineHeight; // blank line, then current ride
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
-      String rideName = formatRideName(effectiveRide, currentRide, regionRide);
+      FormattedRide formattedRide = formatRideName(effectiveRide, currentRide, regionRide);
       String text =
           currentGoal != null
               ? String.format(
                   "%s - %d rides needed, %s",
-                  rideName,
+                  formattedRide.getName(),
                   currentGoal.getRidesNeeded(),
                   TimeFormatUtil.formatDuration(currentGoal.getTimeNeededSeconds()))
-              : "Riding: " + rideName;
-      context.drawString(client.font, text, xLeft, extraY, colorGreen, false);
+              : "Riding: " + formattedRide.getName();
+      int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
+      context.drawString(client.font, text, xLeft, extraY, color, false);
     }
   }
 
@@ -159,16 +182,43 @@ public class StrategyHudRenderer {
     return new ArrayList<>(topGoals);
   }
 
-  private static String formatRideName(RideName ride, RideName currentRide, RideName regionRide) {
+  private static String getAnimatedDots() {
+    long currentTimeMillis = System.currentTimeMillis();
+    int quarterSecond = (int) ((currentTimeMillis % 2000) / 500);
+    return switch (quarterSecond) {
+      case 0 -> "";
+      case 1 -> ".";
+      case 2 -> "..";
+      case 3 -> "...";
+      default -> "";
+    };
+  }
+
+  private static FormattedRide formatRideName(
+      RideName ride, RideName currentRide, RideName regionRide) {
     String rideName = ride.getDisplayName();
+    RideStatus status = RideStatus.NORMAL;
+
     if (currentRide != null && ride == currentRide) {
       Integer progress = CurrentRideHolder.getCurrentProgressPercent();
       if (progress != null) {
         rideName += " (" + progress + "%)";
       }
+      status = RideStatus.RIDING;
     } else if (currentRide == null && regionRide != null && ride == regionRide) {
-      rideName += " (Autograbbing...)";
+      rideName += " (Autograbbing" + getAnimatedDots() + ")";
+      status = RideStatus.AUTOGRABBING;
     }
-    return rideName;
+
+    return new FormattedRide(rideName, status);
+  }
+
+  private static int getColorForStatus(
+      RideStatus status, int colorRed, int colorGreen, int colorLightBlue) {
+    return switch (status) {
+      case RIDING -> colorGreen;
+      case AUTOGRABBING -> colorLightBlue;
+      case NORMAL -> colorRed;
+    };
   }
 }

@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.ModConfig;
 import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -24,7 +25,7 @@ public abstract class LivingEntityMixin {
     }
     LivingEntity entity = (LivingEntity) (Object) this;
     if (entity instanceof net.minecraft.client.player.LocalPlayer player) {
-      if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
+      if (ModConfig.getInstance().blindWhenRiding
           && effect == MobEffects.BLINDNESS
           && NotRidingAlertClient.isRiding(player)) {
         cir.setReturnValue(true);
@@ -44,7 +45,7 @@ public abstract class LivingEntityMixin {
     }
     LivingEntity entity = (LivingEntity) (Object) this;
     if (entity instanceof net.minecraft.client.player.LocalPlayer player) {
-      if (NotRidingAlertClient.getConfig().isBlindWhenRiding()
+      if (ModConfig.getInstance().blindWhenRiding
           && effect == MobEffects.BLINDNESS
           && NotRidingAlertClient.isRiding(player)) {
         if (cir.getReturnValue() == null) {

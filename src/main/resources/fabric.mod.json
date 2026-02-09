@@ -16,6 +16,9 @@
 	"entrypoints": {
 		"client": [
 			"com.chenweikeng.nra.NotRidingAlertClient"
+		],
+		"modmenu": [
+			"com.chenweikeng.nra.config.ModMenuApiImpl"
 		]
 	},
 	"mixins": [
@@ -25,6 +28,7 @@
 		"fabricloader": ">=0.18.4",
 		"minecraft": "~1.21.11",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"cloth-config": ">=21.11.153"
 	}
 }

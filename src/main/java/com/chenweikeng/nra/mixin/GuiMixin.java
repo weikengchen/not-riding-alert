@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideName;
@@ -123,7 +124,7 @@ public abstract class GuiMixin {
     }
 
     // Check if scoreboard rendering should be cancelled (after processing ride info)
-    if (NotRidingAlertClient.getConfig().isHideScoreboard()) {
+    if (ModConfig.getInstance().hideScoreboard) {
       ci.cancel();
     }
   }
@@ -138,7 +139,7 @@ public abstract class GuiMixin {
       return;
     }
     // Check if chat should be hidden
-    if (NotRidingAlertClient.getConfig().isHideChat()) {
+    if (ModConfig.getInstance().hideChat) {
       ci.cancel();
     }
   }
@@ -149,7 +150,7 @@ public abstract class GuiMixin {
       return;
     }
     // Check if player health should be hidden
-    if (NotRidingAlertClient.getConfig().isHideHealth()) {
+    if (ModConfig.getInstance().hideHealth) {
       ci.cancel();
     }
   }
@@ -160,7 +161,7 @@ public abstract class GuiMixin {
       return;
     }
     // Check if vehicle health should be hidden
-    if (NotRidingAlertClient.getConfig().isHideHealth()) {
+    if (ModConfig.getInstance().hideHealth) {
       ci.cancel();
     }
   }

@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.strategy;
 
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ public class StrategyCalculator {
     RideCountManager countManager = RideCountManager.getInstance();
 
     // Get config for filtering
-    boolean seasonalRidesEnabled = NotRidingAlertClient.getConfig().isSeasonalRidesEnabled();
-    Integer minRideTimeMinutes = NotRidingAlertClient.getConfig().getMinRideTimeMinutes();
+    Integer minRideTimeMinutes = ModConfig.getInstance().minRideTimeMinutes;
+    boolean onlyAutograbbing = ModConfig.getInstance().onlyAutograbbing;
 
     // Calculate goals for each ride
     for (RideName ride : RideName.values()) {
@@ -33,13 +34,13 @@ public class StrategyCalculator {
         continue;
       }
 
-      // Skip seasonal rides if disabled
-      if (ride.isSeasonal() && !seasonalRidesEnabled) {
+      // Skip non-autograbbing rides if onlyAutograbbing is enabled
+      if (onlyAutograbbing && !RegionHolder.hasAutograb(ride)) {
         continue;
       }
 
       // Skip hidden rides
-      if (NotRidingAlertClient.getConfig().isRideHidden(ride.getDisplayName())) {
+      if (ModConfig.getInstance().hiddenRides.contains(ride.getDisplayName())) {
         continue;
       }
 

@@ -40,7 +40,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 
 ### ⚙️ Additional Features
 - **Autograbbing Detection**: When enabled, entering predefined ride regions automatically releases the cursor and marks you as ready to ride. This allows you to multitask without needing to manually interact with the ride vehicle while waiting for rides to start.
-- **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding. 
+- **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding.
 - **Blindness Effect**: Optional blindness effect when riding (to reduce distractions)
 - **Sound Suppression**: Automatically suppresses game sounds when riding
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
@@ -56,186 +56,43 @@ Autograbbing detection is a smart feature that automatically detects when you en
 **Supported Rides with Autograbbing Detection:**
 - **Alice in Wonderland**
 - **Big Thunder Mountain Railroad**
+- **Casey Jr. Circus Train**
 - **Disneyland Monorail**
 - **Disneyland Railroad**
+- **Finding Nemo Submarine Voyage**
+- **Haunted Mansion**
+- **Indiana Jones Adventure**
 - **Jungle Cruise**
+- **Mickey and Friends Parking Tram**
 - **Roger Rabbit's Car Toon Spin**
 - **Space Mountain**
 
-**Note:** Autograbbing detection can be toggled on/off using `/nra:autograb`. When disabled, region-based ride detection will not occur.
-
-## Commands
-
-Note: You need to open /scoreboard to enable the mod to capture ride data. You can then use /nra:hidesb to hide the scoreboard later.
-
-All commands use the `nra:` namespace prefix.
-
-### `/nra:alert`
-Toggles the alert system on/off.
-
-**Usage:**
-```
-/nra:alert
-```
-
-### `/nra:setsound <soundId>`
-Sets the sound that plays when you're not riding.
-
-**Usage:**
-```
-/nra:setsound <soundId>
-/nra:setsound entity.experience_orb.pickup
-```
-
-**Examples:**
-- `entity.experience_orb.pickup` (default)
-- `entity.note_block.note`
-- `block.note_block.pling`
-
-### `/nra:blind`
-Toggles the blindness effect when riding on/off.
-
-**Usage:**
-```
-/nra:blind
-```
-
-### `/nra:defocus`
-Toggles the defocus cursor feature on/off. When enabled, automatically releases the mouse cursor when you start riding and grabs it back when you stop riding.
-
-**Usage:**
-```
-/nra:defocus
-```
-
-### `/nra:seasonalride`
-Toggles whether seasonal rides appear in the strategy recommendations.
-
-**Usage:**
-```
-/nra:seasonalride
-```
-
-### `/nra:hideride <rideName>`
-Hides or shows a specific ride in the strategy display. Use Tab to autocomplete ride names.
-
-**Usage:**
-```
-/nra:hideride <rideName>
-/nra:hideride "Space Mountain"
-```
-
-### `/nra:display <num>`
-Sets the number of rides to display in the strategy HUD (minimum 1).
-
-**Usage:**
-```
-/nra:display <num>
-/nra:display 16
-```
-
-**Note:** If you call the command without arguments, it will show the current value.
-
-### `/nra:hidescoreboard` or `/nra:hidesb`
-Toggles scoreboard visibility. The scoreboard will be hidden but ride data will still be tracked.
-
-**Usage:**
-```
-/nra:hidescoreboard
-/nra:hidesb
-```
-
-### `/nra:hidechat`
-Toggles chat visibility.
-
-**Usage:**
-```
-/nra:hidechat
-```
-
-### `/nra:hidehp`
-Toggles health bar visibility (both player and vehicle). This is enabled by default to provide a cleaner interface.
-
-**Usage:**
-```
-/nra:hidehp
-```
-
-### `/nra:silent`
-Toggles whether ride sounds are suppressed while riding. When enabled, all game sounds are suppressed except for the ride completion sound. Default: enabled.
-
-**Usage:**
-```
-/nra:silent
-```
-
-### `/nra:autograb`
-Toggles autograbbing detection for rides. When enabled, entering a predefined region for a ride will automatically release the cursor and mark you as ready to ride. Default: enabled.
-
-**Usage:**
-```
-/nra:autograb
-```
-
-### Ride Goal Commands (/nra:1k, /nra:5k, /nra:10k)
-Calculate the total time needed to reach specific ride count goals for all non-seasonal rides, as well as the player's progress so far.
-
-| Command | Goal | Usage | Example Output |
-|---------|------|-------|----------------|
-| `/nra:1k` | 1000 rides | `/nra:1k` | ` rides to reach 1000: 15`<br>`Total time needed: 3d 5h 12m 34s` |
-| `/nra:5k` | 5000 rides | `/nra:5k` | ` rides to reach 5000: 10`<br>`Total time needed: 12d 8h 45m 20s` |
-| `/nra:10k` | 10000 rides | `/nra:10k` | ` rides to reach 10000: 8`<br>`Total time needed: 25d 14h 30m 10s` |
-
-### `/nra:minfilter [minutes]`
-Filters rides in the strategy display based on minimum ride time (in minutes). If no argument is provided, clears the filter.
-
-**Usage:**
-```
-/nra:minfilter <minutes>
-/nra:minfilter 10
-/nra:minfilter
-```
-
-**Examples:**
-- `/nra:minfilter 5` - Show only rides that take 5+ minutes
-- `/nra:minfilter` - Clear the filter and show all rides
+**Note:** Autograbbing detection can be toggled on/off in the configuration menu (`/nra`). When disabled, region-based ride detection will not occur.
 
 ## Configuration
 
-The mod automatically creates a configuration file at:
-```
-.minecraft/config/not-riding-alert.json
-```
+The mod provides a comprehensive configuration screen accessible via the `/nra` command. This replaces all previous chat commands.
 
-You can edit this file directly or use the in-game commands. The configuration includes:
-- `enabled`: Whether the alert system is enabled
-- `soundId`: The sound to play for alerts
-- `defocusCursor`: Whether to automatically release/grab the cursor when riding
-- `autograb`: Whether autograbbing detection is enabled (default: true)
-- `silent`: Whether ride sounds are suppressed while riding (default: true)
-- `blindWhenRiding`: Whether to apply blindness when riding
-- `seasonalRidesEnabled`: Whether seasonal rides appear in recommendations
-- `hiddenRides`: List of rides to hide from the display
-- `rideDisplayCount`: Number of rides to show in the HUD
-- `hideScoreboard`: Whether to hide the scoreboard
-- `hideChat`: Whether to hide the chat
-- `hideHealth`: Whether to hide the health bar (default: true)
-- `minRideTimeMinutes`: Minimum ride time filter in minutes (null = no filter)
+### ⚙️ General Settings
+- **Progress Summary**: The configuration screen title displays your overall progress towards 1k, 5k, and 10k ride goals (e.g., "1k (10%, 2d 5h)").
+- **Silent Mode**: Toggle the alert sound on/off.
+- **Sound ID**: Select the alert sound from a dropdown menu of all available game sounds.
+- **Blindness Effect**: Toggle blindness effect when riding.
+- **Defocus Cursor**: Toggle automatic cursor release when riding.
+- **Only show known autograbbing rides**: Filter the strategy HUD to only show rides that support autograbbing.
 
-## Requirements
+### 📊 Tracker Settings (Tracker Tab)
+- **Auto-grabbing detection**: Toggle the region-based autograbbing feature.
+- **Ride Display Count**: Slider to set how many rides to show in the HUD (1-16).
+- **Minimum Ride Time Filter**: Filter out rides shorter than X minutes.
 
-- **Minecraft**: 1.21.11
-- **Fabric Loader**: >= 0.18.4
-- **Fabric API**: Required
-- **Java**: >= 21
+### 🎢 Ride Management (Rides Tab)
+- **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD. Useful for hiding completed rides.
 
-## Installation
-
-1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 1.21.11
-2. Install [Fabric API](https://modrinth.com/mod/fabric-api)
-3. Download the latest version of Not Riding Alert from Modrinth
-4. Place the `.jar` file in your `mods` folder
-5. Launch Minecraft
+### 🎨 Display Settings (General Tab)
+- **Hide Scoreboard**: Toggle scoreboard visibility.
+- **Hide Chat**: Toggle chat visibility.
+- **Hide Health**: Toggle health bar visibility.
 
 ## How It Works
 
@@ -262,11 +119,11 @@ The mod detects when you're on a ride through:
 ## Tips
 
 1. **Use the Strategy HUD**: The green highlighted ride is your current ride - focus on completing it!
-2. **Hide Completed Rides**: Use `/nra:hideride` to hide rides you've already completed to focus on new goals
-3. **Adjust Display Count**: If you want to see more or fewer recommendations, use `/nra:display`
+2. **Hide Completed Rides**: Uncheck completed rides in the "Rides" tab of the config (`/nra`) to focus on new goals
+3. **Adjust Display Count**: If you want to see more or fewer recommendations, adjust the "Ride Display Count" in the "Tracker" tab
 4. **Customize Your Sound**: Find a sound that's noticeable but not annoying for long grinding sessions
-5. **Hide UI Elements**: Use `/nra:hidescoreboard`, `/nra:hidechat`, and `/nra:hidehp` for a cleaner interface
-6. **Enable Defocus Cursor**: Use `/nra:defocus` to prevent Minecraft from stealing window focus while on rides, allowing you to multitask more easily
+5. **Hide UI Elements**: Toggle scoreboard, chat, and health visibility in the "General" tab for a cleaner interface
+6. **Enable Defocus Cursor**: Enable this in "General" settings to prevent Minecraft from stealing window focus while on rides, allowing you to multitask more easily
 
 ## Known Limitations
 
@@ -277,7 +134,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.1.8
+- **Version**: 2.2.0
 
 ## License
 
@@ -285,4 +142,4 @@ This mod is licensed under CC0-1.0 (Public Domain).
 
 ---
 
-**Note**: This mod is designed specifically for the ImagineFun server and may not work correctly on other servers without similar scoreboard setups.
+**Note**: This mod is designed specifically for the ImagineFun server.
