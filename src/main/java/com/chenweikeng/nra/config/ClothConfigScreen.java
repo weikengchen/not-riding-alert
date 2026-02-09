@@ -154,19 +154,21 @@ public class ClothConfigScreen {
                 Component.translatable("config.not-riding-alert.rideDisplayCount"),
                 ModConfig.getInstance().rideDisplayCount,
                 1,
-                16)
-            .setDefaultValue(16)
+                60)
+            .setDefaultValue(10)
             .setTooltip(Component.translatable("config.not-riding-alert.rideDisplayCount.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().rideDisplayCount = newValue)
             .build());
 
     tracker.addEntry(
         entryBuilder
-            .startIntField(
+            .startIntSlider(
                 Component.translatable("config.not-riding-alert.minRideTimeMinutes"),
                 ModConfig.getInstance().minRideTimeMinutes != null
                     ? ModConfig.getInstance().minRideTimeMinutes
-                    : 0)
+                    : 0,
+                0,
+                16)
             .setDefaultValue(0)
             .setTooltip(
                 Component.translatable("config.not-riding-alert.minRideTimeMinutes.tooltip"))

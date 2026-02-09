@@ -111,19 +111,20 @@ public class StrategyHudRenderer {
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
 
-    // Split goals into columns based on display count
+    // Split goals into columns based on actual number of goals
     List<RideGoal> leftGoals;
     List<RideGoal> rightGoals = new ArrayList<>();
+    int topGoalsSize = topGoals.size();
 
-    if (displayCount < 8) {
+    if (topGoalsSize < 8) {
       // Single column: all goals on the left
       leftGoals = topGoals;
     } else {
-      // Two columns: left gets one more if odd, otherwise split evenly
-      int leftCount = (displayCount + 1) / 2; // Left gets one more if odd
-      leftGoals = topGoals.size() > leftCount ? topGoals.subList(0, leftCount) : topGoals;
-      if (topGoals.size() > leftCount) {
-        rightGoals = topGoals.subList(leftCount, Math.min(displayCount, topGoals.size()));
+      // Two columns: left gets one more if odd, otherwise split evenly based on actual goals
+      int leftCount = (topGoalsSize + 1) / 2; // Left gets one more if odd
+      leftGoals = topGoals.subList(0, Math.min(leftCount, topGoalsSize));
+      if (topGoalsSize > leftCount) {
+        rightGoals = topGoals.subList(leftCount, topGoalsSize);
       }
     }
 
@@ -141,8 +142,8 @@ public class StrategyHudRenderer {
       context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
     }
 
-    // Render right column (only if displayCount >= 8)
-    if (displayCount >= 8) {
+    // Render right column (only if topGoalsSize >= 8)
+    if (topGoalsSize >= 8) {
       for (int i = 0; i < rightGoals.size(); i++) {
         RideGoal goal = rightGoals.get(i);
         FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
