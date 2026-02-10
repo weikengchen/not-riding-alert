@@ -63,7 +63,9 @@ Autograbbing detection is a smart feature that automatically detects when you en
 - **Haunted Mansion**
 - **Indiana Jones Adventure**
 - **Jungle Cruise**
+- **Matterhorn Bobsleds**
 - **Mickey and Friends Parking Tram**
+- **Mr. Toad's Wild Ride**
 - **Roger Rabbit's Car Toon Spin**
 - **Space Mountain**
 

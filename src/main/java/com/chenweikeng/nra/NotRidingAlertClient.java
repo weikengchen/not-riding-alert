@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -57,8 +56,6 @@ public class NotRidingAlertClient implements ClientModInitializer {
   @Override
   public void onInitializeClient() {
     LOGGER.info("Not Riding Alert client initialized");
-
-    WorldRenderEvents.AFTER_ENTITIES.register(context -> RegionHolder.render(context));
 
     ClientPlayConnectionEvents.JOIN.register(
         (handler, sender, client) -> {

@@ -124,7 +124,37 @@ public enum RegionHolder {
       new Point(445, -45),
       new Point(449, -45),
       new Point(449, -46),
-      new Point(445, -46));
+      new Point(445, -46)),
+  MATTERHORN_BOBSLEDS_LEFT(
+      RideName.MATTERHORN_BOBSLEDS,
+      new Point(-226.74, 706.91),
+      64,
+      new Point(-232, 704),
+      new Point(-227, 704),
+      new Point(-226, 704),
+      new Point(-221, 705),
+      new Point(-222, 705),
+      new Point(-222, 710),
+      new Point(-227, 710),
+      new Point(-231, 709),
+      new Point(-232, 705)),
+  MATTERHORN_BOBSLEDS_RIGHT(
+      RideName.MATTERHORN_BOBSLEDS,
+      new Point(-191.67, 707.73),
+      64,
+      new Point(-188, 704),
+      new Point(-188, 703),
+      new Point(-188, 708),
+      new Point(-193, 710),
+      new Point(-198, 710)),
+  MR_TOADS_WILD_RIDE(
+      RideName.MR_TOADS_WILD_RIDE,
+      new Point(-49.00, 692.50),
+      64,
+      new Point(-50, 692),
+      new Point(-48, 692),
+      new Point(-48, 693),
+      new Point(-50, 693));
 
   private final RideName ride;
   private final Point center;
@@ -206,14 +236,14 @@ public enum RegionHolder {
   }
 
   public static boolean hasAutograb(RideName ride) {
-    return BY_RIDE.containsKey(ride);
+    return AUTOGRAB_RIDES.contains(ride);
   }
 
-  private static final java.util.Map<RideName, RegionHolder> BY_RIDE = new java.util.HashMap<>();
+  private static final java.util.Set<RideName> AUTOGRAB_RIDES = new java.util.HashSet<>();
 
   static {
     for (RegionHolder region : values()) {
-      BY_RIDE.put(region.ride, region);
+      AUTOGRAB_RIDES.add(region.ride);
     }
   }
 
@@ -238,19 +268,5 @@ public enum RegionHolder {
       this.x = x;
       this.z = z;
     }
-  }
-
-  public static void render(Object context) {
-    // Rendering disabled
-  }
-
-  private boolean isCloseTo(double x, double y, double z) {
-    if (Math.abs(y - this.y) > 3) {
-      return false;
-    }
-    double dx = x - center.x;
-    double dz = z - center.z;
-    double dy = y - this.y;
-    return !(Math.sqrt(dx * dx + dz * dz + dy * dy) > 100);
   }
 }

@@ -90,7 +90,7 @@ public class StrategyHudRenderer {
     int lineHeight = 10;
     int colorRed = 0xFFFF0000; // Red
     int colorGreen = 0xFF00FF00; // Green (for goal matching current ride)
-    int colorPurple = 0xFF800080; // Purple (for autograbbing)
+    int colorPurple = 0xFFEE00FF; // Purple (for autograbbing)
     int errorColor = 0xFFFF6600; // Orange for errors
 
     // Render error at the top if present
@@ -106,7 +106,9 @@ public class StrategyHudRenderer {
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName regionRide =
-        ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(client.player) : null;
+        ModConfig.getInstance().autograb && !client.player.isPassenger()
+            ? RegionHolder.getRideAtLocation(client.player)
+            : null;
     RideName effectiveRide = currentRide != null ? currentRide : regionRide;
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
