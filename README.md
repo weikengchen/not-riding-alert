@@ -54,6 +54,8 @@ Autograbbing detection is a smart feature that automatically detects when you en
 3. **Suppress the alert system** - since the mod knows you're waiting for a ride to start
 
 **Supported Rides with Autograbbing Detection:**
+
+**Disneyland Park:**
 - **Alice in Wonderland**
 - **Big Thunder Mountain Railroad**
 - **Casey Jr. Circus Train**
@@ -66,8 +68,18 @@ Autograbbing detection is a smart feature that automatically detects when you en
 - **Matterhorn Bobsleds**
 - **Mickey and Friends Parking Tram**
 - **Mr. Toad's Wild Ride**
+- **Peter Pan's Flight**
+- **Pinocchio's Daring Journey**
 - **Roger Rabbit's Car Toon Spin**
 - **Space Mountain**
+- **Splash Mountain**
+- **Storybook Land Canal Boats**
+- **The Many Adventures of Winnie the Pooh**
+
+**Disney California Adventure:**
+- **Incredicoaster**
+- **Radiator Springs Racers**
+- **The Little Mermaid: Ariel's Undersea Adventure**
 
 **Note:** Autograbbing detection can be toggled on/off in the configuration menu (`/nra`). When disabled, region-based ride detection will not occur.
 

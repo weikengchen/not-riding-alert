@@ -193,7 +193,7 @@ public class ClothConfigScreen {
       boolean currentValue = !ModConfig.getInstance().hiddenRides.contains(ride.getDisplayName());
       rides.addEntry(
           entryBuilder
-              .startBooleanToggle(Component.literal(ride.getDisplayName()), currentValue)
+              .startBooleanToggle(formatRideLabel(ride), currentValue)
               .setDefaultValue(true)
               .setTooltip(Component.translatable("config.not-riding-alert.rideDisplay.tooltip"))
               .setSaveConsumer(
@@ -208,6 +208,11 @@ public class ClothConfigScreen {
     }
 
     return builder.build();
+  }
+
+  private static Component formatRideLabel(RideName ride) {
+    String timeString = TimeFormatUtil.formatDuration(ride.getRideTime());
+    return Component.literal(String.format("%s (Time: %s)", ride.getDisplayName(), timeString));
   }
 
   private static String calculateProgress(int goal) {
