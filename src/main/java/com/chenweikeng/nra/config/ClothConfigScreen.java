@@ -190,7 +190,7 @@ public class ClothConfigScreen {
       if (ride == RideName.UNKNOWN) {
         continue;
       }
-      boolean currentValue = !ModConfig.getInstance().hiddenRides.contains(ride.getDisplayName());
+      boolean currentValue = !ModConfig.getInstance().hiddenRides.contains(ride.toMatchString());
       rides.addEntry(
           entryBuilder
               .startBooleanToggle(formatRideLabel(ride), currentValue)
@@ -199,9 +199,9 @@ public class ClothConfigScreen {
               .setSaveConsumer(
                   newValue -> {
                     if (!newValue) {
-                      ModConfig.getInstance().hiddenRides.add(ride.getDisplayName());
+                      ModConfig.getInstance().hiddenRides.add(ride.toMatchString());
                     } else {
-                      ModConfig.getInstance().hiddenRides.remove(ride.getDisplayName());
+                      ModConfig.getInstance().hiddenRides.remove(ride.toMatchString());
                     }
                   })
               .build());
@@ -226,7 +226,7 @@ public class ClothConfigScreen {
         continue;
       }
 
-      if (ModConfig.getInstance().hiddenRides.contains(ride.getDisplayName())) {
+      if (ModConfig.getInstance().hiddenRides.contains(ride.toMatchString())) {
         continue;
       }
 

@@ -11,28 +11,29 @@ public enum RideName {
   BIG_THUNDER_MOUNTAIN_RAILROAD("Big Thunder Mountain Railroad", 201),
   BUZZ_LIGHTYEAR_ASTRO_BLASTERS("Buzz Lightyear Astro Blasters", 258),
   CASEY_JR_CIRCUS_TRAIN("Casey Jr. Circus Train", 152),
-  CHIP_N_DALES_GADGET_COASTER("Chip 'N' Dale's Gadget Coaster", 44),
+  CHIP_N_DALES_GADGET_COASTER(
+      "Chip 'N' Dale's Gadget Coaster", "Chip 'n' Dale's GADGETcoaster", 44),
   DAVY_CROCKETTS_EXPLORER_CANOES("Davy Crockett's Explorer Canoes", 150),
   DISNEYLAND_MONORAIL("Disneyland Monorail", 485),
   DISNEYLAND_RAILROAD("Disneyland Railroad", 1008),
   DUMBO_THE_FLYING_ELEPHANT("Dumbo the Flying Elephant", 105),
-  ENCHANTED_TIKI_ROOM("Enchanted Tiki Room", 750),
+  ENCHANTED_TIKI_ROOM("Enchanted Tiki Room", "Walt Disney's Enchanted Tiki Room", 750),
   FINDING_NEMO_SUBMARINE_VOYAGE("Finding Nemo Submarine Voyage", 790),
   GREAT_MOMENTS_WITH_MR_LINCOLN("Great Moments with Mr. Lincoln", 372),
   HAUNTED_MANSION("Haunted Mansion", 445),
-  INDIANA_JONES_ADVENTURE("Indiana Jones Adventure", 225),
+  INDIANA_JONES_ADVENTURE("Indiana Jones Adventure", "Indiana Jones(TM) Adventure", 225),
   JUNGLE_CRUISE("Jungle Cruise", 431),
   KING_ARTHUR_CARROUSEL("King Arthur Carrousel", 130),
   MAD_TEA_PARTY("Mad Tea Party", 90),
-  MAIN_STREET_CARRIAGES("Main Street Carriages", 381),
+  MAIN_STREET_CARRIAGES("Main Street Carriages", "Main Street Vehicles", 381),
   MATTERHORN_BOBSLEDS("Matterhorn Bobsleds", 120),
   MICKEY_AND_FRIENDS_PARKING_TRAM("Mickey & Friends Parking Tram", 550),
   MR_TOADS_WILD_RIDE("Mr Toad's Wild Ride", 109),
-  PEOPLEMOVER("Peoplemover", 717),
+  PEOPLEMOVER("Peoplemover", "PeopleMover", 717),
   PETER_PANS_FLIGHT("Peter Pan's Flight", 139),
   PINOCCHIOS_DARING_JOURNEY("Pinocchio's Daring Journey", 168),
   PIRATES_OF_THE_CARIBBEAN("Pirates of the Caribbean", 841),
-  ROGER_RABBITS_CAR_TOON_SPIN("Roger Rabbit's Car-Toon Spin", 168),
+  ROGER_RABBITS_CAR_TOON_SPIN("Roger Rabbit's Car-Toon Spin", "Roger Rabbit's Car Toon Spin", 168),
   SNOW_WHITES_ENCHANTED_WISH("Snow White's Enchanted Wish", 122),
   SPACE_MOUNTAIN("Space Mountain", 180),
   SPLASH_MOUNTAIN("Splash Mountain", 484),
@@ -45,20 +46,28 @@ public enum RideName {
   GOLDEN_ZEPHYR("Golden Zephyr", 108),
   GOOFYS_SKY_SCHOOL("Goofy's Sky School", 91),
   GRIZZLY_RIVER_RUN("Grizzly River Run", 361),
-  GUARDIANS_OF_THE_GALAXY_MISSION_BREAKOUT("Guardians of the Galaxy: Mission Breakout", 123),
+  GUARDIANS_OF_THE_GALAXY_MISSION_BREAKOUT(
+      "Guardians of the Galaxy: Mission Breakout",
+      "Guardians of the Galaxy - Mission: BREAKOUT!",
+      123),
   INCREDICOASTER("Incredicoaster", 135),
   INSIDE_OUT_EMOTIONAL_WHIRLWIND("Inside Out Emotional Whirlwind", 98),
   JESSIES_CRITTER_CAROUSEL("Jessie's Critter Carousel", 120),
   JUMPIN_JELLYFISH("Jumpin' Jellyfish", 45),
   LUIGIS_ROLICKIN_ROADSTERS("Luigi's Rollickin' Roadsters", 94),
   MATERS_JUNKYARD_JAMBOREE("Mater's Junkyard Jamboree", 90),
-  MONSTERS_INC_MIKE_AND_SULLEY_TO_THE_RESCUE("Monster's Inc. Mike & Sulley to the Rescue!", 230),
+  MONSTERS_INC_MIKE_AND_SULLEY_TO_THE_RESCUE(
+      "Monster's Inc. Mike & Sulley to the Rescue!",
+      "Monsters, Inc. Mike & Sulley to the Rescue!",
+      230),
   PIXAR_PAL_AROUND("Pixar Pal-A-Round", 551),
   RADIATOR_SPRINGS_RACERS("Radiator Springs Racers", 267),
   RED_CAR_TROLLEY("Red Car Trolley", 300),
   SILLY_SYMPHONY_SWINGS("Silly Symphony Swings", 87),
   THE_LITTLE_MERMAID_ARIELS_UNDERSEA_ADVENTURE(
-      "The Little Mermaid: Ariel's Undersea Adventure", 369),
+      "The Little Mermaid: Ariel's Undersea Adventure",
+      "The Little Mermaid - Ariel's Undersea Adventure",
+      369),
 
   // Retro
   FLIKS_FLYERS("Flik's Flyers", 98),
@@ -67,7 +76,10 @@ public enum RideName {
 
   // Seasonal
   HAUNTED_MANSION_HOLIDAY("Haunted Mansion Holiday", 445),
-  GUARDIANS_OF_THE_GALAXY_MONSTERS_AFTER_DARK("Guardians of the Galaxy: Monsters After Dark", 123),
+  GUARDIANS_OF_THE_GALAXY_MONSTERS_AFTER_DARK(
+      "Guardians of the Galaxy: Monsters After Dark",
+      "Guardians of the Galaxy - Monsters After Dark",
+      123),
   THE_SUGARPINE_EXPRESS("The Sugarpine Express", 132),
   THE_SUGARPINE_MERRY_GO_ROUND("The Sugarpine Merry-Go-Round", 76),
   HYPERSPACE_MOUNTAIN("Hyperspace Mountain", 180),
@@ -75,23 +87,29 @@ public enum RideName {
   // Unknown ride (for rides not in the enum)
   UNKNOWN("Unknown", 99999);
 
+  private final String matchName;
   private final String displayName;
   private final int rideTime; // Ride time in seconds
-  private static final Map<String, RideName> BY_DISPLAY_NAME = new HashMap<>();
+  private static final Map<String, RideName> BY_MATCH_NAME = new HashMap<>();
 
   static {
     for (RideName ride : values()) {
-      BY_DISPLAY_NAME.put(ride.displayName, ride);
+      BY_MATCH_NAME.put(ride.matchName, ride);
     }
   }
 
-  RideName(String displayName, int rideTime) {
+  RideName(String matchName, int rideTime) {
+    this(matchName, null, rideTime);
+  }
+
+  RideName(String matchName, String displayName, int rideTime) {
+    this.matchName = matchName;
     this.displayName = displayName;
     this.rideTime = rideTime;
   }
 
   public String getDisplayName() {
-    return displayName;
+    return displayName != null ? displayName : matchName;
   }
 
   /** Gets the ride time in seconds. */
@@ -100,16 +118,16 @@ public enum RideName {
   }
 
   /**
-   * Maps a string (display name) to a RideName enum. Returns UNKNOWN if the string doesn't match
-   * any known ride.
+   * Maps a string (match name) to a RideName enum. Returns UNKNOWN if the string doesn't match any
+   * known ride.
    */
-  public static RideName fromString(String displayName) {
-    return BY_DISPLAY_NAME.getOrDefault(displayName, UNKNOWN);
+  public static RideName fromMatchString(String matchName) {
+    return BY_MATCH_NAME.getOrDefault(matchName, UNKNOWN);
   }
 
   /** Maps a RideName enum back to its string representation. */
-  public String toString() {
-    return displayName;
+  public String toMatchString() {
+    return matchName;
   }
 
   /** Checks if this ride is a seasonal ride. */
@@ -137,16 +155,16 @@ public enum RideName {
     if (cleaned.endsWith("...")) cleaned = cleaned.substring(0, cleaned.length() - 3).trim();
     // Exact match first
     cleaned = cleaned.trim();
-    RideName exact = fromString(cleaned);
+    RideName exact = fromMatchString(cleaned);
     if (exact != UNKNOWN) return exact;
     // Find displayName that starts with cleaned (truncated match)
     RideName best = UNKNOWN;
     int bestLen = Integer.MAX_VALUE;
     for (RideName r : values()) {
       if (r == UNKNOWN) continue;
-      if (r.displayName.startsWith(cleaned) && r.displayName.length() < bestLen) {
+      if (r.matchName.startsWith(cleaned) && r.matchName.length() < bestLen) {
         best = r;
-        bestLen = r.displayName.length();
+        bestLen = r.matchName.length();
       }
     }
     // Special case for Rise of the Resistance (sidebar shows "Rise of the Resistance" without "Star
@@ -165,16 +183,5 @@ public enum RideName {
       return CHIP_N_DALES_GADGET_COASTER;
     }
     return best;
-  }
-
-  /** Gets all ride display names for autocomplete. */
-  public static java.util.List<String> getAllDisplayNames() {
-    java.util.List<String> names = new java.util.ArrayList<>();
-    for (RideName ride : values()) {
-      if (ride != UNKNOWN) {
-        names.add(ride.displayName);
-      }
-    }
-    return names;
   }
 }

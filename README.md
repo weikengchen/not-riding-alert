@@ -59,15 +59,16 @@ Autograbbing detection is a smart feature that automatically detects when you en
 - **Alice in Wonderland**
 - **Big Thunder Mountain Railroad**
 - **Casey Jr. Circus Train**
+- **Chip 'n' Dale's GADGETcoaster**
 - **Disneyland Monorail**
 - **Disneyland Railroad**
 - **Finding Nemo Submarine Voyage**
 - **Haunted Mansion**
-- **Indiana Jones Adventure**
+- **Indiana Jones™ Adventure**
 - **Jungle Cruise**
 - **Matterhorn Bobsleds**
-- **Mickey and Friends Parking Tram**
-- **Mr. Toad's Wild Ride**
+- **Mickey & Friends Parking Tram**
+- **Mr Toad's Wild Ride**
 - **Peter Pan's Flight**
 - **Pinocchio's Daring Journey**
 - **Pirates of the Caribbean**
@@ -82,11 +83,11 @@ Autograbbing detection is a smart feature that automatically detects when you en
 **Disney California Adventure:**
 - **Goofy's Sky School**
 - **Grizzly River Run**
-- **Guardians of the Galaxy: Mission Breakout**
+- **Guardians of the Galaxy - Mission: BREAKOUT!**
 - **Incredicoaster**
-- **Monster's Inc. Mike & Sulley to the Rescue!**
+- **Monsters, Inc. Mike & Sulley to the Rescue!**
 - **Radiator Springs Racers**
-- **The Little Mermaid: Ariel's Undersea Adventure**
+- **The Little Mermaid - Ariel's Undersea Adventure**
 
 **Retro:**
 - **The Twilight Zone Tower of Terror**

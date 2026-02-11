@@ -88,7 +88,7 @@ public class ClientPacketListenerMixin {
             if (matcher.find()) {
               try {
                 int count = Integer.parseInt(matcher.group(1));
-                RideName ride = RideName.fromString(nameString);
+                RideName ride = RideName.fromMatchString(nameString);
                 countManager.updateRideCount(ride, count);
               } catch (NumberFormatException e) {
                 // Ignore invalid numbers
@@ -140,7 +140,7 @@ public class ClientPacketListenerMixin {
           if (matcher.find()) {
             try {
               int count = Integer.parseInt(matcher.group(1));
-              RideName ride = RideName.fromString(nameString);
+              RideName ride = RideName.fromMatchString(nameString);
               if (ride == RideName.UNKNOWN) {
                 StrategyHudRenderer.setError("Unknown ride detected (name: " + nameString + ")");
               }

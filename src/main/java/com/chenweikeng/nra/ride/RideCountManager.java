@@ -107,7 +107,7 @@ public class RideCountManager {
 
         if (stringMap != null) {
           for (Map.Entry<String, Integer> entry : stringMap.entrySet()) {
-            RideName ride = RideName.fromString(entry.getKey());
+            RideName ride = RideName.fromMatchString(entry.getKey());
             if (ride != RideName.UNKNOWN) {
               rideCounts.put(ride, entry.getValue());
               lastSavedCounts.put(ride, entry.getValue());
@@ -126,7 +126,7 @@ public class RideCountManager {
       // Convert enum keys to strings for JSON serialization
       Map<String, Integer> stringMap = new HashMap<>();
       for (Map.Entry<RideName, Integer> entry : rideCounts.entrySet()) {
-        stringMap.put(entry.getKey().getDisplayName(), entry.getValue());
+        stringMap.put(entry.getKey().toMatchString(), entry.getValue());
       }
       GSON.toJson(stringMap, writer);
     } catch (IOException e) {

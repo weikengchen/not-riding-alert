@@ -40,7 +40,7 @@ public class StrategyCalculator {
       }
 
       // Skip hidden rides
-      if (ModConfig.getInstance().hiddenRides.contains(ride.getDisplayName())) {
+      if (ModConfig.getInstance().hiddenRides.contains(ride.toMatchString())) {
         continue;
       }
 
