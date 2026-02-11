@@ -194,7 +194,7 @@ public class ClothConfigScreen {
       rides.addEntry(
           entryBuilder
               .startBooleanToggle(formatRideLabel(ride), currentValue)
-              .setDefaultValue(true)
+              .setDefaultValue(!ride.isSeasonal())
               .setTooltip(Component.translatable("config.not-riding-alert.rideDisplay.tooltip"))
               .setSaveConsumer(
                   newValue -> {
