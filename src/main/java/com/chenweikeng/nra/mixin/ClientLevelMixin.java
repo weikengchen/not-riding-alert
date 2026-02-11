@@ -2,7 +2,6 @@ package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
-import com.chenweikeng.nra.ride.CurrentRideHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.Identifier;
@@ -44,11 +43,10 @@ public class ClientLevelMixin {
       if (ModConfig.getInstance().silent) {
         Minecraft client = Minecraft.getInstance();
 
-        // Check if player is riding an entity (Minecraft's hasVehicle) or on a ride
-        // (CurrentRideHolder)
+        // Check if player is riding (including autograb region check via isRiding helper)
         if (client != null
             && client.player != null
-            && (client.player.isPassenger() || CurrentRideHolder.getCurrentRide() != null)) {
+            && NotRidingAlertClient.isRiding(client.player)) {
           // Cancel sound when riding (except ride.complete)
           ci.cancel();
         }

@@ -70,16 +70,26 @@ Autograbbing detection is a smart feature that automatically detects when you en
 - **Mr. Toad's Wild Ride**
 - **Peter Pan's Flight**
 - **Pinocchio's Daring Journey**
+- **Pirates of the Caribbean**
 - **Roger Rabbit's Car Toon Spin**
+- **Snow White's Enchanted Wish**
 - **Space Mountain**
 - **Splash Mountain**
+- **Star Wars: Rise of the Resistance**
 - **Storybook Land Canal Boats**
 - **The Many Adventures of Winnie the Pooh**
 
 **Disney California Adventure:**
+- **Goofy's Sky School**
+- **Grizzly River Run**
+- **Guardians of the Galaxy: Mission Breakout**
 - **Incredicoaster**
+- **Monster's Inc. Mike & Sulley to the Rescue!**
 - **Radiator Springs Racers**
 - **The Little Mermaid: Ariel's Undersea Adventure**
+
+**Retro:**
+- **The Twilight Zone Tower of Terror**
 
 **Note:** Autograbbing detection can be toggled on/off in the configuration menu (`/nra`). When disabled, region-based ride detection will not occur.
 
@@ -148,7 +158,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.2.0
+- **Version**: 2.2.5
 
 ## License
 

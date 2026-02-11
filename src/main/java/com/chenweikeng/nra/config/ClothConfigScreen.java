@@ -69,7 +69,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.blindWhenRiding"),
                 ModConfig.getInstance().blindWhenRiding)
-            .setDefaultValue(false)
+            .setDefaultValue(true)
             .setTooltip(Component.translatable("config.not-riding-alert.blindWhenRiding.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().blindWhenRiding = newValue)
             .build());
@@ -153,7 +153,7 @@ public class ClothConfigScreen {
             .startIntSlider(
                 Component.translatable("config.not-riding-alert.rideDisplayCount"),
                 ModConfig.getInstance().rideDisplayCount,
-                1,
+                0,
                 60)
             .setDefaultValue(10)
             .setTooltip(Component.translatable("config.not-riding-alert.rideDisplayCount.tooltip"))

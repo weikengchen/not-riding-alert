@@ -106,9 +106,7 @@ public class StrategyHudRenderer {
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName regionRide =
-        ModConfig.getInstance().autograb && !client.player.isPassenger()
-            ? RegionHolder.getRideAtLocation(client.player)
-            : null;
+        ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(client) : null;
     RideName effectiveRide = currentRide != null ? currentRide : regionRide;
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);

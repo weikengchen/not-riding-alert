@@ -41,6 +41,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private static final int VEHICLE_SUPPRESSION_TICKS =
       100; // Suppress sound for 100 ticks (5 seconds) after having a vehicle
   private RideName previousRide = null; // Track previous ride state to detect completion
+  private RideName previousRegionRide = null;
   private static final double SUPPRESSION_LOCATION_X = 674.0;
   private static final double SUPPRESSION_LOCATION_Y = 65.0;
   private static final double SUPPRESSION_LOCATION_Z = 984.0;
@@ -79,17 +80,27 @@ public class NotRidingAlertClient implements ClientModInitializer {
           }
 
           // Update cached riding state every tick
-          RideName regionRide =
-              ModConfig.getInstance().autograb
-                  ? RegionHolder.getRideAtLocation(client.player)
-                  : null;
+          ModConfig modConfig = ModConfig.getInstance();
+          boolean isPassenger = client.player.isPassenger();
+          RideName regionRide = modConfig.autograb ? RegionHolder.getRideAtLocation(client) : null;
           isRiding =
-              client.player.isPassenger()
-                  || CurrentRideHolder.getCurrentRide() != null
-                  || regionRide != null;
+              isPassenger || CurrentRideHolder.getCurrentRide() != null || regionRide != null;
+
+          if (regionRide != null && !isPassenger && modConfig.autograb) {
+            if (regionRide != previousRegionRide) {
+              client.setScreen(null);
+              if (client.mouseHandler.isMouseGrabbed()) {
+                client.mouseHandler.releaseMouse();
+                automaticallyReleasedCursor = true;
+              }
+              previousRegionRide = regionRide;
+            }
+          } else {
+            previousRegionRide = null;
+          }
 
           // Handle cursor lock/unlock based on riding state (if defocus cursor is enabled)
-          if (ModConfig.getInstance().defocusCursor) {
+          if (modConfig.defocusCursor) {
             if (!wasRiding && isRiding) {
               client.mouseHandler.releaseMouse();
               automaticallyReleasedCursor = true;
@@ -361,7 +372,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
       return isRiding || CurrentRideHolder.getCurrentRide() != null;
     }
     RideName regionRide =
-        ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(player) : null;
+        ModConfig.getInstance().autograb
+            ? RegionHolder.getRideAtLocation(Minecraft.getInstance())
+            : null;
     return isRiding || CurrentRideHolder.getCurrentRide() != null || regionRide != null;
   }
 
