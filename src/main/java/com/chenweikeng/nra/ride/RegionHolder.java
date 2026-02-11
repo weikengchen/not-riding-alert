@@ -281,12 +281,12 @@ public enum RegionHolder {
   THE_TWILIGHT_ZONE_TOWER_OF_TERROR(
       RideName.THE_TWILIGHT_ZONE_TOWER_OF_TERROR,
       isRetro(),
-      new Point(-344.30, -746.37),
+      new Point(-344.30, -746.35),
       64,
-      new Point(-347.7, -744.7),
-      new Point(-342.7, -749.7),
-      new Point(-342.5, -744.7),
-      new Point(-342.7, -744.7)),
+      new Point(-347.69999998807907, -744.6999999880791),
+      new Point(-342.69999998807907, -749.6815062990032),
+      new Point(-342.49766213527624, -744.6601793293152),
+      new Point(-342.69999998807907, -744.6592544032699)),
   GRIZZLY_RIVER_RUN(
       RideName.GRIZZLY_RIVER_RUN,
       isDlnew(),
