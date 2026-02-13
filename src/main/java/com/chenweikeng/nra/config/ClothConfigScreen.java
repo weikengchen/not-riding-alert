@@ -39,6 +39,16 @@ public class ClothConfigScreen {
     general.addEntry(
         entryBuilder
             .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.globalEnable"),
+                ModConfig.getInstance().globalEnable)
+            .setDefaultValue(true)
+            .setTooltip(Component.translatable("config.not-riding-alert.globalEnable.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().globalEnable = newValue)
+            .build());
+
+    general.addEntry(
+        entryBuilder
+            .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.enabled"),
                 ModConfig.getInstance().enabled)
             .setDefaultValue(true)
@@ -72,6 +82,18 @@ public class ClothConfigScreen {
             .setDefaultValue(true)
             .setTooltip(Component.translatable("config.not-riding-alert.blindWhenRiding.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().blindWhenRiding = newValue)
+            .build());
+
+    general.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.nightVisionWhenNotRiding"),
+                ModConfig.getInstance().nightVisionWhenNotRiding)
+            .setDefaultValue(false)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.nightVisionWhenNotRiding.tooltip"))
+            .setSaveConsumer(
+                newValue -> ModConfig.getInstance().nightVisionWhenNotRiding = newValue)
             .build());
 
     general.addEntry(

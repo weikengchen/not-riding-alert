@@ -84,8 +84,9 @@ public class StrategyHudRenderer {
       return;
     }
 
+    int screenWidth = client.getWindow().getGuiScaledWidth();
     int xLeft = 50;
-    int xRight = 450; // Right column x position
+    int xRight = screenWidth - 50;
     int y = 50;
     int lineHeight = 10;
     int colorRed = 0xFFFF0000; // Red
@@ -154,7 +155,9 @@ public class StrategyHudRenderer {
                 goal.getRidesNeeded(),
                 TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
         int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
-        context.drawString(client.font, text, xRight, y + (i * lineHeight), color, false);
+        int textWidth = client.font.width(text);
+        context.drawString(
+            client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
       }
     }
 

@@ -17,9 +17,11 @@ public class ModConfig {
   private static final Path CONFIG_PATH = Path.of("config/not-riding-alert.json");
   private static ModConfig instance;
 
+  public boolean globalEnable = true;
   public boolean enabled = true;
   public String soundId = "entity.experience_orb.pickup";
   public boolean blindWhenRiding = false;
+  public boolean nightVisionWhenNotRiding = false;
   public boolean defocusCursor = true;
   public boolean silent = true;
   public boolean autograb = true;
@@ -67,8 +69,10 @@ public class ModConfig {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ModConfig modConfig = (ModConfig) o;
-    return enabled == modConfig.enabled
+    return globalEnable == modConfig.globalEnable
+        && enabled == modConfig.enabled
         && blindWhenRiding == modConfig.blindWhenRiding
+        && nightVisionWhenNotRiding == modConfig.nightVisionWhenNotRiding
         && defocusCursor == modConfig.defocusCursor
         && silent == modConfig.silent
         && autograb == modConfig.autograb
@@ -85,9 +89,11 @@ public class ModConfig {
   @Override
   public int hashCode() {
     return Objects.hash(
+        globalEnable,
         enabled,
         soundId,
         blindWhenRiding,
+        nightVisionWhenNotRiding,
         defocusCursor,
         silent,
         autograb,

@@ -42,6 +42,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Autograbbing Detection**: When enabled, entering predefined ride regions automatically releases the cursor and marks you as ready to ride. This allows you to multitask without needing to manually interact with the ride vehicle while waiting for rides to start.
 - **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding.
 - **Blindness Effect**: Optional blindness effect when riding (to reduce distractions)
+- **Night Vision Effect**: Optional night vision effect when not riding (disabled by default)
 - **Sound Suppression**: Automatically suppresses game sounds when riding
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
 - **Configurable Sound**: Customize the alert sound to your preference
@@ -103,6 +104,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Silent Mode**: Toggle the alert sound on/off.
 - **Sound ID**: Select the alert sound from a dropdown menu of all available game sounds.
 - **Blindness Effect**: Toggle blindness effect when riding.
+- **Night Vision Effect**: Toggle night vision effect when not riding (disabled by default).
 - **Defocus Cursor**: Toggle automatic cursor release when riding.
 - **Only show known autograbbing rides**: Filter the strategy HUD to only show rides that support autograbbing.
 
@@ -119,37 +121,6 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Hide Chat**: Toggle chat visibility.
 - **Hide Health**: Toggle health bar visibility.
 
-## How It Works
-
-### Alert System
-The mod checks every 10 seconds if you're riding a ride. If you're not riding and haven't moved recently, it plays an alert sound to remind you to get back on a ride.
-
-### Strategy Recommendations
-The mod calculates which rides will help you reach your next milestone the fastest. It considers:
-- Your current ride count for each ride
-- The duration of each ride
-- Your next goal milestone (1, 10, 100, 500, 1000, 5000, or 10000 rides)
-
-### Progress Tracking
-The mod reads the scoreboard to detect:
-- Your current ride (from the "Current Ride" scoreboard entry)
-- Elapsed time on the ride (from the time display)
-- Calculates percentage based on known ride durations
-
-### Ride Detection
-The mod detects when you're on a ride through:
-- Scoreboard data (primary method)
-- Minecraft vehicle detection (fallback)
-
-## Tips
-
-1. **Use the Strategy HUD**: The green highlighted ride is your current ride - focus on completing it!
-2. **Hide Completed Rides**: Uncheck completed rides in the "Rides" tab of the config (`/nra`) to focus on new goals
-3. **Adjust Display Count**: If you want to see more or fewer recommendations, adjust the "Ride Display Count" in the "Tracker" tab
-4. **Customize Your Sound**: Find a sound that's noticeable but not annoying for long grinding sessions
-5. **Hide UI Elements**: Toggle scoreboard, chat, and health visibility in the "General" tab for a cleaner interface
-6. **Enable Defocus Cursor**: Enable this in "General" settings to prevent Minecraft from stealing window focus while on rides, allowing you to multitask more easily
-
 ## Known Limitations
 
 - Progress tracking is not available for "Davy Crockett's Explorer Canoes" (ride time is player-dependent)
@@ -159,7 +130,7 @@ The mod detects when you're on a ride through:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.2.5
+- **Version**: 2.3.0
 
 ## License
 

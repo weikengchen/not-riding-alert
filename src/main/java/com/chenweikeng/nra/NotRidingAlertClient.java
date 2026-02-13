@@ -379,7 +379,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   }
 
   public static boolean isImagineFunServer() {
-    return isImagineFunServer;
+    return isImagineFunServer && ModConfig.getInstance().globalEnable;
   }
 
   public static boolean isAutomaticallyReleasedCursor() {
