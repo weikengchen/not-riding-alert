@@ -32,6 +32,7 @@ public class ModConfig {
   public boolean hideChat = false;
   public boolean hideHealth = true;
   public boolean onlyAutograbbing = false;
+  public boolean alertAutograbFailure = true;
   public boolean displayShortName = false;
 
   public static ModConfig getInstance() {
@@ -82,6 +83,7 @@ public class ModConfig {
         && hideChat == modConfig.hideChat
         && hideHealth == modConfig.hideHealth
         && onlyAutograbbing == modConfig.onlyAutograbbing
+        && alertAutograbFailure == modConfig.alertAutograbFailure
         && displayShortName == modConfig.displayShortName
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
@@ -106,6 +108,7 @@ public class ModConfig {
         hideChat,
         hideHealth,
         onlyAutograbbing,
+        alertAutograbFailure,
         displayShortName);
   }
 }

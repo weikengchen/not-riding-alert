@@ -32,6 +32,8 @@
   "config.not-riding-alert.hideHealth.tooltip": "Hide the health bar for a cleaner interface",
   "config.not-riding-alert.onlyAutograbbing": "Only show known autograbbing rides",
   "config.not-riding-alert.onlyAutograbbing.tooltip": "Only show rides that have auto-grabbing support in the tracker",
+  "config.not-riding-alert.alertAutograbFailure": "Alert when autograbbing fails",
+  "config.not-riding-alert.alertAutograbFailure.tooltip": "Play an alert sound if autograbbing fails to detect a vehicle",
   "config.not-riding-alert.displayShortName": "Use short names in the suggested rides",
   "config.not-riding-alert.displayShortName.tooltip": "Display short names instead of full ride names in the tracker"
 }

@@ -1,61 +1,51 @@
 package com.chenweikeng.nra;
 
-import com.chenweikeng.nra.command.NraCommand;
+import com.chenweikeng.nra.config.ClothConfigScreen;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.handler.AutograbFailureHandler;
+import com.chenweikeng.nra.handler.DayTimeHandler;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.strategy.StrategyHudRenderer;
+import com.chenweikeng.nra.tracker.PlayerMovementTracker;
+import com.chenweikeng.nra.tracker.RideStateTracker;
+import com.chenweikeng.nra.tracker.SuppressionRegionTracker;
+import com.chenweikeng.nra.util.SoundHelper;
+import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NotRidingAlertClient implements ClientModInitializer {
   public static final String MOD_ID = "not-riding-alert";
   public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-  private static boolean isImagineFunServer = false;
+
+  private static final int CHECK_INTERVAL = 200;
+
+  private final PlayerMovementTracker movementTracker = new PlayerMovementTracker();
+  private final RideStateTracker rideStateTracker = new RideStateTracker();
+  private final SuppressionRegionTracker suppressionRegionTracker = new SuppressionRegionTracker();
+  private final DayTimeHandler dayTimeHandler = new DayTimeHandler();
+  private final AutograbFailureHandler autograbFailureHandler = new AutograbFailureHandler();
+
   private int tickCounter = 0;
-  private static final int CHECK_INTERVAL = 200; // Check every 200 ticks (10 seconds)
-  private static boolean isRiding = false; // Cached riding state
-  private boolean wasRiding = false; // Previous riding state
-  private long absoluteTickCounter = 0; // Absolute tick counter (never resets)
-  private long lastPlayerMovementTick = -1; // Last absolute tick when player moved via keyboard
-  private static final int MOVEMENT_SUPPRESSION_TICKS =
-      600; // Suppress sound for 600 ticks (30 seconds) after movement
-  private long lastRideTick = -1; // Last absolute tick when player was on a ride
-  private static final int RIDE_COMPLETION_SUPPRESSION_TICKS =
-      100; // Suppress sound for 100 ticks (5 seconds) after ride completion
-  private long lastVehicleTick = -1; // Last absolute tick when player had a vehicle
-  private static final int VEHICLE_SUPPRESSION_TICKS =
-      100; // Suppress sound for 100 ticks (5 seconds) after having a vehicle
-  private RideName previousRide = null; // Track previous ride state to detect completion
+  private long absoluteTickCounter = 0;
+  private static boolean isRiding = false;
+  private boolean wasRiding = false;
   private RideName previousRegionRide = null;
-  private static final double SUPPRESSION_LOCATION_X = 674.0;
-  private static final double SUPPRESSION_LOCATION_Y = 65.0;
-  private static final double SUPPRESSION_LOCATION_Z = 984.0;
-  private static final double SUPPRESSION_LOCATION_RADIUS = 4.0; // Block distance of 4
-  private static final int LINCOLN_SUPPRESSION_X_MIN = -132;
-  private static final int LINCOLN_SUPPRESSION_X_MAX = -106;
-  private static final int LINCOLN_SUPPRESSION_Z_MIN = 11;
-  private static final int LINCOLN_SUPPRESSION_Z_MAX = 52;
-  private boolean wasInLincolnRegion = false; // Track previous tick region state
-  private boolean lincolnSuppressionActive = false; // Lincoln suppression flag
-  private static boolean automaticallyReleasedCursor = false; // Track if cursor was auto-released
-  private static final long NOON = 6000L;
-  private static final long SUNSET_START = 12000L;
+  private static boolean automaticallyReleasedCursor = false;
 
   @Override
   public void onInitializeClient() {
@@ -63,18 +53,18 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
     ClientPlayConnectionEvents.JOIN.register(
         (handler, sender, client) -> {
-          onJoin(client);
+          ServerState.onJoin(client);
         });
 
     ClientPlayConnectionEvents.DISCONNECT.register(
         (handler, client) -> {
-          onDisconnect();
+          ServerState.onDisconnect();
+          resetAllTrackers();
         });
 
-    // Register tick event to update cached riding state and check periodically (for sound alert)
     ClientTickEvents.END_CLIENT_TICK.register(
         client -> {
-          if (!isImagineFunServer) {
+          if (!ServerState.isImagineFunServer()) {
             return;
           }
           if (client.player == null) {
@@ -82,64 +72,24 @@ public class NotRidingAlertClient implements ClientModInitializer {
             return;
           }
 
-          // Update cached riding state every tick
           ModConfig modConfig = ModConfig.getInstance();
           boolean isPassenger = client.player.isPassenger();
           RideName regionRide = modConfig.autograb ? RegionHolder.getRideAtLocation(client) : null;
           isRiding =
               isPassenger || CurrentRideHolder.getCurrentRide() != null || regionRide != null;
 
-          if (regionRide != null && !isPassenger && modConfig.autograb) {
-            if (regionRide != previousRegionRide) {
-              client.setScreen(null);
-              if (client.mouseHandler.isMouseGrabbed()) {
-                client.mouseHandler.releaseMouse();
-                automaticallyReleasedCursor = true;
-              }
-              previousRegionRide = regionRide;
-            }
-          } else {
-            previousRegionRide = null;
-          }
+          handleCursorManagement(client, modConfig, isPassenger, regionRide);
 
-          // Handle cursor lock/unlock based on riding state (if defocus cursor is enabled)
-          if (modConfig.defocusCursor) {
-            if (!wasRiding && isRiding) {
-              client.mouseHandler.releaseMouse();
-              automaticallyReleasedCursor = true;
-            } else if (wasRiding && !isRiding) {
-              automaticallyReleasedCursor = false;
-              if (client.screen == null) {
-                client.mouseHandler.grabMouse();
-              }
-            } else if (automaticallyReleasedCursor
-                && isRiding
-                && client.mouseHandler.isRightPressed()
-                && client.screen == null) {
-              client.mouseHandler.releaseMouse();
-            }
-          }
           wasRiding = isRiding;
-
-          // Increment absolute tick counter
           absoluteTickCounter++;
 
-          // Track player keyboard movement (WASD keys)
-          trackPlayerMovement(client);
+          movementTracker.track(client, absoluteTickCounter);
+          rideStateTracker.trackRideCompletion(absoluteTickCounter);
+          rideStateTracker.trackVehicleState(client, absoluteTickCounter);
+          suppressionRegionTracker.trackLincolnRegionEntryExit(client, rideStateTracker);
+          dayTimeHandler.resetDayTimeIfNeeded(client);
+          autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
 
-          // Track ride completion (when currentRide changes from non-null to null)
-          trackRideCompletion();
-
-          // Track vehicle state (update tick while player has vehicle)
-          trackVehicleState(client);
-
-          // Track Lincoln region entry/exit
-          trackLincolnRegionEntryExit(client);
-
-          // Reset day time if needed for fullbright
-          resetDayTimeIfNeeded(client);
-
-          // Check and save ride counts if needed (every tick, but manager handles 15s interval)
           RideCountManager.getInstance().checkAndSaveIfNeeded();
 
           tickCounter++;
@@ -149,10 +99,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
           }
         });
 
-    // Register commands
     ClientCommandRegistrationCallback.EVENT.register(
         (dispatcher, registryAccess) -> {
-          NraCommand.register(dispatcher);
+          registerNraCommand(dispatcher);
         });
 
     Identifier beforeChatId =
@@ -163,142 +112,37 @@ public class NotRidingAlertClient implements ClientModInitializer {
     }
   }
 
-  /**
-   * Tracks if player is moving via keyboard input (WASD keys) or mouse clicks. Updates
-   * lastPlayerMovementTick when movement keys are pressed or mouse is clicked.
-   */
-  private void trackPlayerMovement(Minecraft client) {
-    if (client.options == null) {
-      return;
+  private void handleCursorManagement(
+      Minecraft client, ModConfig modConfig, boolean isPassenger, RideName regionRide) {
+    if (regionRide != null && !isPassenger && modConfig.autograb) {
+      if (regionRide != previousRegionRide) {
+        client.setScreen(null);
+        if (client.mouseHandler.isMouseGrabbed()) {
+          client.mouseHandler.releaseMouse();
+          automaticallyReleasedCursor = true;
+        }
+        previousRegionRide = regionRide;
+      }
+    } else {
+      previousRegionRide = null;
     }
 
-    // Check if any movement keys are pressed
-    boolean isMoving =
-        client.options.keyUp.isDown()
-            || client.options.keyDown.isDown()
-            || client.options.keyLeft.isDown()
-            || client.options.keyRight.isDown()
-            || client.options.keyJump.isDown()
-            || client.options.keyShift.isDown();
-
-    // Check if mouse buttons are pressed (left or right click)
-    boolean isMouseClicking =
-        client.mouseHandler.isLeftPressed() || client.mouseHandler.isRightPressed();
-
-    if (isMoving || isMouseClicking) {
-      lastPlayerMovementTick = absoluteTickCounter;
+    if (modConfig.defocusCursor) {
+      if (!wasRiding && isRiding) {
+        client.mouseHandler.releaseMouse();
+        automaticallyReleasedCursor = true;
+      } else if (wasRiding && !isRiding) {
+        automaticallyReleasedCursor = false;
+        if (client.screen == null) {
+          client.mouseHandler.grabMouse();
+        }
+      } else if (automaticallyReleasedCursor
+          && isRiding
+          && client.mouseHandler.isRightPressed()
+          && client.screen == null) {
+        client.mouseHandler.releaseMouse();
+      }
     }
-  }
-
-  /**
-   * Tracks when a ride is completed (currentRide changes from non-null to null). Also updates the
-   * counter while the player is on a ride to ensure at least 5 seconds of suppression even for
-   * rides where the player is not sitting.
-   */
-  private void trackRideCompletion() {
-    RideName currentRide = CurrentRideHolder.getCurrentRide();
-
-    // Update counter when player is on a ride or just completed one
-    if (currentRide != null || previousRide != null) {
-      lastRideTick = absoluteTickCounter;
-    }
-
-    // Check if Lincoln ride just completed, disable Lincoln suppression
-    if (previousRide == RideName.GREAT_MOMENTS_WITH_MR_LINCOLN && currentRide == null) {
-      lincolnSuppressionActive = false;
-    }
-
-    previousRide = currentRide;
-  }
-
-  /**
-   * Tracks vehicle state. Updates the counter while the player has a vehicle to ensure at least 5
-   * seconds of suppression after they stop having a vehicle.
-   */
-  private void trackVehicleState(Minecraft client) {
-    if (client.player != null && client.player.isPassenger()) {
-      lastVehicleTick = absoluteTickCounter;
-    }
-  }
-
-  /** Checks if player has moved recently (within MOVEMENT_SUPPRESSION_TICKS). */
-  private boolean hasPlayerMovedRecently() {
-    // If player has never moved, return false
-    if (lastPlayerMovementTick < 0) {
-      return false;
-    }
-
-    long ticksSinceLastMovement = absoluteTickCounter - lastPlayerMovementTick;
-    return ticksSinceLastMovement < MOVEMENT_SUPPRESSION_TICKS;
-  }
-
-  /** Checks if player has been on a ride recently (within RIDE_COMPLETION_SUPPRESSION_TICKS). */
-  private boolean hasRidenRecently() {
-    // If player has never been on a ride, return false
-    if (lastRideTick < 0) {
-      return false;
-    }
-
-    long ticksSinceLastRide = absoluteTickCounter - lastRideTick;
-    return ticksSinceLastRide < RIDE_COMPLETION_SUPPRESSION_TICKS;
-  }
-
-  /** Checks if player had a vehicle recently (within VEHICLE_SUPPRESSION_TICKS). */
-  private boolean hasVehicleRecently() {
-    // If player has never had a vehicle, return false
-    if (lastVehicleTick < 0) {
-      return false;
-    }
-
-    long ticksSinceLastVehicle = absoluteTickCounter - lastVehicleTick;
-    return ticksSinceLastVehicle < VEHICLE_SUPPRESSION_TICKS;
-  }
-
-  /**
-   * Tracks Lincoln region entry and exit. Sets lincolnSuppressionActive to true when player enters
-   * the region, and to false when player leaves the region.
-   */
-  private void trackLincolnRegionEntryExit(Minecraft client) {
-    boolean currentlyInRegion = isInLincolnSuppressionArea(client);
-
-    if (currentlyInRegion && !wasInLincolnRegion) {
-      // Player just entered the region
-      lincolnSuppressionActive = true;
-    } else if (!currentlyInRegion && wasInLincolnRegion) {
-      // Player just left the region
-      lincolnSuppressionActive = false;
-    }
-
-    wasInLincolnRegion = currentlyInRegion;
-  }
-
-  /** Checks if player is within the ROTR suppression area (circular radius). */
-  private boolean isInROTRExceptionArea(Minecraft client) {
-    if (client.player == null) {
-      return false;
-    }
-
-    double dx = client.player.getX() - SUPPRESSION_LOCATION_X;
-    double dy = client.player.getY() - SUPPRESSION_LOCATION_Y;
-    double dz = client.player.getZ() - SUPPRESSION_LOCATION_Z;
-    double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-    return distance <= SUPPRESSION_LOCATION_RADIUS;
-  }
-
-  /** Checks if player is within the Lincoln suppression area (rectangular region). */
-  private boolean isInLincolnSuppressionArea(Minecraft client) {
-    if (client.player == null) {
-      return false;
-    }
-
-    double x = client.player.getX();
-    double z = client.player.getZ();
-
-    return x >= LINCOLN_SUPPRESSION_X_MIN
-        && x <= LINCOLN_SUPPRESSION_X_MAX
-        && z >= LINCOLN_SUPPRESSION_Z_MIN
-        && z <= LINCOLN_SUPPRESSION_Z_MAX;
   }
 
   private void checkNotRidingAlert(Minecraft client) {
@@ -306,91 +150,30 @@ public class NotRidingAlertClient implements ClientModInitializer {
       return;
     }
 
-    // Check if feature is enabled
     if (!ModConfig.getInstance().enabled) {
       return;
     }
 
-    // Play sound when player is NOT riding, but suppress if player has been moving recently, just
-    // completed a ride, had a vehicle recently, or is in a suppression exception area
     if (!isRiding
-        && !hasPlayerMovedRecently()
-        && !hasRidenRecently()
-        && !hasVehicleRecently()
-        && !isInROTRExceptionArea(client)
-        && !lincolnSuppressionActive) {
-      playSound(client);
+        && !movementTracker.hasPlayerMovedRecently(absoluteTickCounter)
+        && !rideStateTracker.hasRidenRecently(absoluteTickCounter)
+        && !rideStateTracker.hasVehicleRecently(absoluteTickCounter)
+        && !suppressionRegionTracker.isInROTRExceptionArea(client)
+        && !rideStateTracker.isLincolnSuppressionActive()) {
+      SoundHelper.playConfiguredSound(client);
     }
   }
 
-  private void playSound(Minecraft client) {
-    if (client.player == null) return;
-    if (client.level == null) return;
-
-    try {
-      String soundId = ModConfig.getInstance().soundId;
-      Identifier soundIdentifier = Identifier.parse(soundId);
-
-      // Try to get the sound event from the registry
-      SoundEvent soundEvent = null;
-      try {
-        // Try to get from sound registry
-        var registry = client.level.registryAccess().lookupOrThrow(Registries.SOUND_EVENT);
-        soundEvent = registry.getValue(soundIdentifier);
-      } catch (Exception e) {
-        // If not found, try common sound events
-      }
-
-      // Fallback to default if not found
-      if (soundEvent == null) {
-        soundEvent = SoundEvents.EXPERIENCE_ORB_PICKUP;
-      }
-
-      // Play sound at player's position
-      client.level.playSound(
-          client.player,
-          client.player.getX(),
-          client.player.getY(),
-          client.player.getZ(),
-          soundEvent,
-          SoundSource.MASTER,
-          1.0f,
-          1.0f);
-    } catch (Exception e) {
-      // Fallback to default sound
-      if (client.player != null && client.level != null) {
-        SoundEvent fallbackSound = SoundEvents.EXPERIENCE_ORB_PICKUP;
-        client.level.playSound(
-            client.player,
-            client.player.getX(),
-            client.player.getY(),
-            client.player.getZ(),
-            fallbackSound,
-            SoundSource.MASTER,
-            1.0f,
-            1.0f);
-      }
-    }
-  }
-
-  private void resetDayTimeIfNeeded(Minecraft client) {
-    if (!isImagineFunServer) {
-      return;
-    }
-    if (!ModConfig.getInstance().fullbrightWhenNotRiding) {
-      return;
-    }
-
-    ClientLevel level = client.level;
-    if (level == null) {
-      return;
-    }
-
-    long time = level.getDayTime() % 24000L;
-
-    if (time >= SUNSET_START) {
-      level.getLevelData().setDayTime(NOON);
-    }
+  private void resetAllTrackers() {
+    movementTracker.reset();
+    rideStateTracker.reset();
+    suppressionRegionTracker.reset();
+    autograbFailureHandler.reset();
+    tickCounter = 0;
+    absoluteTickCounter = 0;
+    wasRiding = false;
+    previousRegionRide = null;
+    automaticallyReleasedCursor = false;
   }
 
   public static boolean isRiding(net.minecraft.client.player.LocalPlayer player) {
@@ -405,32 +188,24 @@ public class NotRidingAlertClient implements ClientModInitializer {
   }
 
   public static boolean isImagineFunServer() {
-    return isImagineFunServer && ModConfig.getInstance().globalEnable;
+    return ServerState.isImagineFunServer();
   }
 
   public static boolean isAutomaticallyReleasedCursor() {
     return automaticallyReleasedCursor;
   }
 
-  public static void onJoin(Minecraft client) {
-    if (client.getCurrentServer() == null || client.getCurrentServer().ip == null) {
-      isImagineFunServer = false;
-      LOGGER.info("No server info available on join");
-      return;
-    }
-
-    String serverIp = client.getCurrentServer().ip.toLowerCase();
-    isImagineFunServer = serverIp.endsWith(".imaginefun.net");
-
-    if (isImagineFunServer) {
-      LOGGER.info("Joined ImagineFun.net server: {}", serverIp);
-    } else {
-      LOGGER.info("Joined non-ImagineFun.net server: {}", serverIp);
-    }
-  }
-
-  public static void onDisconnect() {
-    LOGGER.info("Disconnected from server");
-    isImagineFunServer = false;
+  private static void registerNraCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+    dispatcher.register(
+        ClientCommandManager.literal("nra")
+            .executes(
+                context -> {
+                  Minecraft client = Minecraft.getInstance();
+                  client.execute(
+                      () -> {
+                        client.setScreen((Screen) ClothConfigScreen.createScreen(client.screen));
+                      });
+                  return 1;
+                }));
   }
 }

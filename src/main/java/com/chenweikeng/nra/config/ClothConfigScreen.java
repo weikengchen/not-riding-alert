@@ -155,6 +155,17 @@ public class ClothConfigScreen {
             .setSaveConsumer(newValue -> ModConfig.getInstance().onlyAutograbbing = newValue)
             .build());
 
+    general.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.alertAutograbFailure"),
+                ModConfig.getInstance().alertAutograbFailure)
+            .setDefaultValue(true)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.alertAutograbFailure.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().alertAutograbFailure = newValue)
+            .build());
+
     ConfigCategory tracker =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rides"));
