@@ -5,90 +5,96 @@ import java.util.Map;
 
 public enum RideName {
   // Disneyland rides
-  ALICE_IN_WONDERLAND("Alice in Wonderland", 206),
-  ASTRO_ORBITOR("Astro Orbitor", 88),
-  AUTOPIA("Autopia", 246),
-  BIG_THUNDER_MOUNTAIN_RAILROAD("Big Thunder Mountain Railroad", 201),
-  BUZZ_LIGHTYEAR_ASTRO_BLASTERS("Buzz Lightyear Astro Blasters", 258),
-  CASEY_JR_CIRCUS_TRAIN("Casey Jr. Circus Train", 152),
+  ALICE_IN_WONDERLAND("Alice in Wonderland", "alice", 206),
+  ASTRO_ORBITOR("Astro Orbitor", "astro", 88),
+  AUTOPIA("Autopia", "autopia", 246),
+  BIG_THUNDER_MOUNTAIN_RAILROAD("Big Thunder Mountain Railroad", "btm", 201),
+  BUZZ_LIGHTYEAR_ASTRO_BLASTERS("Buzz Lightyear Astro Blasters", "buzz", 258),
+  CASEY_JR_CIRCUS_TRAIN("Casey Jr. Circus Train", "casey", 152),
   CHIP_N_DALES_GADGET_COASTER(
-      "Chip 'N' Dale's Gadget Coaster", "Chip 'n' Dale's GADGETcoaster", 44),
-  DAVY_CROCKETTS_EXPLORER_CANOES("Davy Crockett's Explorer Canoes", 150),
-  DISNEYLAND_MONORAIL("Disneyland Monorail", 485),
-  DISNEYLAND_RAILROAD("Disneyland Railroad", 1008),
-  DUMBO_THE_FLYING_ELEPHANT("Dumbo the Flying Elephant", 105),
-  ENCHANTED_TIKI_ROOM("Enchanted Tiki Room", "Walt Disney's Enchanted Tiki Room", 750),
-  FINDING_NEMO_SUBMARINE_VOYAGE("Finding Nemo Submarine Voyage", 790),
-  GREAT_MOMENTS_WITH_MR_LINCOLN("Great Moments with Mr. Lincoln", 372),
-  HAUNTED_MANSION("Haunted Mansion", 445),
-  INDIANA_JONES_ADVENTURE("Indiana Jones Adventure", "Indiana Jones(TM) Adventure", 225),
-  JUNGLE_CRUISE("Jungle Cruise", 431),
-  KING_ARTHUR_CARROUSEL("King Arthur Carrousel", 130),
-  MAD_TEA_PARTY("Mad Tea Party", 90),
-  MAIN_STREET_CARRIAGES("Main Street Carriages", "Main Street Vehicles", 381),
-  MATTERHORN_BOBSLEDS("Matterhorn Bobsleds", 120),
-  MICKEY_AND_FRIENDS_PARKING_TRAM("Mickey & Friends Parking Tram", 550),
-  MR_TOADS_WILD_RIDE("Mr Toad's Wild Ride", 109),
-  PEOPLEMOVER("Peoplemover", "PeopleMover", 717),
-  PETER_PANS_FLIGHT("Peter Pan's Flight", 139),
-  PINOCCHIOS_DARING_JOURNEY("Pinocchio's Daring Journey", 168),
-  PIRATES_OF_THE_CARIBBEAN("Pirates of the Caribbean", 841),
-  ROGER_RABBITS_CAR_TOON_SPIN("Roger Rabbit's Car-Toon Spin", "Roger Rabbit's Car Toon Spin", 168),
-  SNOW_WHITES_ENCHANTED_WISH("Snow White's Enchanted Wish", 122),
-  SPACE_MOUNTAIN("Space Mountain", 180),
-  SPLASH_MOUNTAIN("Splash Mountain", 484),
-  STAR_WARS_RISE_OF_THE_RESISTANCE("Star Wars: Rise of the Resistance", 294),
-  STORYBOOK_LAND_CANAL_BOATS("Storybook Land Canal Boats", 303),
-  THE_MANY_ADVENTURES_OF_WINNIE_THE_POOH("The Many Adventures of Winnie the Pooh", 200),
-  TOM_SAWYER_ISLAND_RAFTS("Tom Sawyer Island Rafts", 129),
+      "Chip 'N' Dale's Gadget Coaster", "Chip 'n' Dale's GADGETcoaster", "gadget", 44),
+  DAVY_CROCKETTS_EXPLORER_CANOES("Davy Crockett's Explorer Canoes", "canoe", 150),
+  DISNEYLAND_MONORAIL("Disneyland Monorail", "monorail", 485),
+  DISNEYLAND_RAILROAD("Disneyland Railroad", "dlrr", 1008),
+  DUMBO_THE_FLYING_ELEPHANT("Dumbo the Flying Elephant", "dumbo", 105),
+  ENCHANTED_TIKI_ROOM("Enchanted Tiki Room", "Walt Disney's Enchanted Tiki Room", "tiki", 750),
+  FINDING_NEMO_SUBMARINE_VOYAGE("Finding Nemo Submarine Voyage", "nemo", 790),
+  GREAT_MOMENTS_WITH_MR_LINCOLN("Great Moments with Mr. Lincoln", "lincoln", 372),
+  HAUNTED_MANSION("Haunted Mansion", "hm", 445),
+  INDIANA_JONES_ADVENTURE("Indiana Jones Adventure", "Indiana Jones(TM) Adventure", "indy", 225),
+  JUNGLE_CRUISE("Jungle Cruise", "jungle", 431),
+  KING_ARTHUR_CARROUSEL("King Arthur Carrousel", "kac", 130),
+  MAD_TEA_PARTY("Mad Tea Party", "mad", 90),
+  MAIN_STREET_CARRIAGES("Main Street Carriages", "Main Street Vehicles", "vehicles", 381),
+  MATTERHORN_BOBSLEDS("Matterhorn Bobsleds", "matterhorn", 120),
+  MICKEY_AND_FRIENDS_PARKING_TRAM("Mickey & Friends Parking Tram", "parking", 550),
+  MR_TOADS_WILD_RIDE("Mr Toad's Wild Ride", "mrtoads", 109),
+  PEOPLEMOVER("Peoplemover", "PeopleMover", "pm", 717),
+  PETER_PANS_FLIGHT("Peter Pan's Flight", "peterpan", 139),
+  PINOCCHIOS_DARING_JOURNEY("Pinocchio's Daring Journey", "pinocchio", 168),
+  PIRATES_OF_THE_CARIBBEAN("Pirates of the Caribbean", "potc", 841),
+  ROGER_RABBITS_CAR_TOON_SPIN(
+      "Roger Rabbit's Car-Toon Spin", "Roger Rabbit's Car Toon Spin", "roger", 168),
+  SNOW_WHITES_ENCHANTED_WISH("Snow White's Enchanted Wish", "snowwhite", 122),
+  SPACE_MOUNTAIN("Space Mountain", "space", 180),
+  SPLASH_MOUNTAIN("Splash Mountain", "splash", 484),
+  STAR_WARS_RISE_OF_THE_RESISTANCE("Star Wars: Rise of the Resistance", "rotr", 294),
+  STORYBOOK_LAND_CANAL_BOATS("Storybook Land Canal Boats", "storybook", 303),
+  THE_MANY_ADVENTURES_OF_WINNIE_THE_POOH("The Many Adventures of Winnie the Pooh", "pooh", 200),
+  TOM_SAWYER_ISLAND_RAFTS("Tom Sawyer Island Rafts", "tsi", 129),
 
   // DCA rides
-  GOLDEN_ZEPHYR("Golden Zephyr", 108),
-  GOOFYS_SKY_SCHOOL("Goofy's Sky School", 91),
-  GRIZZLY_RIVER_RUN("Grizzly River Run", 361),
+  GOLDEN_ZEPHYR("Golden Zephyr", "gz", 108),
+  GOOFYS_SKY_SCHOOL("Goofy's Sky School", "gss", 91),
+  GRIZZLY_RIVER_RUN("Grizzly River Run", "grr", 361),
   GUARDIANS_OF_THE_GALAXY_MISSION_BREAKOUT(
       "Guardians of the Galaxy: Mission Breakout",
       "Guardians of the Galaxy - Mission: BREAKOUT!",
+      "gotg",
       123),
-  INCREDICOASTER("Incredicoaster", 135),
-  INSIDE_OUT_EMOTIONAL_WHIRLWIND("Inside Out Emotional Whirlwind", 98),
-  JESSIES_CRITTER_CAROUSEL("Jessie's Critter Carousel", 120),
-  JUMPIN_JELLYFISH("Jumpin' Jellyfish", 45),
-  LUIGIS_ROLICKIN_ROADSTERS("Luigi's Rollickin' Roadsters", 94),
-  MATERS_JUNKYARD_JAMBOREE("Mater's Junkyard Jamboree", 90),
+  INCREDICOASTER("Incredicoaster", "incredi", 135),
+  INSIDE_OUT_EMOTIONAL_WHIRLWIND("Inside Out Emotional Whirlwind", "insideout", 98),
+  JESSIES_CRITTER_CAROUSEL("Jessie's Critter Carousel", "jessie", 120),
+  JUMPIN_JELLYFISH("Jumpin' Jellyfish", "jumpin", 45),
+  LUIGIS_ROLICKIN_ROADSTERS("Luigi's Rollickin' Roadsters", "luigi", 94),
+  MATERS_JUNKYARD_JAMBOREE("Mater's Junkyard Jamboree", "mater", 90),
   MONSTERS_INC_MIKE_AND_SULLEY_TO_THE_RESCUE(
       "Monster's Inc. Mike & Sulley to the Rescue!",
       "Monsters, Inc. Mike & Sulley to the Rescue!",
+      "monster",
       230),
-  PIXAR_PAL_AROUND("Pixar Pal-A-Round", 551),
-  RADIATOR_SPRINGS_RACERS("Radiator Springs Racers", 267),
-  RED_CAR_TROLLEY("Red Car Trolley", 300),
-  SILLY_SYMPHONY_SWINGS("Silly Symphony Swings", 87),
+  PIXAR_PAL_AROUND("Pixar Pal-A-Round", "palaround", 551),
+  RADIATOR_SPRINGS_RACERS("Radiator Springs Racers", "rsr", 267),
+  RED_CAR_TROLLEY("Red Car Trolley", "rct", 300),
+  SILLY_SYMPHONY_SWINGS("Silly Symphony Swings", "silly", 87),
   THE_LITTLE_MERMAID_ARIELS_UNDERSEA_ADVENTURE(
       "The Little Mermaid: Ariel's Undersea Adventure",
       "The Little Mermaid - Ariel's Undersea Adventure",
+      "ariel",
       369),
 
   // Retro
-  FLIKS_FLYERS("Flik's Flyers", 98),
-  HEIMLICHS_CHEW_CHEW_TRAIN("Heimlich's Chew Chew Train", 102),
-  THE_TWILIGHT_ZONE_TOWER_OF_TERROR("The Twilight Zone Tower of Terror", 125),
+  FLIKS_FLYERS("Flik's Flyers", "flik", 98),
+  HEIMLICHS_CHEW_CHEW_TRAIN("Heimlich's Chew Chew Train", "heimlich", 102),
+  THE_TWILIGHT_ZONE_TOWER_OF_TERROR("The Twilight Zone Tower of Terror", "tot", 125),
 
   // Seasonal
-  HAUNTED_MANSION_HOLIDAY("Haunted Mansion Holiday", 445),
+  HAUNTED_MANSION_HOLIDAY("Haunted Mansion Holiday", "hmh", 445),
   GUARDIANS_OF_THE_GALAXY_MONSTERS_AFTER_DARK(
       "Guardians of the Galaxy: Monsters After Dark",
       "Guardians of the Galaxy - Monsters After Dark",
+      "gotgmad",
       123),
-  THE_SUGARPINE_EXPRESS("The Sugarpine Express", 132),
-  THE_SUGARPINE_MERRY_GO_ROUND("The Sugarpine Merry-Go-Round", 76),
-  HYPERSPACE_MOUNTAIN("Hyperspace Mountain", 180),
+  THE_SUGARPINE_EXPRESS("The Sugarpine Express", "sugarexpress", 132),
+  THE_SUGARPINE_MERRY_GO_ROUND("The Sugarpine Merry-Go-Round", "sugargoround", 76),
+  HYPERSPACE_MOUNTAIN("Hyperspace Mountain", "hyperspace", 180),
 
   // Unknown ride (for rides not in the enum)
-  UNKNOWN("Unknown", 99999);
+  UNKNOWN("Unknown", "unknown", 99999);
 
   private final String matchName;
   private final String displayName;
+  private final String shortName;
   private final int rideTime; // Ride time in seconds
   private static final Map<String, RideName> BY_MATCH_NAME = new HashMap<>();
 
@@ -98,18 +104,23 @@ public enum RideName {
     }
   }
 
-  RideName(String matchName, int rideTime) {
-    this(matchName, null, rideTime);
+  RideName(String matchName, String shortName, int rideTime) {
+    this(matchName, null, shortName, rideTime);
   }
 
-  RideName(String matchName, String displayName, int rideTime) {
+  RideName(String matchName, String displayName, String shortName, int rideTime) {
     this.matchName = matchName;
     this.displayName = displayName;
+    this.shortName = shortName;
     this.rideTime = rideTime;
   }
 
   public String getDisplayName() {
     return displayName != null ? displayName : matchName;
+  }
+
+  public String getShortName() {
+    return shortName;
   }
 
   /** Gets the ride time in seconds. */
@@ -181,6 +192,10 @@ public enum RideName {
     // without apostrophe in N)
     if (best == UNKNOWN && "Chip N Dale's Gadget Coaster".startsWith(cleaned)) {
       return CHIP_N_DALES_GADGET_COASTER;
+    }
+    // Special case for Astro Orbitor (sidebar shows "Astro Orbiter" with "er" instead of "or")
+    if (best == UNKNOWN && "Astro Orbiter".startsWith(cleaned)) {
+      return ASTRO_ORBITOR;
     }
     return best;
   }

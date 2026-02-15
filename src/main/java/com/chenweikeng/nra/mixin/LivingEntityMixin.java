@@ -29,7 +29,7 @@ public abstract class LivingEntityMixin {
           && effect == MobEffects.BLINDNESS
           && NotRidingAlertClient.isRiding(player)) {
         cir.setReturnValue(true);
-      } else if (ModConfig.getInstance().nightVisionWhenNotRiding
+      } else if (ModConfig.getInstance().fullbrightWhenNotRiding
           && effect == MobEffects.NIGHT_VISION
           && !NotRidingAlertClient.isRiding(player)) {
         cir.setReturnValue(true);
@@ -55,7 +55,7 @@ public abstract class LivingEntityMixin {
         if (cir.getReturnValue() == null) {
           cir.setReturnValue(new MobEffectInstance(MobEffects.BLINDNESS, -1));
         }
-      } else if (ModConfig.getInstance().nightVisionWhenNotRiding
+      } else if (ModConfig.getInstance().fullbrightWhenNotRiding
           && effect == MobEffects.NIGHT_VISION
           && !NotRidingAlertClient.isRiding(player)) {
         if (cir.getReturnValue() == null) {

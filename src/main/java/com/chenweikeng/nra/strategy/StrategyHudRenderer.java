@@ -101,9 +101,6 @@ public class StrategyHudRenderer {
     }
 
     int displayCount = ModConfig.getInstance().rideDisplayCount;
-    if (displayCount == 0) {
-      return;
-    }
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName regionRide =
@@ -112,67 +109,72 @@ public class StrategyHudRenderer {
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
 
-    // Split goals into columns based on actual number of goals
-    List<RideGoal> leftGoals;
-    List<RideGoal> rightGoals = new ArrayList<>();
-    int topGoalsSize = topGoals.size();
+    int maxColumnHeight = 0;
 
-    if (topGoalsSize < 8) {
-      // Single column: all goals on the left
-      leftGoals = topGoals;
-    } else {
-      // Two columns: left gets one more if odd, otherwise split evenly based on actual goals
-      int leftCount = (topGoalsSize + 1) / 2; // Left gets one more if odd
-      leftGoals = topGoals.subList(0, Math.min(leftCount, topGoalsSize));
-      if (topGoalsSize > leftCount) {
-        rightGoals = topGoals.subList(leftCount, topGoalsSize);
+    if (displayCount > 0) {
+      // Split goals into columns based on actual number of goals
+      List<RideGoal> leftGoals;
+      List<RideGoal> rightGoals = new ArrayList<>();
+      int topGoalsSize = topGoals.size();
+
+      if (topGoalsSize < 8) {
+        // Single column: all goals on the left
+        leftGoals = topGoals;
+      } else {
+        // Two columns: left gets one more if odd, otherwise split evenly based on actual goals
+        int leftCount = (topGoalsSize + 1) / 2; // Left gets one more if odd
+        leftGoals = topGoals.subList(0, Math.min(leftCount, topGoalsSize));
+        if (topGoalsSize > leftCount) {
+          rightGoals = topGoals.subList(leftCount, topGoalsSize);
+        }
       }
-    }
 
-    // Render left column
-    for (int i = 0; i < leftGoals.size(); i++) {
-      RideGoal goal = leftGoals.get(i);
-      FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
-      String text =
-          String.format(
-              "%s - %d rides needed, %s",
-              formattedRide.getName(),
-              goal.getRidesNeeded(),
-              TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
-      int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
-      context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
-    }
-
-    // Render right column (only if topGoalsSize >= 8)
-    if (topGoalsSize >= 8) {
-      for (int i = 0; i < rightGoals.size(); i++) {
-        RideGoal goal = rightGoals.get(i);
+      // Render left column
+      for (int i = 0; i < leftGoals.size(); i++) {
+        RideGoal goal = leftGoals.get(i);
         FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
         String text =
             String.format(
-                "%s - %d rides needed, %s",
+                "%s - %d more, %s",
                 formattedRide.getName(),
                 goal.getRidesNeeded(),
                 TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
         int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
-        int textWidth = client.font.width(text);
-        context.drawString(
-            client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
+        context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
       }
+
+      // Render right column (only if topGoalsSize >= 8)
+      if (topGoalsSize >= 8) {
+        for (int i = 0; i < rightGoals.size(); i++) {
+          RideGoal goal = rightGoals.get(i);
+          FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
+          String text =
+              String.format(
+                  "%s - %d more, %s",
+                  formattedRide.getName(),
+                  goal.getRidesNeeded(),
+                  TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
+          int color =
+              getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
+          int textWidth = client.font.width(text);
+          context.drawString(
+              client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
+        }
+      }
+
+      maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
     }
 
     // If currently riding (or in region) and that ride is not in the displayed goals, show it after
-    // a
-    // blank line in green
+    // a blank line in green
     if (effectiveRide != null && effectiveRide != RideName.UNKNOWN && !currentRideInTop) {
-      int maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
       int extraY = y + (maxColumnHeight * lineHeight) + lineHeight; // blank line, then current ride
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
       FormattedRide formattedRide = formatRideName(effectiveRide, currentRide, regionRide);
       String text =
           currentGoal != null
               ? String.format(
-                  "%s - %d rides needed, %s",
+                  "%s - %d more, %s",
                   formattedRide.getName(),
                   currentGoal.getRidesNeeded(),
                   TimeFormatUtil.formatDuration(currentGoal.getTimeNeededSeconds()))
@@ -200,7 +202,8 @@ public class StrategyHudRenderer {
 
   private static FormattedRide formatRideName(
       RideName ride, RideName currentRide, RideName regionRide) {
-    String rideName = ride.getDisplayName();
+    String rideName =
+        ModConfig.getInstance().displayShortName ? ride.getShortName() : ride.getDisplayName();
     RideStatus status = RideStatus.NORMAL;
 
     if (currentRide != null && ride == currentRide) {

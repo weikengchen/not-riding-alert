@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
@@ -53,6 +54,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private boolean wasInLincolnRegion = false; // Track previous tick region state
   private boolean lincolnSuppressionActive = false; // Lincoln suppression flag
   private static boolean automaticallyReleasedCursor = false; // Track if cursor was auto-released
+  private static final long NOON = 6000L;
+  private static final long SUNSET_START = 12000L;
 
   @Override
   public void onInitializeClient() {
@@ -132,6 +135,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
           // Track Lincoln region entry/exit
           trackLincolnRegionEntryExit(client);
+
+          // Reset day time if needed for fullbright
+          resetDayTimeIfNeeded(client);
 
           // Check and save ride counts if needed (every tick, but manager handles 15s interval)
           RideCountManager.getInstance().checkAndSaveIfNeeded();
@@ -364,6 +370,26 @@ public class NotRidingAlertClient implements ClientModInitializer {
             1.0f,
             1.0f);
       }
+    }
+  }
+
+  private void resetDayTimeIfNeeded(Minecraft client) {
+    if (!isImagineFunServer) {
+      return;
+    }
+    if (!ModConfig.getInstance().fullbrightWhenNotRiding) {
+      return;
+    }
+
+    ClientLevel level = client.level;
+    if (level == null) {
+      return;
+    }
+
+    long time = level.getDayTime() % 24000L;
+
+    if (time >= SUNSET_START) {
+      level.getLevelData().setDayTime(NOON);
     }
   }
 

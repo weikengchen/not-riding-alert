@@ -87,13 +87,12 @@ public class ClothConfigScreen {
     general.addEntry(
         entryBuilder
             .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.nightVisionWhenNotRiding"),
-                ModConfig.getInstance().nightVisionWhenNotRiding)
+                Component.translatable("config.not-riding-alert.fullbrightWhenNotRiding"),
+                ModConfig.getInstance().fullbrightWhenNotRiding)
             .setDefaultValue(false)
             .setTooltip(
-                Component.translatable("config.not-riding-alert.nightVisionWhenNotRiding.tooltip"))
-            .setSaveConsumer(
-                newValue -> ModConfig.getInstance().nightVisionWhenNotRiding = newValue)
+                Component.translatable("config.not-riding-alert.fullbrightWhenNotRiding.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().fullbrightWhenNotRiding = newValue)
             .build());
 
     general.addEntry(
@@ -202,6 +201,16 @@ public class ClothConfigScreen {
                     ModConfig.getInstance().minRideTimeMinutes = newValue;
                   }
                 })
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.displayShortName"),
+                ModConfig.getInstance().displayShortName)
+            .setDefaultValue(false)
+            .setTooltip(Component.translatable("config.not-riding-alert.displayShortName.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().displayShortName = newValue)
             .build());
 
     ConfigCategory rides =

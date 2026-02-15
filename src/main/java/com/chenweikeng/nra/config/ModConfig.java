@@ -21,7 +21,7 @@ public class ModConfig {
   public boolean enabled = true;
   public String soundId = "entity.experience_orb.pickup";
   public boolean blindWhenRiding = false;
-  public boolean nightVisionWhenNotRiding = false;
+  public boolean fullbrightWhenNotRiding = false;
   public boolean defocusCursor = true;
   public boolean silent = true;
   public boolean autograb = true;
@@ -32,6 +32,7 @@ public class ModConfig {
   public boolean hideChat = false;
   public boolean hideHealth = true;
   public boolean onlyAutograbbing = false;
+  public boolean displayShortName = false;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -72,7 +73,7 @@ public class ModConfig {
     return globalEnable == modConfig.globalEnable
         && enabled == modConfig.enabled
         && blindWhenRiding == modConfig.blindWhenRiding
-        && nightVisionWhenNotRiding == modConfig.nightVisionWhenNotRiding
+        && fullbrightWhenNotRiding == modConfig.fullbrightWhenNotRiding
         && defocusCursor == modConfig.defocusCursor
         && silent == modConfig.silent
         && autograb == modConfig.autograb
@@ -81,6 +82,7 @@ public class ModConfig {
         && hideChat == modConfig.hideChat
         && hideHealth == modConfig.hideHealth
         && onlyAutograbbing == modConfig.onlyAutograbbing
+        && displayShortName == modConfig.displayShortName
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -93,7 +95,7 @@ public class ModConfig {
         enabled,
         soundId,
         blindWhenRiding,
-        nightVisionWhenNotRiding,
+        fullbrightWhenNotRiding,
         defocusCursor,
         silent,
         autograb,
@@ -103,6 +105,7 @@ public class ModConfig {
         hideScoreboard,
         hideChat,
         hideHealth,
-        onlyAutograbbing);
+        onlyAutograbbing,
+        displayShortName);
   }
 }

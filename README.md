@@ -19,6 +19,7 @@ A thid-party quality-of-life mod for the ImagineFun server (https://modrinth.com
 - **Smart Layout**: Automatically splits into two columns when displaying 8+ rides
 - **Current Ride Highlighting**: Your current ride is highlighted in green with progress percentage
 - **Customizable Display**: Configure how many rides to show (default: 16)
+- **Short Name Option**: Use abbreviated ride names in the tracker for a cleaner display
 
 ### 📈 Ride Progress Tracking
 - **Real-Time Progress**: Automatically calculates and displays ride completion percentage based on elapsed time
@@ -42,7 +43,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Autograbbing Detection**: When enabled, entering predefined ride regions automatically releases the cursor and marks you as ready to ride. This allows you to multitask without needing to manually interact with the ride vehicle while waiting for rides to start.
 - **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding.
 - **Blindness Effect**: Optional blindness effect when riding (to reduce distractions)
-- **Night Vision Effect**: Optional night vision effect when not riding (disabled by default)
+- **Fullbright**: Force full brightness when not riding (client-side only)
 - **Sound Suppression**: Automatically suppresses game sounds when riding
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
 - **Configurable Sound**: Customize the alert sound to your preference
@@ -104,7 +105,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Silent Mode**: Toggle the alert sound on/off.
 - **Sound ID**: Select the alert sound from a dropdown menu of all available game sounds.
 - **Blindness Effect**: Toggle blindness effect when riding.
-- **Night Vision Effect**: Toggle night vision effect when not riding (disabled by default).
+- **Fullbright**: Force full brightness when not riding (client-side only).
 - **Defocus Cursor**: Toggle automatic cursor release when riding.
 - **Only show known autograbbing rides**: Filter the strategy HUD to only show rides that support autograbbing.
 
@@ -112,6 +113,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Auto-grabbing detection**: Toggle the region-based autograbbing feature.
 - **Ride Display Count**: Slider to set how many rides to show in the HUD (1-16).
 - **Minimum Ride Time Filter**: Filter out rides shorter than X minutes.
+- **Use Short Names**: Toggle to display abbreviated ride names instead of full names in the tracker.
 
 ### 🎢 Ride Management (Rides Tab)
 - **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD. Useful for hiding completed rides.
