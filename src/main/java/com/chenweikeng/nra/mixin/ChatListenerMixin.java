@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
@@ -37,5 +38,7 @@ public class ChatListenerMixin {
     RideCountManager countManager = RideCountManager.getInstance();
     int current = countManager.getRideCount(lastRide);
     countManager.updateRideCount(lastRide, current + 1);
+
+    HibernationHandler.getInstance().cancelPendingCancellation();
   }
 }

@@ -1,9 +1,11 @@
 package com.chenweikeng.nra;
 
+import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ClothConfigScreen;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.handler.AutograbFailureHandler;
 import com.chenweikeng.nra.handler.DayTimeHandler;
+import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
@@ -34,6 +36,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
   private static final int CHECK_INTERVAL = 200;
 
+  private static volatile boolean isMonkeyAttached = false;
+
   private final PlayerMovementTracker movementTracker = new PlayerMovementTracker();
   private final RideStateTracker rideStateTracker = new RideStateTracker();
   private final SuppressionRegionTracker suppressionRegionTracker = new SuppressionRegionTracker();
@@ -50,6 +54,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   @Override
   public void onInitializeClient() {
     LOGGER.info("Not Riding Alert client initialized");
+    MonkeycraftCompat.init();
 
     ClientPlayConnectionEvents.JOIN.register(
         (handler, sender, client) -> {
@@ -89,6 +94,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
           suppressionRegionTracker.trackLincolnRegionEntryExit(client, rideStateTracker);
           dayTimeHandler.resetDayTimeIfNeeded(client);
           autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
+          HibernationHandler.getInstance().track(client, absoluteTickCounter);
 
           RideCountManager.getInstance().checkAndSaveIfNeeded();
 
@@ -169,6 +175,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     rideStateTracker.reset();
     suppressionRegionTracker.reset();
     autograbFailureHandler.reset();
+    HibernationHandler.getInstance().reset();
     tickCounter = 0;
     absoluteTickCounter = 0;
     wasRiding = false;
@@ -193,6 +200,14 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
   public static boolean isAutomaticallyReleasedCursor() {
     return automaticallyReleasedCursor;
+  }
+
+  public static boolean isMonkeyAttached() {
+    return isMonkeyAttached;
+  }
+
+  public static void setMonkeyAttached(boolean attached) {
+    isMonkeyAttached = attached;
   }
 
   private static void registerNraCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {

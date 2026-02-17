@@ -1,5 +1,7 @@
 package com.chenweikeng.nra.util;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ModConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
@@ -9,8 +11,16 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 public class SoundHelper {
+  private static final String NOTIFICATION_TITLE = "Not Riding Alert";
+  private static final String NOTIFICATION_BODY = "You are not riding!";
+
   public static void playConfiguredSound(Minecraft client) {
     if (client.player == null || client.level == null) {
+      return;
+    }
+
+    if (NotRidingAlertClient.isMonkeyAttached()) {
+      MonkeycraftCompat.sendImmediateNotification(NOTIFICATION_TITLE, NOTIFICATION_BODY, true);
       return;
     }
 

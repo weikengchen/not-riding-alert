@@ -19,6 +19,20 @@ public class StrategyHudRenderer {
   private static final int UPDATE_INTERVAL_TICKS = 40; // Update every 2 seconds (40 ticks)
   private static String currentError = null; // Stores the latest error message
 
+  private record LayoutInput(
+      Minecraft client,
+      List<RideGoal> goals,
+      RideName currentRide,
+      RideName regionRide,
+      RideName effectiveRide,
+      boolean currentRideInTop,
+      boolean isPassenger,
+      String error,
+      int availableWidth,
+      int gap) {}
+
+  private record LayoutDecision(boolean useShortNames, boolean twoColumns, boolean visible) {}
+
   private enum RideStatus {
     NORMAL,
     RIDING,
@@ -77,6 +91,10 @@ public class StrategyHudRenderer {
       return;
     }
 
+    if (NotRidingAlertClient.isMonkeyAttached()) {
+      return;
+    }
+
     update();
 
     Minecraft client = Minecraft.getInstance();
@@ -94,12 +112,6 @@ public class StrategyHudRenderer {
     int colorPurple = 0xFFEE00FF; // Purple (for autograbbing)
     int errorColor = 0xFFFF6600; // Orange for errors
 
-    // Render error at the top if present
-    if (currentError != null && !currentError.isEmpty()) {
-      context.drawString(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
-      y += lineHeight; // Move down for the goals
-    }
-
     int displayCount = ModConfig.getInstance().rideDisplayCount;
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
@@ -108,52 +120,71 @@ public class StrategyHudRenderer {
     RideName effectiveRide = currentRide != null ? currentRide : regionRide;
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
+    boolean isPassengerForLayout = client.player.isPassenger();
+
+    int topGoalsSize = topGoals.size();
+    boolean wantsTwoColumns = topGoalsSize >= 8;
+    int availableWidth = xRight - xLeft;
+    int gap = 10;
+    List<RideGoal> goalsForFit = displayCount > 0 ? topGoals : List.of();
+
+    LayoutInput layoutInput =
+        new LayoutInput(
+            client,
+            goalsForFit,
+            currentRide,
+            regionRide,
+            effectiveRide,
+            currentRideInTop,
+            isPassengerForLayout,
+            currentError,
+            availableWidth,
+            gap);
+    LayoutDecision decision =
+        decideLayout(layoutInput, ModConfig.getInstance().displayShortName, wantsTwoColumns);
+    if (!decision.visible) {
+      return;
+    }
+    boolean useShortNames = decision.useShortNames;
+    boolean twoColumns = decision.twoColumns;
+    boolean isPassenger = client.player.isPassenger();
+
+    if (currentError != null && !currentError.isEmpty()) {
+      context.drawString(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
+      y += lineHeight;
+    }
 
     int maxColumnHeight = 0;
 
     if (displayCount > 0) {
-      // Split goals into columns based on actual number of goals
       List<RideGoal> leftGoals;
-      List<RideGoal> rightGoals = new ArrayList<>();
-      int topGoalsSize = topGoals.size();
-
-      if (topGoalsSize < 8) {
-        // Single column: all goals on the left
+      List<RideGoal> rightGoals;
+      if (!twoColumns) {
         leftGoals = topGoals;
+        rightGoals = List.of();
       } else {
-        // Two columns: left gets one more if odd, otherwise split evenly based on actual goals
-        int leftCount = (topGoalsSize + 1) / 2; // Left gets one more if odd
+        int leftCount = (topGoalsSize + 1) / 2;
         leftGoals = topGoals.subList(0, Math.min(leftCount, topGoalsSize));
-        if (topGoalsSize > leftCount) {
-          rightGoals = topGoals.subList(leftCount, topGoalsSize);
-        }
+        rightGoals =
+            topGoalsSize > leftCount ? topGoals.subList(leftCount, topGoalsSize) : List.of();
       }
 
       // Render left column
       for (int i = 0; i < leftGoals.size(); i++) {
         RideGoal goal = leftGoals.get(i);
-        FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
-        String text =
-            String.format(
-                "%s - %d more, %s",
-                formattedRide.getName(),
-                goal.getRidesNeeded(),
-                TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
+        FormattedRide formattedRide =
+            formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
+        String text = formatGoalText(formattedRide, goal);
         int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
         context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
       }
 
-      // Render right column (only if topGoalsSize >= 8)
-      if (topGoalsSize >= 8) {
+      if (twoColumns) {
         for (int i = 0; i < rightGoals.size(); i++) {
           RideGoal goal = rightGoals.get(i);
-          FormattedRide formattedRide = formatRideName(goal.getRide(), currentRide, regionRide);
-          String text =
-              String.format(
-                  "%s - %d more, %s",
-                  formattedRide.getName(),
-                  goal.getRidesNeeded(),
-                  TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
+          FormattedRide formattedRide =
+              formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
+          String text = formatGoalText(formattedRide, goal);
           int color =
               getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
           int textWidth = client.font.width(text);
@@ -170,14 +201,11 @@ public class StrategyHudRenderer {
     if (effectiveRide != null && effectiveRide != RideName.UNKNOWN && !currentRideInTop) {
       int extraY = y + (maxColumnHeight * lineHeight) + lineHeight; // blank line, then current ride
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
-      FormattedRide formattedRide = formatRideName(effectiveRide, currentRide, regionRide);
+      FormattedRide formattedRide =
+          formatRideName(effectiveRide, currentRide, regionRide, useShortNames, isPassenger);
       String text =
           currentGoal != null
-              ? String.format(
-                  "%s - %d more, %s",
-                  formattedRide.getName(),
-                  currentGoal.getRidesNeeded(),
-                  TimeFormatUtil.formatDuration(currentGoal.getTimeNeededSeconds()))
+              ? formatGoalText(formattedRide, currentGoal)
               : "Riding: " + formattedRide.getName();
       int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
       context.drawString(client.font, text, xLeft, extraY, color, false);
@@ -201,9 +229,12 @@ public class StrategyHudRenderer {
   }
 
   private static FormattedRide formatRideName(
-      RideName ride, RideName currentRide, RideName regionRide) {
-    String rideName =
-        ModConfig.getInstance().displayShortName ? ride.getShortName() : ride.getDisplayName();
+      RideName ride,
+      RideName currentRide,
+      RideName regionRide,
+      boolean useShortNames,
+      boolean isPassenger) {
+    String rideName = useShortNames ? ride.getShortName() : ride.getDisplayName();
     RideStatus status = RideStatus.NORMAL;
 
     if (currentRide != null && ride == currentRide) {
@@ -212,12 +243,104 @@ public class StrategyHudRenderer {
         rideName += " (" + progress + "%)";
       }
       status = RideStatus.RIDING;
-    } else if (currentRide == null && regionRide != null && ride == regionRide) {
+    } else if (currentRide == null && regionRide != null && ride == regionRide && !isPassenger) {
       rideName += " (Autograbbing" + getAnimatedDots() + ")";
       status = RideStatus.AUTOGRABBING;
     }
 
     return new FormattedRide(rideName, status);
+  }
+
+  private static String formatGoalText(FormattedRide formattedRide, RideGoal goal) {
+    return String.format(
+        "%s - %d more, %s",
+        formattedRide.getName(),
+        goal.getRidesNeeded(),
+        TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
+  }
+
+  private static LayoutDecision decideLayout(
+      LayoutInput layoutInput, boolean baseUseShortNames, boolean wantsTwoColumns) {
+    boolean useShortNames = baseUseShortNames;
+    boolean twoColumns = wantsTwoColumns;
+    if (fitsLayout(layoutInput, useShortNames, twoColumns)) {
+      return new LayoutDecision(useShortNames, twoColumns, true);
+    }
+    useShortNames = true;
+    if (fitsLayout(layoutInput, useShortNames, twoColumns)) {
+      return new LayoutDecision(useShortNames, twoColumns, true);
+    }
+    twoColumns = false;
+    if (fitsLayout(layoutInput, useShortNames, twoColumns)) {
+      return new LayoutDecision(useShortNames, twoColumns, true);
+    }
+    return new LayoutDecision(useShortNames, twoColumns, false);
+  }
+
+  private static boolean fitsLayout(
+      LayoutInput layoutInput, boolean useShortNames, boolean twoColumns) {
+    int maxWidth = 0;
+    if (layoutInput.error != null && !layoutInput.error.isEmpty()) {
+      maxWidth = Math.max(maxWidth, layoutInput.client.font.width("ERROR: " + layoutInput.error));
+    }
+
+    if (!layoutInput.goals.isEmpty()) {
+      int goalsSize = layoutInput.goals.size();
+      if (!twoColumns || goalsSize < 8) {
+        int leftMax = computeMaxWidth(layoutInput, layoutInput.goals, useShortNames);
+        maxWidth = Math.max(maxWidth, leftMax);
+      } else {
+        int leftCount = (goalsSize + 1) / 2;
+        List<RideGoal> leftGoals = layoutInput.goals.subList(0, Math.min(leftCount, goalsSize));
+        List<RideGoal> rightGoals =
+            goalsSize > leftCount ? layoutInput.goals.subList(leftCount, goalsSize) : List.of();
+
+        int leftMax = computeMaxWidth(layoutInput, leftGoals, useShortNames);
+        int rightMax = computeMaxWidth(layoutInput, rightGoals, useShortNames);
+        if (leftMax + rightMax + layoutInput.gap > layoutInput.availableWidth) {
+          return false;
+        }
+        maxWidth = Math.max(maxWidth, leftMax);
+        maxWidth = Math.max(maxWidth, rightMax);
+      }
+    }
+
+    if (layoutInput.effectiveRide != null
+        && layoutInput.effectiveRide != RideName.UNKNOWN
+        && !layoutInput.currentRideInTop) {
+      RideGoal currentGoal = StrategyCalculator.getGoalForRide(layoutInput.effectiveRide);
+      FormattedRide formattedRide =
+          formatRideName(
+              layoutInput.effectiveRide,
+              layoutInput.currentRide,
+              layoutInput.regionRide,
+              useShortNames,
+              layoutInput.isPassenger);
+      String text =
+          currentGoal != null
+              ? formatGoalText(formattedRide, currentGoal)
+              : "Riding: " + formattedRide.getName();
+      maxWidth = Math.max(maxWidth, layoutInput.client.font.width(text));
+    }
+
+    return maxWidth <= layoutInput.availableWidth;
+  }
+
+  private static int computeMaxWidth(
+      LayoutInput layoutInput, List<RideGoal> goals, boolean useShortNames) {
+    int max = 0;
+    for (RideGoal goal : goals) {
+      FormattedRide formattedRide =
+          formatRideName(
+              goal.getRide(),
+              layoutInput.currentRide,
+              layoutInput.regionRide,
+              useShortNames,
+              layoutInput.isPassenger);
+      String text = formatGoalText(formattedRide, goal);
+      max = Math.max(max, layoutInput.client.font.width(text));
+    }
+    return max;
   }
 
   private static int getColorForStatus(

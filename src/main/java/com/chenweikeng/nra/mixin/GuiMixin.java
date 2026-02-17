@@ -124,7 +124,7 @@ public abstract class GuiMixin {
     }
 
     // Check if scoreboard rendering should be cancelled (after processing ride info)
-    if (ModConfig.getInstance().hideScoreboard) {
+    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideScoreboard) {
       ci.cancel();
     }
   }
@@ -139,7 +139,7 @@ public abstract class GuiMixin {
       return;
     }
     // Check if chat should be hidden
-    if (ModConfig.getInstance().hideChat) {
+    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideChat) {
       ci.cancel();
     }
   }
@@ -150,7 +150,7 @@ public abstract class GuiMixin {
       return;
     }
     // Check if player health should be hidden
-    if (ModConfig.getInstance().hideHealth) {
+    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideHealth) {
       ci.cancel();
     }
   }
@@ -161,7 +161,7 @@ public abstract class GuiMixin {
       return;
     }
     // Check if vehicle health should be hidden
-    if (ModConfig.getInstance().hideHealth) {
+    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideHealth) {
       ci.cancel();
     }
   }

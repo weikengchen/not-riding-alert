@@ -1,0 +1,62 @@
+package com.chenweikeng.nra.compat;
+
+import com.chenweikeng.monkeycraft.api.v1.CommandExecutionResult;
+import com.chenweikeng.monkeycraft.api.v1.MonkeycraftApi;
+import com.chenweikeng.nra.NotRidingAlertClient;
+
+final class MonkeycraftCompatImpl {
+  static void init() {
+    MonkeycraftApi.CONNECTION.register(remoteAddr -> NotRidingAlertClient.setMonkeyAttached(true));
+    MonkeycraftApi.DISCONNECTION.register(() -> NotRidingAlertClient.setMonkeyAttached(false));
+    MonkeycraftApi.COMMAND_EXECUTION.register(
+        command -> {
+          if (command == null) {
+            return CommandExecutionResult.PASS;
+          }
+
+          String trimmed = command.trim();
+          if (trimmed.startsWith("/send ") || trimmed.startsWith("/pay ")) {
+            return CommandExecutionResult.DENY;
+          }
+          if (trimmed.startsWith("/w ")
+              || trimmed.startsWith("/warp ")
+              || trimmed.equals("/deposit")) {
+            return CommandExecutionResult.ALLOW;
+          }
+
+          return CommandExecutionResult.PASS;
+        });
+  }
+
+  static boolean isClientConnected() {
+    return MonkeycraftApi.isClientConnected();
+  }
+
+  static boolean isHibernating() {
+    return MonkeycraftApi.isHibernating();
+  }
+
+  static void setTimedNotification(Long fireAtEpochMs, String title, String body, boolean sound) {
+    MonkeycraftApi.setTimedNotification(fireAtEpochMs, title, body, sound);
+  }
+
+  static void cancelTimedNotification() {
+    MonkeycraftApi.cancelTimedNotification();
+  }
+
+  static void sendImmediateNotification(String title, String body, boolean sound) {
+    MonkeycraftApi.sendImmediateNotification(title, body, sound);
+  }
+
+  static void startHibernation(String message) {
+    MonkeycraftApi.startHibernation(message);
+  }
+
+  static void setHibernationMessage(String message) {
+    MonkeycraftApi.setHibernationMessage(message);
+  }
+
+  static void endHibernation() {
+    MonkeycraftApi.endHibernation();
+  }
+}
