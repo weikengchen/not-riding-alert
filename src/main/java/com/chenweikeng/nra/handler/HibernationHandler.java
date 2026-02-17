@@ -33,7 +33,7 @@ public class HibernationHandler {
   }
 
   public void track(Minecraft client, long currentTick) {
-    if (!MonkeycraftCompat.isClientConnected()) {
+    if (!MonkeycraftCompat.isAvailable()) {
       return;
     }
 

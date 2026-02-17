@@ -93,7 +93,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
           rideStateTracker.trackVehicleState(client, absoluteTickCounter);
           suppressionRegionTracker.trackLincolnRegionEntryExit(client, rideStateTracker);
           dayTimeHandler.resetDayTimeIfNeeded(client);
-          autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
+          boolean autograbFailureActive =
+              autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
           HibernationHandler.getInstance().track(client, absoluteTickCounter);
 
           RideCountManager.getInstance().checkAndSaveIfNeeded();
@@ -101,7 +102,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
           tickCounter++;
           if (tickCounter >= CHECK_INTERVAL) {
             tickCounter = 0;
-            checkNotRidingAlert(client);
+            checkNotRidingAlert(client, autograbFailureActive);
           }
         });
 
@@ -151,8 +152,13 @@ public class NotRidingAlertClient implements ClientModInitializer {
     }
   }
 
-  private void checkNotRidingAlert(Minecraft client) {
+  private void checkNotRidingAlert(Minecraft client, boolean autograbFailureActive) {
     if (client.player == null) {
+      return;
+    }
+
+    if (autograbFailureActive) {
+      SoundHelper.playConfiguredSound(client);
       return;
     }
 

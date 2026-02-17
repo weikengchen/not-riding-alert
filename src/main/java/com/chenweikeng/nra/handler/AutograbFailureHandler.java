@@ -5,7 +5,6 @@ import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.tracker.PlayerMovementTracker;
-import com.chenweikeng.nra.util.SoundHelper;
 import net.minecraft.client.Minecraft;
 
 public class AutograbFailureHandler {
@@ -16,15 +15,15 @@ public class AutograbFailureHandler {
   private RideName currentAutograbRegion = null;
   private boolean autograbFailureAlertActive = false;
 
-  public void track(Minecraft client, long currentTick, PlayerMovementTracker movementTracker) {
+  public boolean track(Minecraft client, long currentTick, PlayerMovementTracker movementTracker) {
     if (!ServerState.isImagineFunServer()) {
-      return;
+      return false;
     }
     if (!ModConfig.getInstance().alertAutograbFailure) {
-      return;
+      return false;
     }
     if (client.player == null) {
-      return;
+      return false;
     }
 
     boolean isPassenger = client.player.isPassenger();
@@ -54,9 +53,7 @@ public class AutograbFailureHandler {
       autograbFailureAlertActive = false;
     }
 
-    if (autograbFailureAlertActive && !movementTracker.hasPlayerMovedRecently(currentTick)) {
-      SoundHelper.playConfiguredSound(client);
-    }
+    return autograbFailureAlertActive && !movementTracker.hasPlayerMovedRecently(currentTick);
   }
 
   public void reset() {
