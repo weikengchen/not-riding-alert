@@ -12,19 +12,7 @@ base {
 }
 
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
-	exclusiveContent {
-		forRepository {
-			mavenLocal()
-		}
-		filter {
-			includeGroup "com.chenweikeng.monkeycraft"
-		}
-	}
+	maven { url = "https://jitpack.io" }
 	maven { url = "https://maven.terraformersmc.com/releases" }
 	maven { url = "https://cursemaven.com" }
 	maven { url = "https://maven.shedaniel.me/" }
@@ -46,8 +34,7 @@ dependencies {
 
 	// ModMenu for config screen support
 	modCompileOnly "com.terraformersmc:modmenu:17.0.0-beta.1"
-
-	compileOnly("com.chenweikeng.monkeycraft:monkeycraft:1.0.0") {
+	compileOnly("com.github.weikengchen:monkeycraft:1.0.0") {
 		transitive = false
 	}
 }

@@ -41,7 +41,8 @@ public enum RideName {
   STAR_WARS_RISE_OF_THE_RESISTANCE("Star Wars: Rise of the Resistance", "rotr", 294),
   STORYBOOK_LAND_CANAL_BOATS("Storybook Land Canal Boats", "storybook", 303),
   THE_MANY_ADVENTURES_OF_WINNIE_THE_POOH("The Many Adventures of Winnie the Pooh", "pooh", 200),
-  TOM_SAWYER_ISLAND_RAFTS("Tom Sawyer Island Rafts", "Rafts to Pirate's Lair on Tom Sawyer Island", "tsi", 129),
+  TOM_SAWYER_ISLAND_RAFTS(
+      "Tom Sawyer Island Rafts", "Rafts to Pirate's Lair on Tom Sawyer Island", "tsi", 129),
 
   // DCA rides
   GOLDEN_ZEPHYR("Golden Zephyr", "gz", 108),

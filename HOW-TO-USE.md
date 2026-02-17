@@ -10,6 +10,8 @@ API package (versioned):
 
 - Connection lifecycle events (phone client authenticated / disconnected)
 - Command execution interception (custom allowlist/denylist logic)
+- Chat message filtering (incoming from server, outgoing to server)
+  - Inspect, modify, or block chat messages
 - Notifications
   - Timed notification (overwrites the existing scheduled notification)
   - Immediate notification (only meaningful while the phone app is active/connected)
@@ -20,6 +22,9 @@ API package (versioned):
 - API: `src/main/java/com/chenweikeng/monkeycraft/api/v1/MonkeycraftApi.java`
 - Events: `MonkeycraftApi.CONNECTION` and `MonkeycraftApi.DISCONNECTION`
 - Command interception: `MonkeycraftApi.COMMAND_EXECUTION`
+- Chat filtering:
+  - `MonkeycraftApi.INCOMING_CHAT` (messages from server → phone app)
+  - `MonkeycraftApi.OUTGOING_CHAT` (messages from phone app → server)
 - Notification methods:
   - `MonkeycraftApi.setTimedNotification(...)`
   - `MonkeycraftApi.cancelTimedNotification()`
@@ -36,32 +41,22 @@ API package (versioned):
 
 Goal: your mod should work even if Monkeycraft is not installed.
 
-### 1) Compile Against Monkeycraft Locally
+### 1) Using JitPack (Remote Dependency)
 
-Use Maven Local (recommended).
-
-Current coordinates (this repo):
-
-- groupId: `com.chenweikeng.monkeycraft`
-- artifactId: `monkeycraft`
-- version: `1.0.0`
-
-1. In the Monkeycraft repo, publish to your local Maven cache:
-   - `./gradlew publishToMavenLocal`
-2. In your other mod, add `mavenLocal()` and a dependency on Monkeycraft:
+Use JitPack to pull directly from GitHub releases:
 
 ```gradle
 repositories {
-  mavenLocal()
   mavenCentral()
+	maven { url = "https://jitpack.io" }
 }
 
 dependencies {
-  modCompileOnly "com.chenweikeng.monkeycraft:monkeycraft:1.0.0"
+  compileOnly('com.github.weikengchen:monkeycraft:1.0.0') {
+    transitive = false
+  }
 }
 ```
-
-This avoids copying jars and makes it easy to reuse Monkeycraft across many projects on your machine.
 
 ### 2) Mark It Optional in fabric.mod.json
 
@@ -134,12 +129,34 @@ public final class MonkeycraftCompat {
     if (!isAvailable()) return;
     MonkeycraftCompatImpl.endHibernation();
   }
+
+  public static void registerIncomingChatFilter(MonkeycraftChatFilter filter) {
+    if (!isAvailable()) return;
+    MonkeycraftCompatImpl.registerIncomingChatFilter(filter);
+  }
+
+  public static void registerOutgoingChatFilter(MonkeycraftChatFilter filter) {
+    if (!isAvailable()) return;
+    MonkeycraftCompatImpl.registerOutgoingChatFilter(filter);
+  }
+
+  // Functional interface for chat filtering (avoids direct API type exposure)
+  @FunctionalInterface
+  public interface MonkeycraftChatFilter {
+    ChatFilterResult onChat(String message, String senderName, String senderUuid, boolean outgoing);
+
+    enum ChatFilterResult {
+      ALLOW, MODIFY, DENY, PASS
+    }
+  }
 }
 ```
 
 ### MonkeycraftCompatImpl (only loaded when Monkeycraft is present)
 
 ```java
+import com.chenweikeng.monkeycraft.api.v1.ChatMessageContext;
+import com.chenweikeng.monkeycraft.api.v1.ChatMessageResult;
 import com.chenweikeng.monkeycraft.api.v1.CommandExecutionResult;
 import com.chenweikeng.monkeycraft.api.v1.MonkeycraftApi;
 
@@ -159,6 +176,14 @@ final class MonkeycraftCompatImpl {
         return CommandExecutionResult.DENY;
       }
       return CommandExecutionResult.PASS; // Fall back to Monkeycraft's config
+    });
+
+    // Example: filter incoming chat messages
+    MonkeycraftApi.INCOMING_CHAT.register(context -> {
+      if (context.getMessage().toLowerCase().contains("spoiler")) {
+        return ChatMessageResult.DENY;
+      }
+      return ChatMessageResult.PASS;
     });
   }
 
@@ -180,6 +205,36 @@ final class MonkeycraftCompatImpl {
 
   static void endHibernation() {
     MonkeycraftApi.endHibernation();
+  }
+
+  static void registerIncomingChatFilter(MonkeycraftCompat.MonkeycraftChatFilter filter) {
+    MonkeycraftApi.INCOMING_CHAT.register(context -> {
+      MonkeycraftCompat.MonkeycraftChatFilter.ChatFilterResult result =
+          filter.onChat(context.getMessage(), context.getSenderName(), context.getSenderUuid(), context.isOutgoing());
+      return mapResult(result, context);
+    });
+  }
+
+  static void registerOutgoingChatFilter(MonkeycraftCompat.MonkeycraftChatFilter filter) {
+    MonkeycraftApi.OUTGOING_CHAT.register(context -> {
+      MonkeycraftCompat.MonkeycraftChatFilter.ChatFilterResult result =
+          filter.onChat(context.getMessage(), context.getSenderName(), context.getSenderUuid(), context.isOutgoing());
+      return mapResult(result, context);
+    });
+  }
+
+  private static ChatMessageResult mapResult(
+      MonkeycraftCompat.MonkeycraftChatFilter.ChatFilterResult result, ChatMessageContext context) {
+    switch (result) {
+      case ALLOW:
+        return ChatMessageResult.ALLOW;
+      case MODIFY:
+        return ChatMessageResult.MODIFY;
+      case DENY:
+        return ChatMessageResult.DENY;
+      default:
+        return ChatMessageResult.PASS;
+    }
   }
 }
 ```
@@ -224,6 +279,63 @@ MonkeycraftApi.COMMAND_EXECUTION.register(command -> {
 2. If any listener returns `ALLOW` or `DENY`, that result is used immediately
 3. If all listeners return `PASS`, Monkeycraft's built-in allowlist/denylist config is applied
 4. The denylist is checked first, then the allowlist, then the default behavior
+
+## Chat Message Filtering
+
+You can intercept and filter chat messages in both directions:
+- **INCOMING_CHAT**: Messages received from the server (to be displayed on the phone app)
+- **OUTGOING_CHAT**: Messages sent from the phone app (to the server)
+
+### ChatMessageContext
+
+| Field | Description |
+|-------|-------------|
+| `message` | The chat message content (modifiable via `setMessage()`) |
+| `senderUuid` | UUID of the message sender |
+| `senderName` | Display name of the sender |
+| `outgoing` | `true` if outgoing (phone→server), `false` if incoming (server→phone) |
+
+### ChatMessageResult Enum
+
+- `ALLOW` - Allow the message as-is
+- `MODIFY` - Allow but use the modified message (set via `context.setMessage()`)
+- `DENY` - Block the message entirely
+- `PASS` - Continue to next listener
+
+### Registration Pattern
+
+```java
+// Filter incoming messages (server → phone)
+MonkeycraftApi.INCOMING_CHAT.register(context -> {
+    // Block messages containing certain words
+    if (context.getMessage().toLowerCase().contains("spoiler")) {
+        return ChatMessageResult.DENY;
+    }
+    // Censor/modify message content
+    if (context.getMessage().contains("badword")) {
+        context.setMessage(context.getMessage().replace("badword", "****"));
+        return ChatMessageResult.MODIFY;
+    }
+    return ChatMessageResult.PASS;
+});
+
+// Filter outgoing messages (phone → server)
+MonkeycraftApi.OUTGOING_CHAT.register(context -> {
+    // Log outgoing messages
+    System.out.println("Outgoing from " + context.getSenderName() + ": " + context.getMessage());
+    // Block empty messages
+    if (context.getMessage().trim().isEmpty()) {
+        return ChatMessageResult.DENY;
+    }
+    return ChatMessageResult.PASS;
+});
+```
+
+### Evaluation Order
+
+1. All registered chat listeners are invoked in order
+2. If any listener returns `ALLOW`, `MODIFY`, or `DENY`, that result is used immediately
+3. If all listeners return `PASS`, the message is allowed through unchanged
 
 ## Notes / Behavior Guarantees
 
