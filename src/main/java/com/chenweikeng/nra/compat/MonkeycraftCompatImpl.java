@@ -1,7 +1,7 @@
 package com.chenweikeng.nra.compat;
 
-import com.chenweikeng.monkeycraft.api.v1.CommandExecutionResult;
-import com.chenweikeng.monkeycraft.api.v1.MonkeycraftApi;
+import com.chenweikeng.monkeycraft_api.v1.CommandExecutionResult;
+import com.chenweikeng.monkeycraft_api.v1.MonkeycraftApi;
 import com.chenweikeng.nra.NotRidingAlertClient;
 
 final class MonkeycraftCompatImpl {
@@ -36,8 +36,9 @@ final class MonkeycraftCompatImpl {
     return MonkeycraftApi.isHibernating();
   }
 
-  static void setTimedNotification(Long fireAtEpochMs, String title, String body, boolean sound) {
-    MonkeycraftApi.setTimedNotification(fireAtEpochMs, title, body, sound);
+  static void setTimedNotification(
+      Long fireAtEpochMs, String title, String body, boolean sound, String countDownText) {
+    MonkeycraftApi.setTimedNotification(fireAtEpochMs, title, body, sound, countDownText);
   }
 
   static void cancelTimedNotification() {

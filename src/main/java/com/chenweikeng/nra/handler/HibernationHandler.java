@@ -146,7 +146,7 @@ public class HibernationHandler {
     String title = "Ride finished";
     String body = buildNotificationBody(ride);
 
-    MonkeycraftCompat.setTimedNotification(fireAtEpochMs, title, body, true);
+    MonkeycraftCompat.setTimedNotification(fireAtEpochMs, title, body, true, ride.getDisplayName());
   }
 
   private String buildNotificationBody(RideName ride) {

@@ -31,11 +31,11 @@ public final class MonkeycraftCompat {
   }
 
   public static void setTimedNotification(
-      Long fireAtEpochMs, String title, String body, boolean sound) {
+      Long fireAtEpochMs, String title, String body, boolean sound, String countDownText) {
     if (!isAvailable()) {
       return;
     }
-    MonkeycraftCompatImpl.setTimedNotification(fireAtEpochMs, title, body, sound);
+    MonkeycraftCompatImpl.setTimedNotification(fireAtEpochMs, title, body, sound, countDownText);
   }
 
   public static void cancelTimedNotification() {
