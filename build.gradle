@@ -16,6 +16,7 @@ repositories {
 	maven { url = "https://maven.terraformersmc.com/releases" }
 	maven { url = "https://cursemaven.com" }
 	maven { url = "https://maven.shedaniel.me/" }
+	maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
 }
 
 dependencies {
@@ -23,6 +24,9 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Mixin for language server visibility
+	compileOnly "org.spongepowered:mixin:0.8.5"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
@@ -34,9 +38,15 @@ dependencies {
 
 	// ModMenu for config screen support
 	modCompileOnly "com.terraformersmc:modmenu:17.0.0-beta.1"
-	compileOnly("com.github.weikengchen:monkeycraft-api:2026-02-18") {
+	modCompileOnly("com.github.weikengchen:monkeycraft-api:2026-02-20") {
 		transitive = false
 	}
+
+	// Emoji detection library
+	implementation "com.vdurmont:emoji-java:5.1.1"
+	include "com.vdurmont:emoji-java:5.1.1"
+	implementation "org.json:json:20231013"
+	include "org.json:json:20231013"
 }
 
 processResources {

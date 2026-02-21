@@ -17,23 +17,23 @@ public class ModConfig {
   private static final Path CONFIG_PATH = Path.of("config/not-riding-alert.json");
   private static ModConfig instance;
 
-  public boolean globalEnable = true;
-  public boolean enabled = true;
-  public String soundId = "entity.experience_orb.pickup";
-  public boolean blindWhenRiding = false;
-  public boolean fullbrightWhenNotRiding = false;
-  public boolean defocusCursor = true;
-  public boolean silent = true;
-  public boolean autograb = true;
+  public boolean globalEnable = ConfigDefaults.GLOBAL_ENABLE;
+  public boolean enabled = ConfigDefaults.ENABLED;
+  public String soundId = ConfigDefaults.SOUND_ID;
+  public boolean blindWhenRiding = ConfigDefaults.BLIND_WHEN_RIDING;
+  public boolean fullbrightWhenNotRiding = ConfigDefaults.FULLBRIGHT_WHEN_NOT_RIDING;
+  public boolean defocusCursor = ConfigDefaults.DEFOCUS_CURSOR;
+  public boolean silent = ConfigDefaults.SILENT;
+  public boolean autograb = ConfigDefaults.AUTOGRAB;
   public Integer minRideTimeMinutes = null;
-  public int rideDisplayCount = 16;
+  public int rideDisplayCount = ConfigDefaults.RIDE_DISPLAY_COUNT;
   public List<String> hiddenRides = Lists.newArrayList();
-  public boolean hideScoreboard = false;
-  public boolean hideChat = false;
-  public boolean hideHealth = true;
-  public boolean onlyAutograbbing = false;
-  public boolean alertAutograbFailure = true;
-  public boolean displayShortName = false;
+  public boolean hideScoreboard = ConfigDefaults.HIDE_SCOREBOARD;
+  public boolean hideChat = ConfigDefaults.HIDE_CHAT;
+  public boolean hideHealth = ConfigDefaults.HIDE_HEALTH;
+  public boolean onlyAutograbbing = ConfigDefaults.ONLY_AUTOGRABBING;
+  public boolean alertAutograbFailure = ConfigDefaults.ALERT_AUTOGRAB_FAILURE;
+  public boolean displayShortName = ConfigDefaults.DISPLAY_SHORT_NAME;
 
   public static ModConfig getInstance() {
     if (instance == null) {

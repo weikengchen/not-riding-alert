@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PNG Color Extraction</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { margin-bottom: 20px; }
+        .item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .img-container {
+            width: 80px;
+            height: 32px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        .img-container img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .color-box {
+            width: 60px;
+            height: 32px;
+            margin: 0 15px;
+            border-radius: 4px;
+            border: 1px solid #000;
+        }
+        .info {
+            flex: 1;
+        }
+        .filename { font-weight: bold; }
+        .char { font-size: 1.5em; margin: 0 10px; }
+        .unicode { color: #666; font-family: monospace; }
+        .rgb { color: #666; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>PNG Color Extraction</h1>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_imagineer.png" alt="rank_imagineer.png">
+        </div>
+        <div class="color-box" style="background-color: #0176BC;" title="#0176BC"></div>
+        <div class="info">
+            <span class="filename">rank_imagineer.png</span>
+            <span class="char">一</span>
+            <span class="unicode">\u4E00</span>
+            <span class="rgb">RGB: 1, 118, 188</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_developer.png" alt="rank_developer.png">
+        </div>
+        <div class="color-box" style="background-color: #FA8231;" title="#FA8231"></div>
+        <div class="info">
+            <span class="filename">rank_developer.png</span>
+            <span class="char">丁</span>
+            <span class="unicode">\u4E01</span>
+            <span class="rgb">RGB: 250, 130, 49</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_manager.png" alt="rank_manager.png">
+        </div>
+        <div class="color-box" style="background-color: #8406DE;" title="#8406DE"></div>
+        <div class="info">
+            <span class="filename">rank_manager.png</span>
+            <span class="char">丂</span>
+            <span class="unicode">\u4E02</span>
+            <span class="rgb">RGB: 132, 6, 222</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_character.png" alt="rank_character.png">
+        </div>
+        <div class="color-box" style="background-color: #2CC129;" title="#2CC129"></div>
+        <div class="info">
+            <span class="filename">rank_character.png</span>
+            <span class="char">七</span>
+            <span class="unicode">\u4E03</span>
+            <span class="rgb">RGB: 44, 193, 41</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_builder.png" alt="rank_builder.png">
+        </div>
+        <div class="color-box" style="background-color: #1E5DEB;" title="#1E5DEB"></div>
+        <div class="info">
+            <span class="filename">rank_builder.png</span>
+            <span class="char">丄</span>
+            <span class="unicode">\u4E04</span>
+            <span class="rgb">RGB: 30, 93, 235</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_operator.png" alt="rank_operator.png">
+        </div>
+        <div class="color-box" style="background-color: #8406DE;" title="#8406DE"></div>
+        <div class="info">
+            <span class="filename">rank_operator.png</span>
+            <span class="char">丅</span>
+            <span class="unicode">\u4E05</span>
+            <span class="rgb">RGB: 132, 6, 222</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_coordinator.png" alt="rank_coordinator.png">
+        </div>
+        <div class="color-box" style="background-color: #DB4BC6;" title="#DB4BC6"></div>
+        <div class="info">
+            <span class="filename">rank_coordinator.png</span>
+            <span class="char">丆</span>
+            <span class="unicode">\u4E06</span>
+            <span class="rgb">RGB: 219, 75, 198</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_castmember.png" alt="rank_castmember.png">
+        </div>
+        <div class="color-box" style="background-color: #FECA57;" title="#FECA57"></div>
+        <div class="info">
+            <span class="filename">rank_castmember.png</span>
+            <span class="char">万</span>
+            <span class="unicode">\u4E07</span>
+            <span class="rgb">RGB: 254, 202, 87</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_tourguide.png" alt="rank_tourguide.png">
+        </div>
+        <div class="color-box" style="background-color: #0C9201;" title="#0C9201"></div>
+        <div class="info">
+            <span class="filename">rank_tourguide.png</span>
+            <span class="char">丈</span>
+            <span class="unicode">\u4E08</span>
+            <span class="rgb">RGB: 12, 146, 1</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_trainee.png" alt="rank_trainee.png">
+        </div>
+        <div class="color-box" style="background-color: #0C9201;" title="#0C9201"></div>
+        <div class="info">
+            <span class="filename">rank_trainee.png</span>
+            <span class="char">三</span>
+            <span class="unicode">\u4E09</span>
+            <span class="rgb">RGB: 12, 146, 1</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_dvcplus.png" alt="rank_dvcplus.png">
+        </div>
+        <div class="color-box" style="background-color: #0176BC;" title="#0176BC"></div>
+        <div class="info">
+            <span class="filename">rank_dvcplus.png</span>
+            <span class="char">上</span>
+            <span class="unicode">\u4E0A</span>
+            <span class="rgb">RGB: 1, 118, 188</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_media.png" alt="rank_media.png">
+        </div>
+        <div class="color-box" style="background-color: #0175B9;" title="#0175B9"></div>
+        <div class="info">
+            <span class="filename">rank_media.png</span>
+            <span class="char">世</span>
+            <span class="unicode">\u4E16</span>
+            <span class="rgb">RGB: 1, 117, 185</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_dvc.png" alt="rank_dvc.png">
+        </div>
+        <div class="color-box" style="background-color: #0176BC;" title="#0176BC"></div>
+        <div class="info">
+            <span class="filename">rank_dvc.png</span>
+            <span class="char">下</span>
+            <span class="unicode">\u4E0B</span>
+            <span class="rgb">RGB: 1, 118, 188</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_club33plus.png" alt="rank_club33plus.png">
+        </div>
+        <div class="color-box" style="background-color: #018178;" title="#018178"></div>
+        <div class="info">
+            <span class="filename">rank_club33plus.png</span>
+            <span class="char">丌</span>
+            <span class="unicode">\u4E0C</span>
+            <span class="rgb">RGB: 1, 129, 120</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_club33.png" alt="rank_club33.png">
+        </div>
+        <div class="color-box" style="background-color: #018178;" title="#018178"></div>
+        <div class="info">
+            <span class="filename">rank_club33.png</span>
+            <span class="char">不</span>
+            <span class="unicode">\u4E0D</span>
+            <span class="rgb">RGB: 1, 129, 120</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_d23plus.png" alt="rank_d23plus.png">
+        </div>
+        <div class="color-box" style="background-color: #0175B9;" title="#0175B9"></div>
+        <div class="info">
+            <span class="filename">rank_d23plus.png</span>
+            <span class="char">与</span>
+            <span class="unicode">\u4E0E</span>
+            <span class="rgb">RGB: 1, 117, 185</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_d23.png" alt="rank_d23.png">
+        </div>
+        <div class="color-box" style="background-color: #0175B9;" title="#0175B9"></div>
+        <div class="info">
+            <span class="filename">rank_d23.png</span>
+            <span class="char">丏</span>
+            <span class="unicode">\u4E0F</span>
+            <span class="rgb">RGB: 1, 117, 185</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_passholderplus.png" alt="rank_passholderplus.png">
+        </div>
+        <div class="color-box" style="background-color: #DB2222;" title="#DB2222"></div>
+        <div class="info">
+            <span class="filename">rank_passholderplus.png</span>
+            <span class="char">丐</span>
+            <span class="unicode">\u4E10</span>
+            <span class="rgb">RGB: 219, 34, 34</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_passholder.png" alt="rank_passholder.png">
+        </div>
+        <div class="color-box" style="background-color: #DB2222;" title="#DB2222"></div>
+        <div class="info">
+            <span class="filename">rank_passholder.png</span>
+            <span class="char">丑</span>
+            <span class="unicode">\u4E11</span>
+            <span class="rgb">RGB: 219, 34, 34</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_guestplus.png" alt="rank_guestplus.png">
+        </div>
+        <div class="color-box" style="background-color: #A9A9A9;" title="#A9A9A9"></div>
+        <div class="info">
+            <span class="filename">rank_guestplus.png</span>
+            <span class="char">且</span>
+            <span class="unicode">\u4E14</span>
+            <span class="rgb">RGB: 169, 169, 169</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_guest.png" alt="rank_guest.png">
+        </div>
+        <div class="color-box" style="background-color: #A9A9A9;" title="#A9A9A9"></div>
+        <div class="info">
+            <span class="filename">rank_guest.png</span>
+            <span class="char">丕</span>
+            <span class="unicode">\u4E15</span>
+            <span class="rgb">RGB: 169, 169, 169</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_vip.png" alt="rank_vip.png">
+        </div>
+        <div class="color-box" style="background-color: #0175A9;" title="#0175A9"></div>
+        <div class="info">
+            <span class="filename">rank_vip.png</span>
+            <span class="char">丒</span>
+            <span class="unicode">\u4E12</span>
+            <span class="rgb">RGB: 1, 117, 169</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_vipplus.png" alt="rank_vipplus.png">
+        </div>
+        <div class="color-box" style="background-color: #F368E0;" title="#F368E0"></div>
+        <div class="info">
+            <span class="filename">rank_vipplus.png</span>
+            <span class="char">习</span>
+            <span class="unicode">\u4E60</span>
+            <span class="rgb">RGB: 243, 104, 224</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_pixelartist.png" alt="rank_pixelartist.png">
+        </div>
+        <div class="color-box" style="background-color: #2D83DA;" title="#2D83DA"></div>
+        <div class="info">
+            <span class="filename">rank_pixelartist.png</span>
+            <span class="char">争</span>
+            <span class="unicode">\u4E89</span>
+            <span class="rgb">RGB: 45, 131, 218</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_juniortourguide.png" alt="rank_juniortourguide.png">
+        </div>
+        <div class="color-box" style="background-color: #0C9201;" title="#0C9201"></div>
+        <div class="info">
+            <span class="filename">rank_juniortourguide.png</span>
+            <span class="char">亘</span>
+            <span class="unicode">\u4E98</span>
+            <span class="rgb">RGB: 12, 146, 1</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_showtech.png" alt="rank_showtech.png">
+        </div>
+        <div class="color-box" style="background-color: #BB2DD9;" title="#BB2DD9"></div>
+        <div class="info">
+            <span class="filename">rank_showtech.png</span>
+            <span class="char">亙</span>
+            <span class="unicode">\u4E99</span>
+            <span class="rgb">RGB: 187, 45, 217</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_discord.png" alt="rank_discord.png">
+        </div>
+        <div class="color-box" style="background-color: #7289DA;" title="#7289DA"></div>
+        <div class="info">
+            <span class="filename">rank_discord.png</span>
+            <span class="char">亚</span>
+            <span class="unicode">\u4E9A</span>
+            <span class="rgb">RGB: 114, 137, 218</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_artist.png" alt="rank_artist.png">
+        </div>
+        <div class="color-box" style="background-color: #47D7F7;" title="#47D7F7"></div>
+        <div class="info">
+            <span class="filename">rank_artist.png</span>
+            <span class="char">亞</span>
+            <span class="unicode">\u4E9E</span>
+            <span class="rgb">RGB: 71, 215, 247</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_director.png" alt="rank_director.png">
+        </div>
+        <div class="color-box" style="background-color: #CA3767;" title="#CA3767"></div>
+        <div class="info">
+            <span class="filename">rank_director.png</span>
+            <span class="char">京</span>
+            <span class="unicode">\u4EAC</span>
+            <span class="rgb">RGB: 202, 55, 103</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_guestplusplusplus.png" alt="rank_guestplusplusplus.png">
+        </div>
+        <div class="color-box" style="background-color: #A9A9A9;" title="#A9A9A9"></div>
+        <div class="info">
+            <span class="filename">rank_guestplusplusplus.png</span>
+            <span class="char">丗</span>
+            <span class="unicode">\u4E17</span>
+            <span class="rgb">RGB: 169, 169, 169</span>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="img-container">
+            <img src="rank_former.png" alt="rank_former.png">
+        </div>
+        <div class="color-box" style="background-color: #2B9270;" title="#2B9270"></div>
+        <div class="info">
+            <span class="filename">rank_former.png</span>
+            <span class="char">殬</span>
+            <span class="unicode">\u6BAC</span>
+            <span class="rgb">RGB: 43, 146, 112</span>
+        </div>
+    </div>
+
+</body>
+</html>

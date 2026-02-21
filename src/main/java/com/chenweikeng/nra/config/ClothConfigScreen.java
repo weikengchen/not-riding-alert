@@ -41,7 +41,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.globalEnable"),
                 ModConfig.getInstance().globalEnable)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.GLOBAL_ENABLE)
             .setTooltip(Component.translatable("config.not-riding-alert.globalEnable.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().globalEnable = newValue)
             .build());
@@ -51,7 +51,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.enabled"),
                 ModConfig.getInstance().enabled)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.ENABLED)
             .setTooltip(Component.translatable("config.not-riding-alert.enabled.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().enabled = newValue)
             .build());
@@ -63,7 +63,7 @@ public class ClothConfigScreen {
                 DropdownMenuBuilder.TopCellElementBuilder.of(
                     ModConfig.getInstance().soundId, e -> e),
                 DropdownMenuBuilder.CellCreatorBuilder.of())
-            .setDefaultValue("entity.experience_orb.pickup")
+            .setDefaultValue(ConfigDefaults.SOUND_ID)
             .setTooltip(Component.translatable("config.not-riding-alert.soundId.tooltip"))
             .setSelections(
                 client.level.registryAccess().lookupOrThrow(Registries.SOUND_EVENT).stream()
@@ -79,7 +79,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.blindWhenRiding"),
                 ModConfig.getInstance().blindWhenRiding)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.BLIND_WHEN_RIDING)
             .setTooltip(Component.translatable("config.not-riding-alert.blindWhenRiding.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().blindWhenRiding = newValue)
             .build());
@@ -89,7 +89,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.fullbrightWhenNotRiding"),
                 ModConfig.getInstance().fullbrightWhenNotRiding)
-            .setDefaultValue(false)
+            .setDefaultValue(ConfigDefaults.FULLBRIGHT_WHEN_NOT_RIDING)
             .setTooltip(
                 Component.translatable("config.not-riding-alert.fullbrightWhenNotRiding.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().fullbrightWhenNotRiding = newValue)
@@ -100,7 +100,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.defocusCursor"),
                 ModConfig.getInstance().defocusCursor)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.DEFOCUS_CURSOR)
             .setTooltip(Component.translatable("config.not-riding-alert.defocusCursor.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().defocusCursor = newValue)
             .build());
@@ -110,7 +110,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.silent"),
                 ModConfig.getInstance().silent)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.SILENT)
             .setTooltip(Component.translatable("config.not-riding-alert.silent.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().silent = newValue)
             .build());
@@ -120,7 +120,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.hideScoreboard"),
                 ModConfig.getInstance().hideScoreboard)
-            .setDefaultValue(false)
+            .setDefaultValue(ConfigDefaults.HIDE_SCOREBOARD)
             .setTooltip(Component.translatable("config.not-riding-alert.hideScoreboard.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().hideScoreboard = newValue)
             .build());
@@ -130,7 +130,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.hideChat"),
                 ModConfig.getInstance().hideChat)
-            .setDefaultValue(false)
+            .setDefaultValue(ConfigDefaults.HIDE_CHAT)
             .setTooltip(Component.translatable("config.not-riding-alert.hideChat.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().hideChat = newValue)
             .build());
@@ -140,7 +140,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.hideHealth"),
                 ModConfig.getInstance().hideHealth)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.HIDE_HEALTH)
             .setTooltip(Component.translatable("config.not-riding-alert.hideHealth.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().hideHealth = newValue)
             .build());
@@ -150,7 +150,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.onlyAutograbbing"),
                 ModConfig.getInstance().onlyAutograbbing)
-            .setDefaultValue(false)
+            .setDefaultValue(ConfigDefaults.ONLY_AUTOGRABBING)
             .setTooltip(Component.translatable("config.not-riding-alert.onlyAutograbbing.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().onlyAutograbbing = newValue)
             .build());
@@ -160,7 +160,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.alertAutograbFailure"),
                 ModConfig.getInstance().alertAutograbFailure)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.ALERT_AUTOGRAB_FAILURE)
             .setTooltip(
                 Component.translatable("config.not-riding-alert.alertAutograbFailure.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().alertAutograbFailure = newValue)
@@ -175,7 +175,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.autograb"),
                 ModConfig.getInstance().autograb)
-            .setDefaultValue(true)
+            .setDefaultValue(ConfigDefaults.AUTOGRAB)
             .setTooltip(Component.translatable("config.not-riding-alert.autograb.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().autograb = newValue)
             .build());
@@ -187,7 +187,7 @@ public class ClothConfigScreen {
                 ModConfig.getInstance().rideDisplayCount,
                 0,
                 60)
-            .setDefaultValue(10)
+            .setDefaultValue(ConfigDefaults.RIDE_DISPLAY_COUNT)
             .setTooltip(Component.translatable("config.not-riding-alert.rideDisplayCount.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().rideDisplayCount = newValue)
             .build());
@@ -219,7 +219,7 @@ public class ClothConfigScreen {
             .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.displayShortName"),
                 ModConfig.getInstance().displayShortName)
-            .setDefaultValue(false)
+            .setDefaultValue(ConfigDefaults.DISPLAY_SHORT_NAME)
             .setTooltip(Component.translatable("config.not-riding-alert.displayShortName.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().displayShortName = newValue)
             .build());

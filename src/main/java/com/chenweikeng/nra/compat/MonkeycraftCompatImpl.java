@@ -26,6 +26,8 @@ final class MonkeycraftCompatImpl {
 
           return CommandExecutionResult.PASS;
         });
+    MonkeycraftApi.INCOMING_CHAT.register(ChatFormatter::onIncomingChat);
+    MonkeycraftApi.OUTGOING_CHAT.register(ChatFormatter::onOutgoingChat);
   }
 
   static boolean isClientConnected() {
