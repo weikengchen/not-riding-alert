@@ -236,7 +236,7 @@ final class ChatFormatter {
         "\u4E6A", s -> Component.literal("[Mythic]").withStyle(s.withColor(0xFD9644)));
     REPLACEMENT_TABLE.put(
         "\u4EA6", s -> Component.literal("[Unobtainable]").withStyle(s.withColor(0x576574)));
-    REPLACEMENT_TABLE.put("\u6A3C", s -> Component.literal("\u1F525").withStyle(s));
+    REPLACEMENT_TABLE.put("\u6A3C", s -> Component.literal("\uD83D\uDD25").withStyle(s));
   }
 
   private static Component filterComponent(Component component, boolean[] modified) {
