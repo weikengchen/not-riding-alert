@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.config;
 
+import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
@@ -15,6 +16,9 @@ import net.minecraft.network.chat.Component;
 public class ClothConfigScreen {
 
   public static Object createScreen(net.minecraft.client.gui.screens.Screen parent) {
+    ModConfig.getInstance().hasOpenedConfig = true;
+    ModConfig.getInstance().save();
+
     String progressDescription =
         String.format(
             " 1k (%s), 5k (%s), 10k (%s)",
@@ -246,6 +250,22 @@ public class ClothConfigScreen {
                       ModConfig.getInstance().hiddenRides.remove(ride.toMatchString());
                     }
                   })
+              .build());
+    }
+
+    if (MonkeycraftCompat.isAvailable()) {
+      ConfigCategory monkeyCraft = builder.getOrCreateCategory(Component.literal("MonkeyCraft"));
+
+      monkeyCraft.addEntry(
+          entryBuilder
+              .startBooleanToggle(
+                  Component.literal("Keep the player screen unchanged after connection"),
+                  ModConfig.getInstance().keepUnchanged)
+              .setDefaultValue(ConfigDefaults.KEEP_UNCHANGED)
+              .setTooltip(
+                  Component.literal(
+                      "When enabled, the mod will not hide scoreboard, chat, or strategy bar when MonkeyCraft is attached."))
+              .setSaveConsumer(newValue -> ModConfig.getInstance().keepUnchanged = newValue)
               .build());
     }
 

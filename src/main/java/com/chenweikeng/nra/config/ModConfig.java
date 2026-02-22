@@ -1,6 +1,6 @@
 package com.chenweikeng.nra.config;
 
-import com.google.common.collect.Lists;
+import com.chenweikeng.nra.ride.RideName;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
@@ -9,8 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ModConfig {
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -27,13 +29,19 @@ public class ModConfig {
   public boolean autograb = ConfigDefaults.AUTOGRAB;
   public Integer minRideTimeMinutes = null;
   public int rideDisplayCount = ConfigDefaults.RIDE_DISPLAY_COUNT;
-  public List<String> hiddenRides = Lists.newArrayList();
+  public List<String> hiddenRides =
+      Arrays.stream(RideName.values())
+          .filter(RideName::isSeasonal)
+          .map(RideName::toMatchString)
+          .collect(Collectors.toList());
   public boolean hideScoreboard = ConfigDefaults.HIDE_SCOREBOARD;
   public boolean hideChat = ConfigDefaults.HIDE_CHAT;
   public boolean hideHealth = ConfigDefaults.HIDE_HEALTH;
   public boolean onlyAutograbbing = ConfigDefaults.ONLY_AUTOGRABBING;
   public boolean alertAutograbFailure = ConfigDefaults.ALERT_AUTOGRAB_FAILURE;
   public boolean displayShortName = ConfigDefaults.DISPLAY_SHORT_NAME;
+  public boolean keepUnchanged = ConfigDefaults.KEEP_UNCHANGED;
+  public boolean hasOpenedConfig = ConfigDefaults.HAS_OPENED_CONFIG;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -85,6 +93,8 @@ public class ModConfig {
         && onlyAutograbbing == modConfig.onlyAutograbbing
         && alertAutograbFailure == modConfig.alertAutograbFailure
         && displayShortName == modConfig.displayShortName
+        && keepUnchanged == modConfig.keepUnchanged
+        && hasOpenedConfig == modConfig.hasOpenedConfig
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -109,6 +119,8 @@ public class ModConfig {
         hideHealth,
         onlyAutograbbing,
         alertAutograbFailure,
-        displayShortName);
+        displayShortName,
+        keepUnchanged,
+        hasOpenedConfig);
   }
 }

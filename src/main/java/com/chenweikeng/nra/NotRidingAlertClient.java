@@ -4,6 +4,7 @@ import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ClothConfigScreen;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.handler.AutograbFailureHandler;
+import com.chenweikeng.nra.handler.ConfigReminderHandler;
 import com.chenweikeng.nra.handler.DayTimeHandler;
 import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
@@ -42,6 +43,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private final RideStateTracker rideStateTracker = new RideStateTracker();
   private final SuppressionRegionTracker suppressionRegionTracker = new SuppressionRegionTracker();
   private final DayTimeHandler dayTimeHandler = new DayTimeHandler();
+  private final ConfigReminderHandler configReminderHandler = new ConfigReminderHandler();
   private final AutograbFailureHandler autograbFailureHandler = new AutograbFailureHandler();
 
   private int tickCounter = 0;
@@ -96,6 +98,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
           boolean autograbFailureActive =
               autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
           HibernationHandler.getInstance().track(client, absoluteTickCounter);
+          configReminderHandler.track(client, absoluteTickCounter);
 
           RideCountManager.getInstance().checkAndSaveIfNeeded();
 
@@ -181,6 +184,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     rideStateTracker.reset();
     suppressionRegionTracker.reset();
     autograbFailureHandler.reset();
+    configReminderHandler.reset();
     HibernationHandler.getInstance().reset();
     tickCounter = 0;
     absoluteTickCounter = 0;

@@ -91,7 +91,7 @@ public class StrategyHudRenderer {
       return;
     }
 
-    if (NotRidingAlertClient.isMonkeyAttached()) {
+    if (!ModConfig.getInstance().keepUnchanged && NotRidingAlertClient.isMonkeyAttached()) {
       return;
     }
 

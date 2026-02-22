@@ -124,7 +124,8 @@ public abstract class GuiMixin {
     }
 
     // Check if scoreboard rendering should be cancelled (after processing ride info)
-    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideScoreboard) {
+    if ((!ModConfig.getInstance().keepUnchanged && NotRidingAlertClient.isMonkeyAttached())
+        || ModConfig.getInstance().hideScoreboard) {
       ci.cancel();
     }
   }
@@ -139,7 +140,8 @@ public abstract class GuiMixin {
       return;
     }
     // Check if chat should be hidden
-    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideChat) {
+    if ((!ModConfig.getInstance().keepUnchanged && NotRidingAlertClient.isMonkeyAttached())
+        || ModConfig.getInstance().hideChat) {
       ci.cancel();
     }
   }

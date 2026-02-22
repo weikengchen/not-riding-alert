@@ -7,6 +7,7 @@ import com.vdurmont.emoji.EmojiManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -62,75 +63,147 @@ final class ChatFormatter {
     return -1;
   }
 
-  private static final Map<String, Component> REPLACEMENT_TABLE = new HashMap<>();
+  private static MutableComponent applyReplacements(String text, Style style) {
+    MutableComponent result = Component.empty();
+    int matchIndex = findFirstReplacementChar(text);
+
+    if (matchIndex < 0) {
+      result.append(Component.literal(text).withStyle(style));
+      return result;
+    }
+
+    String before = text.substring(0, matchIndex);
+    String matchChar = text.substring(matchIndex, matchIndex + 1);
+    String after = text.substring(matchIndex + 1);
+
+    if (!before.isEmpty()) {
+      result.append(Component.literal(before).withStyle(style));
+    }
+
+    Function<Style, Component> replacementFactory = REPLACEMENT_TABLE.get(matchChar);
+    if (replacementFactory != null) {
+      result.append(replacementFactory.apply(style));
+    } else if (!REPLACEMENT_TABLE.containsKey(matchChar)) {
+      result.append(Component.literal(matchChar).withStyle(style));
+    }
+
+    while (!after.isEmpty()) {
+      int nextMatch = findFirstReplacementChar(after);
+      if (nextMatch < 0) {
+        result.append(Component.literal(after).withStyle(style));
+        break;
+      }
+      String nextBefore = after.substring(0, nextMatch);
+      String nextChar = after.substring(nextMatch, nextMatch + 1);
+      after = after.substring(nextMatch + 1);
+
+      if (!nextBefore.isEmpty()) {
+        result.append(Component.literal(nextBefore).withStyle(style));
+      }
+
+      Function<Style, Component> nextReplacementFactory = REPLACEMENT_TABLE.get(nextChar);
+      if (nextReplacementFactory != null) {
+        result.append(nextReplacementFactory.apply(style));
+      } else if (!REPLACEMENT_TABLE.containsKey(nextChar)) {
+        result.append(Component.literal(nextChar).withStyle(style));
+      }
+    }
+
+    return result;
+  }
+
+  private static Component filterHoverText(Component hoverText, boolean[] modified) {
+    MutableComponent result = Component.empty();
+
+    hoverText.visit(
+        (style, text) -> {
+          if (text.isEmpty()) {
+            return Optional.empty();
+          }
+
+          int matchIndex = findFirstReplacementChar(text);
+          if (matchIndex >= 0) {
+            modified[0] = true;
+            result.append(applyReplacements(text, style));
+          } else {
+            result.append(Component.literal(text).withStyle(style));
+          }
+
+          return Optional.empty();
+        },
+        hoverText.getStyle());
+
+    return result;
+  }
+
+  private static final Map<String, Function<Style, Component>> REPLACEMENT_TABLE = new HashMap<>();
 
   static {
     REPLACEMENT_TABLE.put(
-        "\u4E00", Component.literal("[Imagineer]").withStyle(Style.EMPTY.withColor(0x0176BC)));
+        "\u4E00", s -> Component.literal("[Imagineer]").withStyle(s.withColor(0x0176BC)));
     REPLACEMENT_TABLE.put(
-        "\u4E01", Component.literal("[Developer]").withStyle(Style.EMPTY.withColor(0xFA8231)));
+        "\u4E01", s -> Component.literal("[Developer]").withStyle(s.withColor(0xFA8231)));
     REPLACEMENT_TABLE.put(
-        "\u4E02", Component.literal("[Manager]").withStyle(Style.EMPTY.withColor(0x8406DE)));
+        "\u4E02", s -> Component.literal("[Manager]").withStyle(s.withColor(0x8406DE)));
     REPLACEMENT_TABLE.put(
-        "\u4E03", Component.literal("[Character]").withStyle(Style.EMPTY.withColor(0x2CC129)));
+        "\u4E03", s -> Component.literal("[Character]").withStyle(s.withColor(0x2CC129)));
     REPLACEMENT_TABLE.put(
-        "\u4E04", Component.literal("[Builder]").withStyle(Style.EMPTY.withColor(0x1E5DEB)));
+        "\u4E04", s -> Component.literal("[Builder]").withStyle(s.withColor(0x1E5DEB)));
     REPLACEMENT_TABLE.put(
-        "\u4E05", Component.literal("[Operator]").withStyle(Style.EMPTY.withColor(0x8406DE)));
+        "\u4E05", s -> Component.literal("[Operator]").withStyle(s.withColor(0x8406DE)));
     REPLACEMENT_TABLE.put(
-        "\u4E06", Component.literal("[Coordinator]").withStyle(Style.EMPTY.withColor(0xDB4BC6)));
+        "\u4E06", s -> Component.literal("[Coordinator]").withStyle(s.withColor(0xDB4BC6)));
     REPLACEMENT_TABLE.put(
-        "\u4E07", Component.literal("[CastMember]").withStyle(Style.EMPTY.withColor(0xFECA57)));
+        "\u4E07", s -> Component.literal("[Cast Member]").withStyle(s.withColor(0xFECA57)));
     REPLACEMENT_TABLE.put(
-        "\u4E08", Component.literal("[TourGuide]").withStyle(Style.EMPTY.withColor(0x0C9201)));
+        "\u4E08", s -> Component.literal("[Tour Guide]").withStyle(s.withColor(0x0C9201)));
     REPLACEMENT_TABLE.put(
-        "\u4E09", Component.literal("[Trainee]").withStyle(Style.EMPTY.withColor(0x0C9201)));
+        "\u4E09", s -> Component.literal("[Trainee]").withStyle(s.withColor(0x0C9201)));
     REPLACEMENT_TABLE.put(
-        "\u4E0A", Component.literal("[DVC+]").withStyle(Style.EMPTY.withColor(0x0176BC)));
+        "\u4E0A", s -> Component.literal("[DVC+]").withStyle(s.withColor(0x0176BC)));
     REPLACEMENT_TABLE.put(
-        "\u4E16", Component.literal("[Media]").withStyle(Style.EMPTY.withColor(0x0175B9)));
+        "\u4E16", s -> Component.literal("[Media]").withStyle(s.withColor(0x0175B9)));
     REPLACEMENT_TABLE.put(
-        "\u4E0B", Component.literal("[DVC]").withStyle(Style.EMPTY.withColor(0x0176BC)));
+        "\u4E0B", s -> Component.literal("[DVC]").withStyle(s.withColor(0x0176BC)));
     REPLACEMENT_TABLE.put(
-        "\u4E0C", Component.literal("[Club33+]").withStyle(Style.EMPTY.withColor(0x018178)));
+        "\u4E0C", s -> Component.literal("[Club 33+]").withStyle(s.withColor(0x018178)));
     REPLACEMENT_TABLE.put(
-        "\u4E0D", Component.literal("[Club33]").withStyle(Style.EMPTY.withColor(0x018178)));
+        "\u4E0D", s -> Component.literal("[Club 33]").withStyle(s.withColor(0x018178)));
     REPLACEMENT_TABLE.put(
-        "\u4E0E", Component.literal("[D23+]").withStyle(Style.EMPTY.withColor(0x0175B9)));
+        "\u4E0E", s -> Component.literal("[D23+]").withStyle(s.withColor(0x0175B9)));
     REPLACEMENT_TABLE.put(
-        "\u4E0F", Component.literal("[D23]").withStyle(Style.EMPTY.withColor(0x0175B9)));
+        "\u4E0F", s -> Component.literal("[D23]").withStyle(s.withColor(0x0175B9)));
     REPLACEMENT_TABLE.put(
-        "\u4E10", Component.literal("[Passholder+]").withStyle(Style.EMPTY.withColor(0xDB2222)));
+        "\u4E10", s -> Component.literal("[Passholder+]").withStyle(s.withColor(0xDB2222)));
     REPLACEMENT_TABLE.put(
-        "\u4E11", Component.literal("[Passholder]").withStyle(Style.EMPTY.withColor(0xDB2222)));
+        "\u4E11", s -> Component.literal("[Passholder]").withStyle(s.withColor(0xDB2222)));
     REPLACEMENT_TABLE.put(
-        "\u4E14", Component.literal("[Guest+]").withStyle(Style.EMPTY.withColor(0xA9A9A9)));
+        "\u4E14", s -> Component.literal("[Guest+]").withStyle(s.withColor(0xA9A9A9)));
     REPLACEMENT_TABLE.put(
-        "\u4E15", Component.literal("[Guest]").withStyle(Style.EMPTY.withColor(0xA9A9A9)));
+        "\u4E15", s -> Component.literal("[Guest]").withStyle(s.withColor(0xA9A9A9)));
     REPLACEMENT_TABLE.put(
-        "\u4E12", Component.literal("[VIP]").withStyle(Style.EMPTY.withColor(0x0175A9)));
+        "\u4E12", s -> Component.literal("[VIP]").withStyle(s.withColor(0x0175A9)));
     REPLACEMENT_TABLE.put(
-        "\u4E60", Component.literal("[VIP+]").withStyle(Style.EMPTY.withColor(0xF368E0)));
+        "\u4E60", s -> Component.literal("[VIP+]").withStyle(s.withColor(0xF368E0)));
     REPLACEMENT_TABLE.put(
-        "\u4E89", Component.literal("[PixelArtist]").withStyle(Style.EMPTY.withColor(0x2D83DA)));
+        "\u4E89", s -> Component.literal("[Pixel Artist]").withStyle(s.withColor(0x2D83DA)));
     REPLACEMENT_TABLE.put(
-        "\u4E98",
-        Component.literal("[JuniorTourGuide]").withStyle(Style.EMPTY.withColor(0x0C9201)));
+        "\u4E98", s -> Component.literal("[Junior Tour Guide]").withStyle(s.withColor(0x0C9201)));
     REPLACEMENT_TABLE.put(
-        "\u4E99", Component.literal("[ShowTech]").withStyle(Style.EMPTY.withColor(0xBB2DD9)));
+        "\u4E99", s -> Component.literal("[ShowTech]").withStyle(s.withColor(0xBB2DD9)));
     REPLACEMENT_TABLE.put(
-        "\u4E9A", Component.literal("[Discord]").withStyle(Style.EMPTY.withColor(0x7289DA)));
+        "\u4E9A", s -> Component.literal("[Discord]").withStyle(s.withColor(0x7289DA)));
     REPLACEMENT_TABLE.put(
-        "\u4E9E", Component.literal("[Artist]").withStyle(Style.EMPTY.withColor(0x47D7F7)));
+        "\u4E9E", s -> Component.literal("[Artist]").withStyle(s.withColor(0x47D7F7)));
     REPLACEMENT_TABLE.put(
-        "\u4EAC", Component.literal("[Director]").withStyle(Style.EMPTY.withColor(0xCA3767)));
+        "\u4EAC", s -> Component.literal("[Director]").withStyle(s.withColor(0xCA3767)));
     REPLACEMENT_TABLE.put(
-        "\u4E17", Component.literal("[Guest+++]").withStyle(Style.EMPTY.withColor(0xA9A9A9)));
+        "\u4E17", s -> Component.literal("[Guest+++]").withStyle(s.withColor(0xA9A9A9)));
     REPLACEMENT_TABLE.put(
-        "\u6BAC", Component.literal("[Former]").withStyle(Style.EMPTY.withColor(0x2B9270)));
+        "\u6BAC", s -> Component.literal("[Former Staff]").withStyle(s.withColor(0x2B9270)));
     REPLACEMENT_TABLE.put(
         "\u4EF7",
-        Component.literal("[Shout]").withStyle(Style.EMPTY.withColor(0xEB1A3F).withBold(true)));
+        s -> Component.literal("[Shout]").withStyle(s.withColor(0xEB1A3F).withBold(true)));
     REPLACEMENT_TABLE.put("\uF000", null);
     REPLACEMENT_TABLE.put("\uF001", null);
     REPLACEMENT_TABLE.put("\uF002", null);
@@ -148,21 +221,22 @@ final class ChatFormatter {
     REPLACEMENT_TABLE.put("\uF00E", null);
     REPLACEMENT_TABLE.put("\uF00F", null);
     REPLACEMENT_TABLE.put(
-        "\u4E6C", Component.literal("[Uncommon]").withStyle(Style.EMPTY.withColor(0x32FF7E)));
+        "\u4E6C", s -> Component.literal("[Uncommon]").withStyle(s.withColor(0x32FF7E)));
     REPLACEMENT_TABLE.put(
-        "\u4E67", Component.literal("[Common]").withStyle(Style.EMPTY.withColor(0xA9A9A9)));
+        "\u4E67", s -> Component.literal("[Common]").withStyle(s.withColor(0xA9A9A9)));
     REPLACEMENT_TABLE.put(
-        "\u4E6B", Component.literal("[Rare]").withStyle(Style.EMPTY.withColor(0x54A0FF)));
+        "\u4E6B", s -> Component.literal("[Rare]").withStyle(s.withColor(0x54A0FF)));
     REPLACEMENT_TABLE.put(
-        "\u4EA5", Component.literal("[Exotic]").withStyle(Style.EMPTY.withColor(0x48DBFB)));
+        "\u4EA5", s -> Component.literal("[Exotic]").withStyle(s.withColor(0x48DBFB)));
     REPLACEMENT_TABLE.put(
-        "\u4E68", Component.literal("[Epic]").withStyle(Style.EMPTY.withColor(0xBE2EDD)));
+        "\u4E68", s -> Component.literal("[Epic]").withStyle(s.withColor(0xBE2EDD)));
     REPLACEMENT_TABLE.put(
-        "\u4E69", Component.literal("[Legendary]").withStyle(Style.EMPTY.withColor(0xFF9F43)));
+        "\u4E69", s -> Component.literal("[Legendary]").withStyle(s.withColor(0xFF9F43)));
     REPLACEMENT_TABLE.put(
-        "\u4E6A", Component.literal("[Mythic]").withStyle(Style.EMPTY.withColor(0xFD9644)));
+        "\u4E6A", s -> Component.literal("[Mythic]").withStyle(s.withColor(0xFD9644)));
     REPLACEMENT_TABLE.put(
-        "\u4EA6", Component.literal("[Unobtainable]").withStyle(Style.EMPTY.withColor(0x576574)));
+        "\u4EA6", s -> Component.literal("[Unobtainable]").withStyle(s.withColor(0x576574)));
+    REPLACEMENT_TABLE.put("\u6A3C", s -> Component.literal("\u1F525").withStyle(s));
   }
 
   private static Component filterComponent(Component component, boolean[] modified) {
@@ -174,8 +248,6 @@ final class ChatFormatter {
             return Optional.empty();
           }
 
-          boolean shouldModify = false;
-
           HoverEvent hoverEvent = style.getHoverEvent();
           if (hoverEvent != null && hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
             HoverEvent.ShowText showText = (HoverEvent.ShowText) hoverEvent;
@@ -186,15 +258,11 @@ final class ChatFormatter {
                 if (hoverStyle != null
                     && hoverStyle.getColor() != null
                     && hoverStyle.getColor().getValue() == IF_PLUS_COLOR) {
-                  shouldModify = true;
+                  modified[0] = true;
+                  return Optional.empty();
                 }
               }
             }
-          }
-
-          if (shouldModify) {
-            modified[0] = true;
-            return Optional.empty();
           }
 
           TextColor color = style.getColor();
@@ -203,42 +271,24 @@ final class ChatFormatter {
           int matchIndex = findFirstReplacementChar(text);
           if (matchIndex >= 0) {
             modified[0] = true;
-            String before = text.substring(0, matchIndex);
-            String matchChar = text.substring(matchIndex, matchIndex + 1);
-            String after = text.substring(matchIndex + 1);
-
-            if (!before.isEmpty()) {
-              result.append(Component.literal(before).withStyle(style));
-            }
-
-            Component replacement = REPLACEMENT_TABLE.get(matchChar);
-            if (replacement != null) {
-              result.append(replacement);
-            } else if (!REPLACEMENT_TABLE.containsKey(matchChar)) {
-              result.append(Component.literal(matchChar).withStyle(style));
-            }
-
-            while (!after.isEmpty()) {
-              int nextMatch = findFirstReplacementChar(after);
-              if (nextMatch < 0) {
-                result.append(Component.literal(after).withStyle(style));
-                break;
-              }
-              String nextBefore = after.substring(0, nextMatch);
-              String nextChar = after.substring(nextMatch, nextMatch + 1);
-              after = after.substring(nextMatch + 1);
-
-              if (!nextBefore.isEmpty()) {
-                result.append(Component.literal(nextBefore).withStyle(style));
-              }
-
-              Component nextReplacement = REPLACEMENT_TABLE.get(nextChar);
-              if (nextReplacement != null) {
-                result.append(nextReplacement);
-              } else if (!REPLACEMENT_TABLE.containsKey(nextChar)) {
-                result.append(Component.literal(nextChar).withStyle(style));
+            MutableComponent textWithReplacements = applyReplacements(text, style);
+            Style newStyle = style;
+            if (hoverEvent != null && hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
+              HoverEvent.ShowText showText = (HoverEvent.ShowText) hoverEvent;
+              Component hoverTextComponent = showText.value();
+              if (hoverTextComponent != null) {
+                boolean[] hoverModified = {false};
+                Component newHoverText = filterHoverText(hoverTextComponent, hoverModified);
+                if (hoverModified[0]) {
+                  modified[0] = true;
+                  newStyle = style.withHoverEvent(new HoverEvent.ShowText(newHoverText));
+                }
               }
             }
+            if (newStyle != style) {
+              textWithReplacements.setStyle(newStyle);
+            }
+            result.append(textWithReplacements);
             return Optional.empty();
           }
 
@@ -264,7 +314,21 @@ final class ChatFormatter {
             }
           }
 
-          result.append(Component.literal(text).withStyle(style));
+          Style newStyle = style;
+          if (hoverEvent != null && hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
+            HoverEvent.ShowText showText = (HoverEvent.ShowText) hoverEvent;
+            Component hoverTextComponent = showText.value();
+            if (hoverTextComponent != null) {
+              boolean[] hoverModified = {false};
+              Component newHoverText = filterHoverText(hoverTextComponent, hoverModified);
+              if (hoverModified[0]) {
+                modified[0] = true;
+                newStyle = style.withHoverEvent(new HoverEvent.ShowText(newHoverText));
+              }
+            }
+          }
+
+          result.append(Component.literal(text).withStyle(newStyle));
 
           return Optional.empty();
         },
