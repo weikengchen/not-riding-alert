@@ -48,6 +48,16 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
 - **Configurable Sound**: Customize the alert sound to your preference
 
+### 🐵 Monkeycraft Integration
+Optional integration with the Monkeycraft mod for enhanced mobile/remote play experience. When Monkeycraft is installed and connected:
+
+- **Hibernation Control**: Automatically hibernates the remote stream during rides to save bandwidth and battery
+- **Progress Updates**: Displays ride progress (percentage and time remaining) in the Monkeycraft app while riding
+- **Completion Notifications**: Sends a push notification to your phone when a ride finishes
+- **Goal Progress**: Notifications include progress toward your next milestone (e.g., "needs 5 more rides")
+
+This integration is optional - the mod works fully without Monkeycraft installed.
+
 ### 🎯 Autograbbing Detection
 Autograbbing detection is a smart feature that automatically detects when you enter a ride's waiting area and prepares the game for your ride session. When you enter a predefined region for a supported ride, the mod will:
 
@@ -132,7 +142,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.3.0
+- **Version**: 2.3.1
 
 ## License
 
