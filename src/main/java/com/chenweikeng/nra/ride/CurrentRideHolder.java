@@ -6,7 +6,8 @@ package com.chenweikeng.nra.ride;
  */
 public class CurrentRideHolder {
   private static RideName currentRide = null;
-  private static Integer currentProgressPercent = null; // Percentage (0-100), null if not available
+  private static Integer currentProgressPercent = null;
+  private static Integer elapsedSeconds = null;
 
   public static RideName getCurrentRide() {
     return currentRide;
@@ -14,19 +15,25 @@ public class CurrentRideHolder {
 
   public static void setCurrentRide(RideName ride) {
     currentRide = ride;
-    // Clear progress when ride changes
     if (ride == null) {
       currentProgressPercent = null;
+      elapsedSeconds = null;
     }
   }
 
-  /** Gets the current progress percentage (0-100), or null if not available. */
   public static Integer getCurrentProgressPercent() {
     return currentProgressPercent;
   }
 
-  /** Sets the current progress percentage (0-100), or null to clear. */
   public static void setCurrentProgressPercent(Integer percent) {
     currentProgressPercent = percent;
+  }
+
+  public static Integer getElapsedSeconds() {
+    return elapsedSeconds;
+  }
+
+  public static void setElapsedSeconds(Integer seconds) {
+    elapsedSeconds = seconds;
   }
 }

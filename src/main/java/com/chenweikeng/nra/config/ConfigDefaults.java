@@ -20,4 +20,5 @@ public final class ConfigDefaults {
   public static final boolean DISPLAY_SHORT_NAME = false;
   public static final boolean KEEP_UNCHANGED = true;
   public static final boolean HAS_OPENED_CONFIG = false;
+  public static final int HUD_BACKGROUND_OPACITY = 20;
 }

@@ -104,22 +104,25 @@ public abstract class GuiMixin {
       CurrentRideHolder.setCurrentRide(resolved);
       LastRideHolder.setLastRide(resolved);
 
-      // Calculate progress from time prefix if available and ride is not excluded
       if (resolved != RideName.DAVY_CROCKETTS_EXPLORER_CANOES && timePrefix != null) {
-        int elapsedSeconds = parseTimeString(timePrefix);
-        if (elapsedSeconds >= 0) {
+        int elapsed = parseTimeString(timePrefix);
+        if (elapsed >= 0) {
           int rideTimeSeconds = resolved.getRideTime();
           if (rideTimeSeconds > 0) {
-            int percent = Math.min(100, Math.max(0, (elapsedSeconds * 100) / rideTimeSeconds));
+            int percent = Math.min(100, Math.max(0, (elapsed * 100) / rideTimeSeconds));
             CurrentRideHolder.setCurrentProgressPercent(percent);
+            CurrentRideHolder.setElapsedSeconds(elapsed);
           } else {
             CurrentRideHolder.setCurrentProgressPercent(null);
+            CurrentRideHolder.setElapsedSeconds(null);
           }
         } else {
           CurrentRideHolder.setCurrentProgressPercent(null);
+          CurrentRideHolder.setElapsedSeconds(null);
         }
       } else {
         CurrentRideHolder.setCurrentProgressPercent(null);
+        CurrentRideHolder.setElapsedSeconds(null);
       }
     }
 

@@ -42,6 +42,7 @@ public class ModConfig {
   public boolean displayShortName = ConfigDefaults.DISPLAY_SHORT_NAME;
   public boolean keepUnchanged = ConfigDefaults.KEEP_UNCHANGED;
   public boolean hasOpenedConfig = ConfigDefaults.HAS_OPENED_CONFIG;
+  public int hudBackgroundOpacity = ConfigDefaults.HUD_BACKGROUND_OPACITY;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -95,6 +96,7 @@ public class ModConfig {
         && displayShortName == modConfig.displayShortName
         && keepUnchanged == modConfig.keepUnchanged
         && hasOpenedConfig == modConfig.hasOpenedConfig
+        && hudBackgroundOpacity == modConfig.hudBackgroundOpacity
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -121,6 +123,7 @@ public class ModConfig {
         alertAutograbFailure,
         displayShortName,
         keepUnchanged,
-        hasOpenedConfig);
+        hasOpenedConfig,
+        hudBackgroundOpacity);
   }
 }

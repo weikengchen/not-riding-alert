@@ -228,6 +228,19 @@ public class ClothConfigScreen {
             .setSaveConsumer(newValue -> ModConfig.getInstance().displayShortName = newValue)
             .build());
 
+    tracker.addEntry(
+        entryBuilder
+            .startIntSlider(
+                Component.translatable("config.not-riding-alert.hudBackgroundOpacity"),
+                ModConfig.getInstance().hudBackgroundOpacity,
+                0,
+                100)
+            .setDefaultValue(ConfigDefaults.HUD_BACKGROUND_OPACITY)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.hudBackgroundOpacity.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hudBackgroundOpacity = newValue)
+            .build());
+
     ConfigCategory rides =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rideDisplay"));
