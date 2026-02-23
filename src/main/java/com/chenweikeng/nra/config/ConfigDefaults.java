@@ -16,6 +16,7 @@ public final class ConfigDefaults {
   public static final boolean HIDE_CHAT = false;
   public static final boolean HIDE_HEALTH = true;
   public static final boolean ONLY_AUTOGRABBING = false;
+  public static final boolean HIDE_LOVE_POTION_MESSAGES = false;
   public static final boolean ALERT_AUTOGRAB_FAILURE = true;
   public static final boolean DISPLAY_SHORT_NAME = false;
   public static final boolean KEEP_UNCHANGED = true;

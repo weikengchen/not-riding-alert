@@ -39,6 +39,7 @@ public class ModConfig {
   public boolean hideHealth = ConfigDefaults.HIDE_HEALTH;
   public boolean onlyAutograbbing = ConfigDefaults.ONLY_AUTOGRABBING;
   public boolean alertAutograbFailure = ConfigDefaults.ALERT_AUTOGRAB_FAILURE;
+  public boolean hideLovePotionMessages = ConfigDefaults.HIDE_LOVE_POTION_MESSAGES;
   public boolean displayShortName = ConfigDefaults.DISPLAY_SHORT_NAME;
   public boolean keepUnchanged = ConfigDefaults.KEEP_UNCHANGED;
   public boolean hasOpenedConfig = ConfigDefaults.HAS_OPENED_CONFIG;
@@ -97,6 +98,7 @@ public class ModConfig {
         && keepUnchanged == modConfig.keepUnchanged
         && hasOpenedConfig == modConfig.hasOpenedConfig
         && hudBackgroundOpacity == modConfig.hudBackgroundOpacity
+        && hideLovePotionMessages == modConfig.hideLovePotionMessages
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -124,6 +126,7 @@ public class ModConfig {
         displayShortName,
         keepUnchanged,
         hasOpenedConfig,
-        hudBackgroundOpacity);
+        hudBackgroundOpacity,
+        hideLovePotionMessages);
   }
 }

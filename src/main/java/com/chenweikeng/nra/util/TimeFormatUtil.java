@@ -16,7 +16,7 @@ public class TimeFormatUtil {
     long secs = seconds % SECONDS_PER_MINUTE;
 
     if (days > 0) {
-      return days + "d " + hours + "h " + minutes + "m " + secs + "s";
+      return days + "d " + hours + "h";
     } else if (hours > 0) {
       if (minutes == 0) {
         return hours + "h";

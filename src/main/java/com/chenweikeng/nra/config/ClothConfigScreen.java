@@ -170,6 +170,17 @@ public class ClothConfigScreen {
             .setSaveConsumer(newValue -> ModConfig.getInstance().alertAutograbFailure = newValue)
             .build());
 
+    general.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideLovePotionMessages"),
+                ModConfig.getInstance().hideLovePotionMessages)
+            .setDefaultValue(ConfigDefaults.HIDE_LOVE_POTION_MESSAGES)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.hideLovePotionMessages.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideLovePotionMessages = newValue)
+            .build());
+
     ConfigCategory tracker =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rides"));
@@ -216,16 +227,6 @@ public class ClothConfigScreen {
                     ModConfig.getInstance().minRideTimeMinutes = newValue;
                   }
                 })
-            .build());
-
-    tracker.addEntry(
-        entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.displayShortName"),
-                ModConfig.getInstance().displayShortName)
-            .setDefaultValue(ConfigDefaults.DISPLAY_SHORT_NAME)
-            .setTooltip(Component.translatable("config.not-riding-alert.displayShortName.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().displayShortName = newValue)
             .build());
 
     tracker.addEntry(

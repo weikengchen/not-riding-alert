@@ -12,26 +12,16 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
-/** Handles rendering of strategy recommendations on the HUD. */
 public class StrategyHudRenderer {
   private static List<RideGoal> topGoals = new ArrayList<>();
   private static int updateCounter = 0;
-  private static final int UPDATE_INTERVAL_TICKS = 40; // Update every 2 seconds (40 ticks)
-  private static String currentError = null; // Stores the latest error message
+  private static final int UPDATE_INTERVAL_TICKS = 40;
+  private static String currentError = null;
 
-  private record LayoutInput(
-      Minecraft client,
-      List<RideGoal> goals,
-      RideName currentRide,
-      RideName regionRide,
-      RideName effectiveRide,
-      boolean currentRideInTop,
-      boolean isPassenger,
-      String error,
-      int availableWidth,
-      int gap) {}
-
-  private record LayoutDecision(boolean useShortNames, boolean visible) {}
+  private static final int COMPONENT_GAP = 20;
+  private static final int COLUMN_GAP = 20;
+  private static final long ANIMATION_DURATION_MS = 500;
+  private static final long WAIT_DURATION_MS = 3000;
 
   private enum RideStatus {
     NORMAL,
@@ -39,25 +29,42 @@ public class StrategyHudRenderer {
     AUTOGRABBING
   }
 
-  private static class FormattedRide {
-    private final String name;
-    private final RideStatus status;
-
-    FormattedRide(String name, RideStatus status) {
-      this.name = name;
-      this.status = status;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    RideStatus getStatus() {
-      return status;
-    }
+  private enum HudState {
+    FULL,
+    COLLAPSING,
+    COLLAPSED,
+    WAITING,
+    EXPANDING
   }
 
-  /** Updates the top goals to display. Should be called periodically. */
+  private static HudState currentState = HudState.FULL;
+  private static long stateStartTime = 0;
+  private static RideName trackedRide = null;
+  private static long normalStartTime = 0;
+
+  private record EntryComponents(String name, String rides, String time) {}
+
+  private record LayoutResult(
+      int optimalColumns,
+      List<int[]> entryXPositions,
+      List<int[]> columnMaxWidths,
+      int startOffset) {}
+
+  private record LayoutCandidate(
+      int numColumns, int numRows, java.util.List<int[]> columnMaxWidths) {}
+
+  private record FullModeRenderContext(
+      GuiGraphics context,
+      Minecraft client,
+      List<EntryComponents> entries,
+      boolean hasError,
+      int numColumns,
+      List<int[]> entryXPositions,
+      int y,
+      int lineHeight,
+      int textColor,
+      int errorColor) {}
+
   public static void update() {
     updateCounter++;
     if (updateCounter >= UPDATE_INTERVAL_TICKS) {
@@ -67,25 +74,14 @@ public class StrategyHudRenderer {
     }
   }
 
-  /**
-   * Sets an error message to display on the HUD.
-   *
-   * @param error The error message (null to clear)
-   */
   public static void setError(String error) {
     currentError = error;
   }
 
-  /** Gets the current error message. */
   public static String getError() {
     return currentError;
   }
 
-  /**
-   * Renders the strategy recommendations on the HUD.
-   *
-   * @param context The GUI graphics context
-   */
   public static void render(GuiGraphics context, DeltaTracker tickCounter) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
@@ -103,12 +99,9 @@ public class StrategyHudRenderer {
     }
 
     int screenWidth = client.getWindow().getGuiScaledWidth();
-    int textPadding = 10;
-    int xLeft = textPadding;
-    int xRight = screenWidth - textPadding;
     int yStart = 0;
     int lineHeight = 10;
-    int colorRed = 0xFFFF0000;
+    int colorWhite = 0xFFFFFFFF;
     int colorGreen = 0xFF00FF00;
     int colorPurple = 0xFFEE00FF;
     int errorColor = 0xFFFF6600;
@@ -119,52 +112,59 @@ public class StrategyHudRenderer {
     RideName regionRide =
         ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(client) : null;
     RideName effectiveRide = currentRide != null ? currentRide : regionRide;
-    boolean currentRideInTop =
-        effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
-    boolean isPassengerForLayout = client.player.isPassenger();
-
-    int topGoalsSize = topGoals.size();
-    int halfWidth = screenWidth / 2 - textPadding * 2;
-    List<RideGoal> goalsForFit = displayCount > 0 ? topGoals : List.of();
-
-    LayoutInput layoutInput =
-        new LayoutInput(
-            client,
-            goalsForFit,
-            currentRide,
-            regionRide,
-            effectiveRide,
-            currentRideInTop,
-            isPassengerForLayout,
-            currentError,
-            halfWidth,
-            0);
-    LayoutDecision decision = decideLayout(layoutInput, ModConfig.getInstance().displayShortName);
-    if (!decision.visible) {
-      return;
-    }
-    boolean useShortNames = decision.useShortNames;
     boolean isPassenger = client.player.isPassenger();
 
-    List<RideGoal> leftGoals;
-    List<RideGoal> rightGoals;
+    RideStatus effectiveStatus = getEffectiveStatus(currentRide, regionRide, isPassenger);
+    updateState(effectiveStatus, effectiveRide);
+
+    List<EntryComponents> entries = new ArrayList<>();
+
     if (displayCount > 0) {
-      int leftCount = (topGoalsSize + 1) / 2;
-      leftGoals = topGoals.subList(0, Math.min(leftCount, topGoalsSize));
-      rightGoals = topGoalsSize > leftCount ? topGoals.subList(leftCount, topGoalsSize) : List.of();
-    } else {
-      leftGoals = List.of();
-      rightGoals = List.of();
+      for (RideGoal goal : topGoals) {
+        String name = goal.getRide().getShortName().toUpperCase();
+        String rides = goal.getRidesNeeded() + "+";
+        String time = TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds());
+        entries.add(new EntryComponents(name, rides, time));
+      }
     }
 
-    int maxColumnHeight = Math.max(leftGoals.size(), rightGoals.size());
-
     boolean hasError = currentError != null && !currentError.isEmpty();
-    boolean hasExtraRide =
-        effectiveRide != null && effectiveRide != RideName.UNKNOWN && !currentRideInTop;
 
-    int totalLines = (hasError ? 1 : 0) + maxColumnHeight + (hasExtraRide ? 2 : 0);
-    int bgHeight = totalLines * lineHeight;
+    if (currentState == HudState.FULL && entries.isEmpty() && !hasError) {
+      return;
+    }
+
+    LayoutResult layout = computeLayout(entries, screenWidth, client.font);
+    int numColumns = layout.optimalColumns();
+    java.util.List<int[]> entryXPositions = layout.entryXPositions();
+    int startOffset = layout.startOffset();
+
+    int numRows = entries.isEmpty() ? 0 : (entries.size() + numColumns - 1) / numColumns;
+    int fullHeight = ((hasError ? 1 : 0) + numRows) * lineHeight;
+
+    float animProgress = getAnimationProgress();
+    int textAlpha = 255;
+    int bgHeight;
+
+    switch (currentState) {
+      case FULL:
+        bgHeight = fullHeight;
+        break;
+      case COLLAPSING:
+        bgHeight = (int) (fullHeight * (1 - animProgress) + lineHeight * animProgress);
+        textAlpha = (int) (255 * (1 - animProgress));
+        break;
+      case COLLAPSED:
+      case WAITING:
+        bgHeight = lineHeight;
+        break;
+      case EXPANDING:
+        bgHeight = (int) (lineHeight * (1 - animProgress) + fullHeight * animProgress);
+        textAlpha = (int) (255 * animProgress);
+        break;
+      default:
+        bgHeight = fullHeight;
+    }
 
     int bgY1 = yStart;
     int bgY2 = yStart + bgHeight + 4;
@@ -178,176 +178,379 @@ public class StrategyHudRenderer {
 
     int y = yStart + 2;
 
-    if (hasError) {
-      context.drawString(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
-      y += lineHeight;
+    switch (currentState) {
+      case FULL:
+        renderFullMode(
+            new FullModeRenderContext(
+                context,
+                client,
+                entries,
+                hasError,
+                numColumns,
+                entryXPositions,
+                y,
+                lineHeight,
+                colorWhite,
+                errorColor));
+        break;
+      case COLLAPSING:
+        renderFullMode(
+            new FullModeRenderContext(
+                context,
+                client,
+                entries,
+                hasError,
+                numColumns,
+                entryXPositions,
+                y,
+                lineHeight,
+                applyAlpha(colorWhite, textAlpha),
+                applyAlpha(errorColor, textAlpha)));
+        break;
+      case COLLAPSED:
+        renderCollapsedMode(
+            context,
+            client,
+            screenWidth,
+            y,
+            trackedRide,
+            currentRide,
+            regionRide,
+            isPassenger,
+            colorGreen,
+            colorPurple);
+        break;
+      case WAITING:
+        renderWaitingMode(context, client, screenWidth, y, colorWhite);
+        break;
+      case EXPANDING:
+        renderFullMode(
+            new FullModeRenderContext(
+                context,
+                client,
+                entries,
+                hasError,
+                numColumns,
+                entryXPositions,
+                y,
+                lineHeight,
+                applyAlpha(colorWhite, textAlpha),
+                applyAlpha(errorColor, textAlpha)));
+        break;
+    }
+  }
+
+  private static void updateState(RideStatus status, RideName ride) {
+    long currentTime = System.currentTimeMillis();
+
+    switch (currentState) {
+      case FULL:
+        if (status == RideStatus.RIDING || status == RideStatus.AUTOGRABBING) {
+          currentState = HudState.COLLAPSING;
+          stateStartTime = currentTime;
+          trackedRide = ride;
+          normalStartTime = 0;
+        }
+        break;
+      case COLLAPSING:
+        if (currentTime - stateStartTime >= ANIMATION_DURATION_MS) {
+          currentState = HudState.COLLAPSED;
+        }
+        break;
+      case COLLAPSED:
+        if (status == RideStatus.NORMAL) {
+          if (normalStartTime == 0) {
+            normalStartTime = currentTime;
+          } else if (currentTime - normalStartTime >= WAIT_DURATION_MS) {
+            currentState = HudState.WAITING;
+            stateStartTime = currentTime;
+            normalStartTime = 0;
+          }
+        } else {
+          trackedRide = ride;
+          normalStartTime = 0;
+        }
+        break;
+      case WAITING:
+        if (status == RideStatus.RIDING || status == RideStatus.AUTOGRABBING) {
+          currentState = HudState.COLLAPSED;
+          trackedRide = ride;
+          normalStartTime = 0;
+        } else if (currentTime - stateStartTime >= WAIT_DURATION_MS) {
+          currentState = HudState.EXPANDING;
+          stateStartTime = currentTime;
+        }
+        break;
+      case EXPANDING:
+        if (status == RideStatus.RIDING || status == RideStatus.AUTOGRABBING) {
+          currentState = HudState.COLLAPSED;
+          trackedRide = ride;
+          normalStartTime = 0;
+        } else if (currentTime - stateStartTime >= ANIMATION_DURATION_MS) {
+          currentState = HudState.FULL;
+          trackedRide = null;
+        }
+        break;
+    }
+  }
+
+  private static float getAnimationProgress() {
+    long elapsed = System.currentTimeMillis() - stateStartTime;
+    return Math.min(1.0f, (float) elapsed / ANIMATION_DURATION_MS);
+  }
+
+  private static LayoutResult computeLayout(
+      List<EntryComponents> entries, int screenWidth, net.minecraft.client.gui.Font font) {
+
+    if (entries.isEmpty()) {
+      return new LayoutResult(0, List.of(), List.of(), 0);
     }
 
-    if (displayCount > 0) {
-      for (int i = 0; i < leftGoals.size(); i++) {
-        RideGoal goal = leftGoals.get(i);
-        FormattedRide formattedRide =
-            formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
-        String text = formatGoalText(formattedRide, goal);
-        int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
-        context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
+    java.util.List<Integer> nameWidths = new java.util.ArrayList<>();
+    java.util.List<Integer> ridesWidths = new java.util.ArrayList<>();
+    java.util.List<Integer> timeWidths = new java.util.ArrayList<>();
+
+    for (EntryComponents entry : entries) {
+      nameWidths.add(font.width(entry.name()));
+      ridesWidths.add(font.width(entry.rides()));
+      timeWidths.add(font.width(entry.time()));
+    }
+
+    java.util.List<LayoutCandidate> validCandidates = new java.util.ArrayList<>();
+
+    int maxColumnsToTry = Math.min(8, entries.size());
+
+    for (int numCols = maxColumnsToTry; numCols >= 1; numCols--) {
+      java.util.List<int[]> columnMaxWidths = new java.util.ArrayList<>();
+
+      for (int col = 0; col < numCols; col++) {
+        columnMaxWidths.add(new int[] {0, 0, 0});
       }
 
-      for (int i = 0; i < rightGoals.size(); i++) {
-        RideGoal goal = rightGoals.get(i);
-        FormattedRide formattedRide =
-            formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
-        String text = formatGoalText(formattedRide, goal);
-        int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
-        int textWidth = client.font.width(text);
+      int entryIdx = 0;
+      for (EntryComponents entry : entries) {
+        int col = entryIdx % numCols;
+        columnMaxWidths.get(col)[0] =
+            Math.max(columnMaxWidths.get(col)[0], nameWidths.get(entryIdx));
+        columnMaxWidths.get(col)[1] =
+            Math.max(columnMaxWidths.get(col)[1], ridesWidths.get(entryIdx));
+        columnMaxWidths.get(col)[2] =
+            Math.max(columnMaxWidths.get(col)[2], timeWidths.get(entryIdx));
+        entryIdx++;
+      }
+
+      int totalWidth = 0;
+      for (int col = 0; col < numCols; col++) {
+        int[] widths = columnMaxWidths.get(col);
+        int colWidth = widths[0] + COMPONENT_GAP + widths[1] + COMPONENT_GAP + widths[2];
+        if (col < numCols - 1) {
+          colWidth += COLUMN_GAP;
+        }
+        totalWidth += colWidth;
+      }
+
+      if (totalWidth <= screenWidth) {
+        int numRows = (entries.size() + numCols - 1) / numCols;
+        validCandidates.add(new LayoutCandidate(numCols, numRows, columnMaxWidths));
+      }
+    }
+
+    if (validCandidates.isEmpty()) {
+      return new LayoutResult(1, List.of(), List.of(), 0);
+    }
+
+    LayoutCandidate best = validCandidates.get(0);
+    for (LayoutCandidate candidate : validCandidates) {
+      if (candidate.numRows() < best.numRows()
+          || (candidate.numRows() == best.numRows()
+              && candidate.numColumns() < best.numColumns())) {
+        best = candidate;
+      }
+    }
+
+    int startOffset = 0;
+    int totalContentWidth = 0;
+    for (int col = 0; col < best.numColumns(); col++) {
+      int[] widths = best.columnMaxWidths().get(col);
+      int colWidth = widths[0] + COMPONENT_GAP + widths[1] + COMPONENT_GAP + widths[2];
+      if (col < best.numColumns() - 1) {
+        colWidth += COLUMN_GAP;
+      }
+      totalContentWidth += colWidth;
+    }
+    startOffset = (screenWidth - totalContentWidth) / 2;
+
+    java.util.List<int[]> optimalEntryXPositions = new java.util.ArrayList<>();
+
+    int entryIdx = 0;
+    for (EntryComponents entry : entries) {
+      int col = entryIdx % best.numColumns();
+
+      int columnStartX = startOffset;
+      for (int prevCol = 0; prevCol < col; prevCol++) {
+        int[] prevWidths = best.columnMaxWidths().get(prevCol);
+        int prevColWidth =
+            prevWidths[0] + COMPONENT_GAP + prevWidths[1] + COMPONENT_GAP + prevWidths[2];
+        columnStartX += prevColWidth + COLUMN_GAP;
+      }
+
+      int nameX = columnStartX;
+      int ridesX = nameX + best.columnMaxWidths().get(col)[0] + COMPONENT_GAP;
+      int timeX = ridesX + best.columnMaxWidths().get(col)[1] + COMPONENT_GAP;
+
+      optimalEntryXPositions.add(new int[] {nameX, ridesX, timeX});
+      entryIdx++;
+    }
+
+    return new LayoutResult(
+        best.numColumns(), optimalEntryXPositions, best.columnMaxWidths(), startOffset);
+  }
+
+  private static RideStatus getEffectiveStatus(
+      RideName currentRide, RideName regionRide, boolean isPassenger) {
+    if (currentRide != null) {
+      return RideStatus.RIDING;
+    }
+    if (regionRide != null && !isPassenger) {
+      return RideStatus.AUTOGRABBING;
+    }
+    return RideStatus.NORMAL;
+  }
+
+  private static void renderFullMode(FullModeRenderContext ctx) {
+    GuiGraphics context = ctx.context();
+    int currentY = ctx.y();
+
+    if (ctx.hasError()) {
+      String errorText = "ERROR: " + currentError;
+      int errorTextWidth = ctx.client().font.width(errorText);
+      int errorX = (ctx.client().getWindow().getGuiScaledWidth() - errorTextWidth) / 2;
+      context.drawString(ctx.client().font, errorText, errorX, currentY, ctx.errorColor(), false);
+      currentY += ctx.lineHeight();
+    }
+
+    int entryIdx = 0;
+    int numRows =
+        ctx.entries().isEmpty()
+            ? 0
+            : (ctx.entries().size() + ctx.numColumns() - 1) / ctx.numColumns();
+
+    for (int row = 0; row < numRows; row++) {
+      for (int col = 0; col < ctx.numColumns() && entryIdx < ctx.entries().size(); col++) {
+        int[] positions = ctx.entryXPositions().get(entryIdx);
+        EntryComponents entry = ctx.entries().get(entryIdx);
+
         context.drawString(
-            client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
+            ctx.client().font, entry.name(), positions[0], currentY, ctx.textColor(), false);
+        context.drawString(
+            ctx.client().font, entry.rides(), positions[1], currentY, ctx.textColor(), false);
+        context.drawString(
+            ctx.client().font, entry.time(), positions[2], currentY, ctx.textColor(), false);
+
+        entryIdx++;
       }
+      currentY += ctx.lineHeight();
+    }
+  }
+
+  private static void renderCollapsedMode(
+      GuiGraphics context,
+      Minecraft client,
+      int screenWidth,
+      int y,
+      RideName ride,
+      RideName currentRide,
+      RideName regionRide,
+      boolean isPassenger,
+      int colorGreen,
+      int colorPurple) {
+    if (ride == null || ride == RideName.UNKNOWN) {
+      return;
     }
 
-    if (hasExtraRide) {
-      int extraY = yStart + 2 + ((hasError ? 1 : 0) + maxColumnHeight + 1) * lineHeight;
-      RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
-      FormattedRide formattedRide =
-          formatRideName(effectiveRide, currentRide, regionRide, useShortNames, isPassenger);
-      String text =
-          currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal)
-              : "Riding: " + formattedRide.getName();
-      int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
-      context.drawString(client.font, text, xLeft, extraY, color, false);
+    RideStatus status = getRideStatus(ride, currentRide, regionRide, isPassenger);
+    int color = status == RideStatus.AUTOGRABBING ? colorPurple : colorGreen;
+
+    String text;
+    if (status == RideStatus.AUTOGRABBING) {
+      text = "Autograbbing " + ride.getDisplayName() + "...";
+    } else {
+      RideGoal goal = StrategyCalculator.getGoalForRide(ride);
+      Integer elapsed = CurrentRideHolder.getElapsedSeconds();
+      Integer progress = CurrentRideHolder.getCurrentProgressPercent();
+
+      StringBuilder sb = new StringBuilder();
+      sb.append("Riding ");
+      sb.append(ride.getDisplayName());
+
+      if (progress != null && elapsed != null) {
+        int totalSeconds = ride.getRideTime();
+        int remainingSeconds = totalSeconds - elapsed;
+        if (remainingSeconds < 0) {
+          remainingSeconds = 0;
+        }
+        sb.append(" (");
+        sb.append(progress);
+        sb.append("% ");
+        sb.append(TimeFormatUtil.formatDuration(remainingSeconds));
+        sb.append(" left)");
+      }
+
+      if (goal != null) {
+        sb.append(" ");
+        sb.append(goal.getRidesNeeded());
+        sb.append("+ rides (");
+        sb.append(TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
+        sb.append(") to reach ");
+        sb.append(formatGoalNumber(goal.getNextGoal()));
+      }
+
+      text = sb.toString();
     }
+
+    int textWidth = client.font.width(text);
+    int x = (screenWidth - textWidth) / 2;
+    context.drawString(client.font, text, x, y, color, false);
+  }
+
+  private static void renderWaitingMode(
+      GuiGraphics context, Minecraft client, int screenWidth, int y, int colorWhite) {
+    String text = "Returning to the platform...";
+    int textWidth = client.font.width(text);
+    int x = (screenWidth - textWidth) / 2;
+    context.drawString(client.font, text, x, y, colorWhite, false);
+  }
+
+  private static int applyAlpha(int color, int alpha) {
+    return (color & 0x00FFFFFF) | (alpha << 24);
+  }
+
+  private static String formatGoalNumber(int goal) {
+    if (goal >= 10000) {
+      return (goal / 1000) + "k";
+    } else if (goal >= 1000) {
+      int thousands = goal / 1000;
+      int hundreds = (goal % 1000) / 100;
+      if (hundreds == 0) {
+        return thousands + "k";
+      }
+      return thousands + "." + hundreds + "k";
+    }
+    return String.valueOf(goal);
   }
 
   public static List<RideGoal> getTopGoals() {
     return new ArrayList<>(topGoals);
   }
 
-  private static String getAnimatedDots() {
-    long currentTimeMillis = System.currentTimeMillis();
-    int quarterSecond = (int) ((currentTimeMillis % 2000) / 500);
-    return switch (quarterSecond) {
-      case 0 -> "";
-      case 1 -> ".";
-      case 2 -> "..";
-      case 3 -> "...";
-      default -> "";
-    };
-  }
-
-  private static FormattedRide formatRideName(
-      RideName ride,
-      RideName currentRide,
-      RideName regionRide,
-      boolean useShortNames,
-      boolean isPassenger) {
-    String rideName = useShortNames ? ride.getShortName() : ride.getDisplayName();
-    RideStatus status = RideStatus.NORMAL;
-
+  private static RideStatus getRideStatus(
+      RideName ride, RideName currentRide, RideName regionRide, boolean isPassenger) {
     if (currentRide != null && ride == currentRide) {
-      Integer elapsed = CurrentRideHolder.getElapsedSeconds();
-      Integer progress = CurrentRideHolder.getCurrentProgressPercent();
-      if (elapsed != null && progress != null) {
-        int totalSeconds = ride.getRideTime();
-        int remainingSeconds = totalSeconds - elapsed;
-        if (remainingSeconds < 0) {
-          remainingSeconds = 0;
-        }
-        String timeLeft = TimeFormatUtil.formatDuration(remainingSeconds);
-        rideName += " (" + progress + "%, " + timeLeft + " left)";
-      }
-      status = RideStatus.RIDING;
-    } else if (currentRide == null && regionRide != null && ride == regionRide && !isPassenger) {
-      rideName += " (Autograbbing" + getAnimatedDots() + ")";
-      status = RideStatus.AUTOGRABBING;
+      return RideStatus.RIDING;
     }
-
-    return new FormattedRide(rideName, status);
-  }
-
-  private static String formatGoalText(FormattedRide formattedRide, RideGoal goal) {
-    return String.format(
-        "%s - %d more, %s",
-        formattedRide.getName(),
-        goal.getRidesNeeded(),
-        TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
-  }
-
-  private static LayoutDecision decideLayout(LayoutInput layoutInput, boolean baseUseShortNames) {
-    boolean useShortNames = baseUseShortNames;
-    if (fitsLayout(layoutInput, useShortNames)) {
-      return new LayoutDecision(useShortNames, true);
+    if (currentRide == null && regionRide != null && ride == regionRide && !isPassenger) {
+      return RideStatus.AUTOGRABBING;
     }
-    useShortNames = true;
-    if (fitsLayout(layoutInput, useShortNames)) {
-      return new LayoutDecision(useShortNames, true);
-    }
-    return new LayoutDecision(useShortNames, false);
-  }
-
-  private static boolean fitsLayout(LayoutInput layoutInput, boolean useShortNames) {
-    int maxWidth = 0;
-    if (layoutInput.error != null && !layoutInput.error.isEmpty()) {
-      maxWidth = Math.max(maxWidth, layoutInput.client.font.width("ERROR: " + layoutInput.error));
-    }
-
-    if (!layoutInput.goals.isEmpty()) {
-      int goalsSize = layoutInput.goals.size();
-      int leftCount = (goalsSize + 1) / 2;
-      List<RideGoal> leftGoals = layoutInput.goals.subList(0, Math.min(leftCount, goalsSize));
-      List<RideGoal> rightGoals =
-          goalsSize > leftCount ? layoutInput.goals.subList(leftCount, goalsSize) : List.of();
-
-      int leftMax = computeMaxWidth(layoutInput, leftGoals, useShortNames);
-      int rightMax = computeMaxWidth(layoutInput, rightGoals, useShortNames);
-      maxWidth = Math.max(maxWidth, leftMax);
-      maxWidth = Math.max(maxWidth, rightMax);
-    }
-
-    if (layoutInput.effectiveRide != null
-        && layoutInput.effectiveRide != RideName.UNKNOWN
-        && !layoutInput.currentRideInTop) {
-      RideGoal currentGoal = StrategyCalculator.getGoalForRide(layoutInput.effectiveRide);
-      FormattedRide formattedRide =
-          formatRideName(
-              layoutInput.effectiveRide,
-              layoutInput.currentRide,
-              layoutInput.regionRide,
-              useShortNames,
-              layoutInput.isPassenger);
-      String text =
-          currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal)
-              : "Riding: " + formattedRide.getName();
-      maxWidth = Math.max(maxWidth, layoutInput.client.font.width(text));
-    }
-
-    return maxWidth <= layoutInput.availableWidth;
-  }
-
-  private static int computeMaxWidth(
-      LayoutInput layoutInput, List<RideGoal> goals, boolean useShortNames) {
-    int max = 0;
-    for (RideGoal goal : goals) {
-      FormattedRide formattedRide =
-          formatRideName(
-              goal.getRide(),
-              layoutInput.currentRide,
-              layoutInput.regionRide,
-              useShortNames,
-              layoutInput.isPassenger);
-      String text = formatGoalText(formattedRide, goal);
-      max = Math.max(max, layoutInput.client.font.width(text));
-    }
-    return max;
-  }
-
-  private static int getColorForStatus(
-      RideStatus status, int colorRed, int colorGreen, int colorLightBlue) {
-    return switch (status) {
-      case RIDING -> colorGreen;
-      case AUTOGRABBING -> colorLightBlue;
-      case NORMAL -> colorRed;
-    };
+    return RideStatus.NORMAL;
   }
 }
