@@ -181,6 +181,18 @@ public class ClothConfigScreen {
             .setSaveConsumer(newValue -> ModConfig.getInstance().hideLovePotionMessages = newValue)
             .build());
 
+    general.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.minimizeWindowWhenRiding"),
+                ModConfig.getInstance().minimizeWindowWhenRiding)
+            .setDefaultValue(ConfigDefaults.MINIMIZE_WINDOW_WHEN_RIDING)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.minimizeWindowWhenRiding.tooltip"))
+            .setSaveConsumer(
+                newValue -> ModConfig.getInstance().minimizeWindowWhenRiding = newValue)
+            .build());
+
     ConfigCategory tracker =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rides"));

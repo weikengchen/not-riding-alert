@@ -44,6 +44,7 @@ public class ModConfig {
   public boolean keepUnchanged = ConfigDefaults.KEEP_UNCHANGED;
   public boolean hasOpenedConfig = ConfigDefaults.HAS_OPENED_CONFIG;
   public int hudBackgroundOpacity = ConfigDefaults.HUD_BACKGROUND_OPACITY;
+  public boolean minimizeWindowWhenRiding = ConfigDefaults.MINIMIZE_WINDOW_WHEN_RIDING;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -98,6 +99,7 @@ public class ModConfig {
         && keepUnchanged == modConfig.keepUnchanged
         && hasOpenedConfig == modConfig.hasOpenedConfig
         && hudBackgroundOpacity == modConfig.hudBackgroundOpacity
+        && minimizeWindowWhenRiding == modConfig.minimizeWindowWhenRiding
         && hideLovePotionMessages == modConfig.hideLovePotionMessages
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
@@ -127,6 +129,7 @@ public class ModConfig {
         keepUnchanged,
         hasOpenedConfig,
         hudBackgroundOpacity,
+        minimizeWindowWhenRiding,
         hideLovePotionMessages);
   }
 }

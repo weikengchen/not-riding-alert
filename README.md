@@ -45,6 +45,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 ### ⚙️ Additional Features
 - **Autograbbing Detection**: When enabled, entering predefined ride regions automatically releases the cursor and marks you as ready to ride. This allows you to multitask without needing to manually interact with the ride vehicle while waiting for rides to start.
 - **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding.
+- **Window Minimization**: Optionally minimize the game window when riding and automatically restore it when the ride ends.
 - **Blindness Effect**: Optional blindness effect when riding (to reduce distractions)
 - **Fullbright**: Force full brightness when not riding (client-side only)
 - **Sound Suppression**: Automatically suppresses game sounds when riding
@@ -120,6 +121,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Blindness Effect**: Toggle blindness effect when riding.
 - **Fullbright**: Force full brightness when not riding (client-side only).
 - **Defocus Cursor**: Toggle automatic cursor release when riding.
+- **Minimize Window When Riding**: Automatically minimize the game window when riding and restore it when the ride ends.
 - **Only show known autograbbing rides**: Filter the strategy HUD to only show rides that support autograbbing.
 - **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional).
 
@@ -147,7 +149,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.3.2
+- **Version**: 2.3.3
 
 ## License
 

@@ -22,4 +22,5 @@ public final class ConfigDefaults {
   public static final boolean KEEP_UNCHANGED = true;
   public static final boolean HAS_OPENED_CONFIG = false;
   public static final int HUD_BACKGROUND_OPACITY = 80;
+  public static final boolean MINIMIZE_WINDOW_WHEN_RIDING = false;
 }

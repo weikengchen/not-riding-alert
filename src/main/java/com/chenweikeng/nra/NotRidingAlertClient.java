@@ -7,6 +7,8 @@ import com.chenweikeng.nra.handler.AutograbFailureHandler;
 import com.chenweikeng.nra.handler.ConfigReminderHandler;
 import com.chenweikeng.nra.handler.DayTimeHandler;
 import com.chenweikeng.nra.handler.HibernationHandler;
+import com.chenweikeng.nra.handler.ScoreboardHandler;
+import com.chenweikeng.nra.handler.WindowMinimizeHandler;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
@@ -45,6 +47,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private final DayTimeHandler dayTimeHandler = new DayTimeHandler();
   private final ConfigReminderHandler configReminderHandler = new ConfigReminderHandler();
   private final AutograbFailureHandler autograbFailureHandler = new AutograbFailureHandler();
+  private final WindowMinimizeHandler windowMinimizeHandler = WindowMinimizeHandler.getInstance();
+  private final ScoreboardHandler scoreboardHandler = new ScoreboardHandler();
 
   private int tickCounter = 0;
   private long absoluteTickCounter = 0;
@@ -99,6 +103,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
               autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
           HibernationHandler.getInstance().track(client, absoluteTickCounter);
           configReminderHandler.track(client, absoluteTickCounter);
+          scoreboardHandler.track(client);
 
           RideCountManager.getInstance().checkAndSaveIfNeeded();
 
@@ -153,6 +158,14 @@ public class NotRidingAlertClient implements ClientModInitializer {
         client.mouseHandler.releaseMouse();
       }
     }
+
+    if (modConfig.minimizeWindowWhenRiding && !MonkeycraftCompat.isClientConnected()) {
+      if (!wasRiding && isRiding) {
+        windowMinimizeHandler.minimizeWindow();
+      } else if (wasRiding && !isRiding) {
+        windowMinimizeHandler.restoreWindow();
+      }
+    }
   }
 
   private void checkNotRidingAlert(Minecraft client, boolean autograbFailureActive) {
@@ -186,6 +199,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     autograbFailureHandler.reset();
     configReminderHandler.reset();
     HibernationHandler.getInstance().reset();
+    scoreboardHandler.reset();
     tickCounter = 0;
     absoluteTickCounter = 0;
     wasRiding = false;

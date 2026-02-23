@@ -2,15 +2,20 @@ package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.mixin.BossHealthOverlayAccessor;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.BossHealthOverlay;
+import net.minecraft.client.gui.components.LerpingBossEvent;
 
 public class StrategyHudRenderer {
   private static List<RideGoal> topGoals = new ArrayList<>();
@@ -91,9 +96,18 @@ public class StrategyHudRenderer {
       return;
     }
 
+    Minecraft client = Minecraft.getInstance();
+    if (client == null || client.gui == null) {
+      return;
+    }
+    BossHealthOverlay bossOverlay = client.gui.getBossOverlay();
+    Map<UUID, LerpingBossEvent> bossEvents = ((BossHealthOverlayAccessor) bossOverlay).getEvents();
+    if (bossEvents != null && !bossEvents.isEmpty()) {
+      return;
+    }
+
     update();
 
-    Minecraft client = Minecraft.getInstance();
     if (client == null || client.player == null || client.font == null) {
       return;
     }
@@ -515,7 +529,7 @@ public class StrategyHudRenderer {
 
   private static void renderWaitingMode(
       GuiGraphics context, Minecraft client, int screenWidth, int y, int colorWhite) {
-    String text = "Returning to the platform...";
+    String text = "Moving on the platform...";
     int textWidth = client.font.width(text);
     int x = (screenWidth - textWidth) / 2;
     context.drawString(client.font, text, x, y, colorWhite, false);

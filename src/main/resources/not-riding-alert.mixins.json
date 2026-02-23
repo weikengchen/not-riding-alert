@@ -10,7 +10,8 @@
 		"GuiMixin",
 		"ChatListenerMixin",
 		"ClientLevelMixin",
-		"MinecraftMixin"
+		"MinecraftMixin",
+		"BossHealthOverlayAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

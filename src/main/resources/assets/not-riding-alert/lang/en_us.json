@@ -37,5 +37,7 @@
   "config.not-riding-alert.alertAutograbFailure": "Alert when autograbbing fails",
   "config.not-riding-alert.alertAutograbFailure.tooltip": "Play an alert sound if autograbbing fails to detect a vehicle",
   "config.not-riding-alert.hideLovePotionMessages": "Hide love potion messages",
-  "config.not-riding-alert.hideLovePotionMessages.tooltip": "Hide system messages that contain love potion effects"
+  "config.not-riding-alert.hideLovePotionMessages.tooltip": "Hide system messages that contain love potion effects",
+  "config.not-riding-alert.minimizeWindowWhenRiding": "Minimize the window when riding",
+  "config.not-riding-alert.minimizeWindowWhenRiding.tooltip": "Automatically minimize the game window when riding"
 }
