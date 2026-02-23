@@ -24,7 +24,7 @@ public enum RideName {
   INDIANA_JONES_ADVENTURE("Indiana Jones Adventure", "Indiana Jones(TM) Adventure", "indy", 225),
   JUNGLE_CRUISE("Jungle Cruise", "jungle", 431),
   KING_ARTHUR_CARROUSEL("King Arthur Carrousel", "kac", 130),
-  MAD_TEA_PARTY("Mad Tea Party", "mad", 90),
+  MAD_TEA_PARTY("Mad Tea Party", "madtea", 90),
   MAIN_STREET_CARRIAGES("Main Street Carriages", "Main Street Vehicles", "vehicles", 381),
   MATTERHORN_BOBSLEDS("Matterhorn Bobsleds", "matterhorn", 120),
   MICKEY_AND_FRIENDS_PARKING_TRAM("Mickey & Friends Parking Tram", "parking", 550),

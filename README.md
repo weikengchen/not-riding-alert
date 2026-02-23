@@ -16,7 +16,9 @@ A thid-party quality-of-life mod for the ImagineFun server (https://modrinth.com
 ### 📊 Strategy HUD
 - **Goal-Based Recommendations**: Displays the top rides you should focus on to reach your next milestone
 - **Progress Tracking**: Shows real-time progress percentage for your current ride (e.g., "Space Mountain (45%)")
-- **Smart Layout**: Automatically splits into two columns when displaying 8+ rides
+- **Smart Dynamic Layout**: Automatically calculates optimal column layout (1-8 columns) based on content width and screen size
+- **Row Minimization**: Prefers fewer columns when row count is the same to reduce wasted horizontal space
+- **Horizontal Centering**: All content is automatically centered on screen for a polished appearance
 - **Current Ride Highlighting**: Your current ride is highlighted in green with progress percentage
 - **Customizable Display**: Configure how many rides to show (default: 16)
 - **Short Name Option**: Use abbreviated ride names in the tracker for a cleaner display
@@ -36,6 +38,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 ### 🎨 Visual Customization
 - **Hide Scoreboard**: Option to hide the scoreboard while still tracking ride data
 - **Hide Chat**: Option to hide the chat for a cleaner interface
+- **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional)
 - **Hide Health**: Option to hide the health bar (both player and vehicle) for a cleaner interface (default: enabled)
 - **Ride Filtering**: Hide specific rides from the strategy display
 
@@ -118,12 +121,13 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Fullbright**: Force full brightness when not riding (client-side only).
 - **Defocus Cursor**: Toggle automatic cursor release when riding.
 - **Only show known autograbbing rides**: Filter the strategy HUD to only show rides that support autograbbing.
+- **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional).
 
 ### 📊 Tracker Settings (Tracker Tab)
-- **Auto-grabbing detection**: Toggle the region-based autograbbing feature.
-- **Ride Display Count**: Slider to set how many rides to show in the HUD (1-16).
+- **Auto-grabbing detection**: Toggle region-based autograbbing feature.
+- **Ride Display Count**: Slider to set how many rides to show in the HUD (1-60).
 - **Minimum Ride Time Filter**: Filter out rides shorter than X minutes.
-- **Use Short Names**: Toggle to display abbreviated ride names instead of full names in the tracker.
+- **Strategy HUD Background Opacity**: Adjust the background opacity of the strategy HUD (0-100%, default: 80%).
 
 ### 🎢 Ride Management (Rides Tab)
 - **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD. Useful for hiding completed rides.
@@ -132,6 +136,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Hide Scoreboard**: Toggle scoreboard visibility.
 - **Hide Chat**: Toggle chat visibility.
 - **Hide Health**: Toggle health bar visibility.
+- **Strategy HUD Background Opacity**: Adjust the opacity of the strategy HUD background (0-100%, default: 80%).
 
 ## Known Limitations
 
@@ -142,7 +147,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.3.1
+- **Version**: 2.3.2
 
 ## License
 
