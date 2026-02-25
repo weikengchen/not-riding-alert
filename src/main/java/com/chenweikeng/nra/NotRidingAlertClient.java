@@ -161,8 +161,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
       previousRegionRide = null;
     }
 
+    boolean isOnVehicle = isPassenger || CurrentRideHolder.getCurrentRide() != null;
     if (timing != CursorReleaseTiming.NONE) {
-      boolean isOnVehicle = isPassenger || CurrentRideHolder.getCurrentRide() != null;
       boolean shouldReleaseOnThisTick =
           switch (timing) {
             case NONE -> false;
@@ -207,14 +207,10 @@ public class NotRidingAlertClient implements ClientModInitializer {
           && client.screen == null) {
         client.mouseHandler.releaseMouse();
       }
-
-      wasOnVehicle = isOnVehicle;
     }
 
     if (modConfig.minimizeWindow != WindowMinimizeTiming.NONE) {
       WindowMinimizeTiming minimizeTiming = modConfig.minimizeWindow;
-      boolean isOnVehicle = isPassenger || CurrentRideHolder.getCurrentRide() != null;
-
       boolean shouldMinimizeOnThisTick =
           switch (minimizeTiming) {
             case NONE -> false;
@@ -237,6 +233,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
         windowMinimizeHandler.restoreWindow();
       }
     }
+
+    wasOnVehicle = isOnVehicle;
   }
 
   private void sendCanoeMessageIfNeeded(Minecraft client, RideName ride) {
