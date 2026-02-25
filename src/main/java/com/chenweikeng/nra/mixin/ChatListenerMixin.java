@@ -3,6 +3,7 @@ package com.chenweikeng.nra.mixin;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.handler.HibernationHandler;
+import com.chenweikeng.nra.handler.ReminderHandler;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
@@ -29,6 +30,15 @@ public class ChatListenerMixin {
     String msg = message.getString();
     if (ModConfig.getInstance().hideLovePotionMessages && msg.contains(": §d§o")) {
       ci.cancel();
+      return;
+    }
+
+    if (msg.equals("You are now connected with the audio client!")) {
+      ReminderHandler.getInstance().setAudioConnected(true);
+      return;
+    }
+    if (msg.equals("Your audio session has been ended")) {
+      ReminderHandler.getInstance().setAudioConnected(false);
       return;
     }
 

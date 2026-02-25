@@ -115,10 +115,10 @@ public class StrategyHudRendererV2 {
     int screenWidth = client.getWindow().getGuiScaledWidth();
     int yStart = 0;
     int lineHeight = 10;
-    int colorWhite = 0xFFFFFFFF;
-    int colorGreen = 0xFF00FF00;
-    int colorPurple = 0xFFEE00FF;
-    int errorColor = 0xFFFF6600;
+    int colorNormal = ModConfig.getInstance().trackerNormalColor;
+    int colorRiding = ModConfig.getInstance().trackerRidingColor;
+    int colorAutograbbing = ModConfig.getInstance().trackerAutograbbingColor;
+    int errorColor = ModConfig.getInstance().trackerErrorColor;
 
     int displayCount = ModConfig.getInstance().rideDisplayCount;
 
@@ -204,7 +204,7 @@ public class StrategyHudRendererV2 {
                 entryXPositions,
                 y,
                 lineHeight,
-                colorWhite,
+                colorNormal,
                 errorColor));
         break;
       case COLLAPSING:
@@ -218,7 +218,7 @@ public class StrategyHudRendererV2 {
                 entryXPositions,
                 y,
                 lineHeight,
-                applyAlpha(colorWhite, textAlpha),
+                applyAlpha(colorNormal, textAlpha),
                 applyAlpha(errorColor, textAlpha)));
         break;
       case COLLAPSED:
@@ -231,11 +231,11 @@ public class StrategyHudRendererV2 {
             currentRide,
             regionRide,
             isPassenger,
-            colorGreen,
-            colorPurple);
+            colorRiding,
+            colorAutograbbing);
         break;
       case WAITING:
-        renderWaitingMode(context, client, screenWidth, y, colorWhite);
+        renderWaitingMode(context, client, screenWidth, y, colorNormal);
         break;
       case EXPANDING:
         renderFullMode(
@@ -248,7 +248,7 @@ public class StrategyHudRendererV2 {
                 entryXPositions,
                 y,
                 lineHeight,
-                applyAlpha(colorWhite, textAlpha),
+                applyAlpha(colorNormal, textAlpha),
                 applyAlpha(errorColor, textAlpha)));
         break;
     }

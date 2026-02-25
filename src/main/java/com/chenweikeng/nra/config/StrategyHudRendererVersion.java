@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.config;
 
 public enum StrategyHudRendererVersion {
+  V2,
   V1,
-  V2
+  V0
 }

@@ -1,7 +1,6 @@
 package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.config.ModConfig;
-import com.chenweikeng.nra.config.StrategyHudRendererVersion;
 import java.util.List;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
@@ -9,42 +8,42 @@ import net.minecraft.client.gui.GuiGraphics;
 public class StrategyHudRendererDispatcher {
 
   public static void update() {
-    if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
-      StrategyHudRendererV1.update();
-    } else {
-      StrategyHudRendererV2.update();
+    switch (ModConfig.getInstance().strategyHudRendererVersion) {
+      case V0 -> StrategyHudRendererV0.update();
+      case V1 -> StrategyHudRendererV1.update();
+      case V2 -> StrategyHudRendererV2.update();
     }
   }
 
   public static void setError(String error) {
-    if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
-      StrategyHudRendererV1.setError(error);
-    } else {
-      StrategyHudRendererV2.setError(error);
+    switch (ModConfig.getInstance().strategyHudRendererVersion) {
+      case V0 -> StrategyHudRendererV0.setError(error);
+      case V1 -> StrategyHudRendererV1.setError(error);
+      case V2 -> StrategyHudRendererV2.setError(error);
     }
   }
 
   public static String getError() {
-    if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
-      return StrategyHudRendererV1.getError();
-    } else {
-      return StrategyHudRendererV2.getError();
-    }
+    return switch (ModConfig.getInstance().strategyHudRendererVersion) {
+      case V0 -> StrategyHudRendererV0.getError();
+      case V1 -> StrategyHudRendererV1.getError();
+      case V2 -> StrategyHudRendererV2.getError();
+    };
   }
 
   public static void render(GuiGraphics context, DeltaTracker tickCounter) {
-    if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
-      StrategyHudRendererV1.render(context, tickCounter);
-    } else {
-      StrategyHudRendererV2.render(context, tickCounter);
+    switch (ModConfig.getInstance().strategyHudRendererVersion) {
+      case V0 -> StrategyHudRendererV0.render(context, tickCounter);
+      case V1 -> StrategyHudRendererV1.render(context, tickCounter);
+      case V2 -> StrategyHudRendererV2.render(context, tickCounter);
     }
   }
 
   public static List<RideGoal> getTopGoals() {
-    if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
-      return StrategyHudRendererV1.getTopGoals();
-    } else {
-      return StrategyHudRendererV2.getTopGoals();
-    }
+    return switch (ModConfig.getInstance().strategyHudRendererVersion) {
+      case V0 -> StrategyHudRendererV0.getTopGoals();
+      case V1 -> StrategyHudRendererV1.getTopGoals();
+      case V2 -> StrategyHudRendererV2.getTopGoals();
+    };
   }
 }

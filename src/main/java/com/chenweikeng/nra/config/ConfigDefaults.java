@@ -27,4 +27,11 @@ public final class ConfigDefaults {
   public static final boolean HIBERNATION_WHEN_RIDING = true;
   public static final StrategyHudRendererVersion STRATEGY_HUD_RENDERER_VERSION =
       StrategyHudRendererVersion.V2;
+
+  public static final int TRACKER_NORMAL_COLOR = 0xFFFFFFFF;
+  public static final int TRACKER_AUTOGRABBING_COLOR = 0xFFFF00EE;
+  public static final int TRACKER_RIDING_COLOR = 0xFF00FF00;
+  public static final int TRACKER_ERROR_COLOR = 0xFF0066FF;
+  public static final AudioBoostReminderMode AUDIO_BOOST_REMINDER_MODE =
+      AudioBoostReminderMode.ONLY_WHEN_RIDING;
 }

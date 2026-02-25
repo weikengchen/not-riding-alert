@@ -18,7 +18,7 @@ import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 
 /** Handles rendering of strategy recommendations on the HUD. */
-public class StrategyHudRendererV1 {
+public class StrategyHudRendererV0 {
   private static List<RideGoal> topGoals = new ArrayList<>();
   private static int updateCounter = 0;
   private static final int UPDATE_INTERVAL_TICKS = 40; // Update every 2 seconds (40 ticks)
@@ -36,7 +36,7 @@ public class StrategyHudRendererV1 {
       int availableWidth,
       int gap) {}
 
-  private record LayoutDecision(boolean useShortNames, boolean visible) {}
+  private record LayoutDecision(boolean useShortNames, boolean twoColumns, boolean visible) {}
 
   private enum RideStatus {
     NORMAL,
@@ -113,10 +113,9 @@ public class StrategyHudRendererV1 {
     update();
 
     int screenWidth = client.getWindow().getGuiScaledWidth();
-    int textPadding = 10;
-    int xLeft = textPadding;
-    int xRight = screenWidth - textPadding;
-    int yStart = 0;
+    int xLeft = 50;
+    int xRight = screenWidth - 50;
+    int yStart = 50;
     int lineHeight = 10;
     int colorNormal = ModConfig.getInstance().trackerNormalColor;
     int colorRiding = ModConfig.getInstance().trackerRidingColor;
@@ -134,7 +133,9 @@ public class StrategyHudRendererV1 {
     boolean isPassengerForLayout = client.player.isPassenger();
 
     int topGoalsSize = topGoals.size();
-    int halfWidth = screenWidth / 2 - textPadding * 2;
+    boolean wantsTwoColumns = topGoalsSize >= 8;
+    int availableWidth = xRight - xLeft;
+    int gap = 10;
     List<RideGoal> goalsForFit = displayCount > 0 ? topGoals : List.of();
 
     LayoutInput layoutInput =
@@ -147,21 +148,29 @@ public class StrategyHudRendererV1 {
             currentRideInTop,
             isPassengerForLayout,
             currentError,
-            halfWidth,
-            0);
-    LayoutDecision decision = decideLayout(layoutInput, ModConfig.getInstance().displayShortName);
+            availableWidth,
+            gap);
+    LayoutDecision decision =
+        decideLayout(layoutInput, ModConfig.getInstance().displayShortName, wantsTwoColumns);
     if (!decision.visible) {
       return;
     }
     boolean useShortNames = decision.useShortNames;
+    boolean twoColumns = decision.twoColumns;
     boolean isPassenger = client.player.isPassenger();
 
     List<RideGoal> leftGoals;
     List<RideGoal> rightGoals;
     if (displayCount > 0) {
-      int leftCount = (topGoalsSize + 1) / 2;
-      leftGoals = topGoals.subList(0, Math.min(leftCount, topGoalsSize));
-      rightGoals = topGoalsSize > leftCount ? topGoals.subList(leftCount, topGoalsSize) : List.of();
+      if (!twoColumns) {
+        leftGoals = topGoals;
+        rightGoals = List.of();
+      } else {
+        int leftCount = (topGoalsSize + 1) / 2;
+        leftGoals = topGoals.subList(0, Math.min(leftCount, topGoalsSize));
+        rightGoals =
+            topGoalsSize > leftCount ? topGoals.subList(leftCount, topGoalsSize) : List.of();
+      }
     } else {
       leftGoals = List.of();
       rightGoals = List.of();
@@ -173,20 +182,36 @@ public class StrategyHudRendererV1 {
     boolean hasExtraRide =
         effectiveRide != null && effectiveRide != RideName.UNKNOWN && !currentRideInTop;
 
-    int totalLines = (hasError ? 1 : 0) + maxColumnHeight + (hasExtraRide ? 2 : 0);
-    int bgHeight = totalLines * lineHeight;
-
-    int bgY1 = yStart;
-    int bgY2 = yStart + bgHeight + 4;
-
-    int opacity = ModConfig.getInstance().hudBackgroundOpacity;
-    if (opacity > 0) {
-      int alpha = (int) (opacity * 2.55);
-      int bgColor = (alpha << 24);
-      context.fill(0, bgY1, screenWidth, bgY2, bgColor);
+    int maxWidth = 0;
+    if (hasError) {
+      maxWidth = Math.max(maxWidth, client.font.width("ERROR: " + currentError));
+    }
+    for (RideGoal goal : leftGoals) {
+      FormattedRide formattedRide =
+          formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
+      String text = formatGoalText(formattedRide, goal);
+      maxWidth = Math.max(maxWidth, client.font.width(text));
+    }
+    if (twoColumns) {
+      for (RideGoal goal : rightGoals) {
+        FormattedRide formattedRide =
+            formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
+        String text = formatGoalText(formattedRide, goal);
+        maxWidth = Math.max(maxWidth, client.font.width(text));
+      }
+    }
+    if (hasExtraRide) {
+      RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
+      FormattedRide formattedRide =
+          formatRideName(effectiveRide, currentRide, regionRide, useShortNames, isPassenger);
+      String text =
+          currentGoal != null
+              ? formatGoalText(formattedRide, currentGoal)
+              : "Riding: " + formattedRide.getName();
+      maxWidth = Math.max(maxWidth, client.font.width(text));
     }
 
-    int y = yStart + 2;
+    int y = yStart;
 
     if (hasError) {
       context.drawString(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
@@ -205,22 +230,24 @@ public class StrategyHudRendererV1 {
         context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
       }
 
-      for (int i = 0; i < rightGoals.size(); i++) {
-        RideGoal goal = rightGoals.get(i);
-        FormattedRide formattedRide =
-            formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
-        String text = formatGoalText(formattedRide, goal);
-        int color =
-            getColorForStatus(
-                formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
-        int textWidth = client.font.width(text);
-        context.drawString(
-            client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
+      if (twoColumns) {
+        for (int i = 0; i < rightGoals.size(); i++) {
+          RideGoal goal = rightGoals.get(i);
+          FormattedRide formattedRide =
+              formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
+          String text = formatGoalText(formattedRide, goal);
+          int color =
+              getColorForStatus(
+                  formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
+          int textWidth = client.font.width(text);
+          context.drawString(
+              client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
+        }
       }
     }
 
     if (hasExtraRide) {
-      int extraY = yStart + 2 + ((hasError ? 1 : 0) + maxColumnHeight + 1) * lineHeight;
+      int extraY = yStart + ((hasError ? 1 : 0) + maxColumnHeight + 1) * lineHeight;
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
       FormattedRide formattedRide =
           formatRideName(effectiveRide, currentRide, regionRide, useShortNames, isPassenger);
@@ -288,19 +315,26 @@ public class StrategyHudRendererV1 {
         TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
   }
 
-  private static LayoutDecision decideLayout(LayoutInput layoutInput, boolean baseUseShortNames) {
+  private static LayoutDecision decideLayout(
+      LayoutInput layoutInput, boolean baseUseShortNames, boolean wantsTwoColumns) {
     boolean useShortNames = baseUseShortNames;
-    if (fitsLayout(layoutInput, useShortNames)) {
-      return new LayoutDecision(useShortNames, true);
+    boolean twoColumns = wantsTwoColumns;
+    if (fitsLayout(layoutInput, useShortNames, twoColumns)) {
+      return new LayoutDecision(useShortNames, twoColumns, true);
     }
     useShortNames = true;
-    if (fitsLayout(layoutInput, useShortNames)) {
-      return new LayoutDecision(useShortNames, true);
+    if (fitsLayout(layoutInput, useShortNames, twoColumns)) {
+      return new LayoutDecision(useShortNames, twoColumns, true);
     }
-    return new LayoutDecision(useShortNames, false);
+    twoColumns = false;
+    if (fitsLayout(layoutInput, useShortNames, twoColumns)) {
+      return new LayoutDecision(useShortNames, twoColumns, true);
+    }
+    return new LayoutDecision(useShortNames, twoColumns, false);
   }
 
-  private static boolean fitsLayout(LayoutInput layoutInput, boolean useShortNames) {
+  private static boolean fitsLayout(
+      LayoutInput layoutInput, boolean useShortNames, boolean twoColumns) {
     int maxWidth = 0;
     if (layoutInput.error != null && !layoutInput.error.isEmpty()) {
       maxWidth = Math.max(maxWidth, layoutInput.client.font.width("ERROR: " + layoutInput.error));
@@ -308,15 +342,23 @@ public class StrategyHudRendererV1 {
 
     if (!layoutInput.goals.isEmpty()) {
       int goalsSize = layoutInput.goals.size();
-      int leftCount = (goalsSize + 1) / 2;
-      List<RideGoal> leftGoals = layoutInput.goals.subList(0, Math.min(leftCount, goalsSize));
-      List<RideGoal> rightGoals =
-          goalsSize > leftCount ? layoutInput.goals.subList(leftCount, goalsSize) : List.of();
+      if (!twoColumns || goalsSize < 8) {
+        int leftMax = computeMaxWidth(layoutInput, layoutInput.goals, useShortNames);
+        maxWidth = Math.max(maxWidth, leftMax);
+      } else {
+        int leftCount = (goalsSize + 1) / 2;
+        List<RideGoal> leftGoals = layoutInput.goals.subList(0, Math.min(leftCount, goalsSize));
+        List<RideGoal> rightGoals =
+            goalsSize > leftCount ? layoutInput.goals.subList(leftCount, goalsSize) : List.of();
 
-      int leftMax = computeMaxWidth(layoutInput, leftGoals, useShortNames);
-      int rightMax = computeMaxWidth(layoutInput, rightGoals, useShortNames);
-      maxWidth = Math.max(maxWidth, leftMax);
-      maxWidth = Math.max(maxWidth, rightMax);
+        int leftMax = computeMaxWidth(layoutInput, leftGoals, useShortNames);
+        int rightMax = computeMaxWidth(layoutInput, rightGoals, useShortNames);
+        if (leftMax + rightMax + layoutInput.gap > layoutInput.availableWidth) {
+          return false;
+        }
+        maxWidth = Math.max(maxWidth, leftMax);
+        maxWidth = Math.max(maxWidth, rightMax);
+      }
     }
 
     if (layoutInput.effectiveRide != null
@@ -335,7 +377,6 @@ public class StrategyHudRendererV1 {
               ? formatGoalText(formattedRide, currentGoal)
               : "Riding: " + formattedRide.getName();
       maxWidth = Math.max(maxWidth, layoutInput.client.font.width(text) / 2);
-      // Effective ride is on its own line, so it can be half width
     }
 
     return maxWidth <= layoutInput.availableWidth;

@@ -12,6 +12,7 @@ import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 
 public class ClothConfigScreen {
 
@@ -295,6 +296,71 @@ public class ClothConfigScreen {
             .setDefaultValue(ConfigDefaults.ONLY_AUTOGRABBING)
             .setTooltip(Component.translatable("config.not-riding-alert.onlyAutograbbing.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().onlyAutograbbing = newValue)
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
+            .startColorField(
+                Component.translatable("config.not-riding-alert.trackerNormalColor"),
+                TextColor.fromRgb(ModConfig.getInstance().trackerNormalColor & 0x00FFFFFF))
+            .setDefaultValue(TextColor.fromRgb(ConfigDefaults.TRACKER_NORMAL_COLOR & 0x00FFFFFF))
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.trackerNormalColor.tooltip"))
+            .setSaveConsumer(
+                color -> ModConfig.getInstance().trackerNormalColor = color | 0xFF000000)
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
+            .startColorField(
+                Component.translatable("config.not-riding-alert.trackerAutograbbingColor"),
+                TextColor.fromRgb(ModConfig.getInstance().trackerAutograbbingColor & 0x00FFFFFF))
+            .setDefaultValue(
+                TextColor.fromRgb(ConfigDefaults.TRACKER_AUTOGRABBING_COLOR & 0x00FFFFFF))
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.trackerAutograbbingColor.tooltip"))
+            .setSaveConsumer(
+                color -> ModConfig.getInstance().trackerAutograbbingColor = color | 0xFF000000)
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
+            .startColorField(
+                Component.translatable("config.not-riding-alert.trackerRidingColor"),
+                TextColor.fromRgb(ModConfig.getInstance().trackerRidingColor & 0x00FFFFFF))
+            .setDefaultValue(TextColor.fromRgb(ConfigDefaults.TRACKER_RIDING_COLOR & 0x00FFFFFF))
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.trackerRidingColor.tooltip"))
+            .setSaveConsumer(
+                color -> ModConfig.getInstance().trackerRidingColor = color | 0xFF000000)
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
+            .startColorField(
+                Component.translatable("config.not-riding-alert.trackerErrorColor"),
+                TextColor.fromRgb(ModConfig.getInstance().trackerErrorColor & 0x00FFFFFF))
+            .setDefaultValue(TextColor.fromRgb(ConfigDefaults.TRACKER_ERROR_COLOR & 0x00FFFFFF))
+            .setTooltip(Component.translatable("config.not-riding-alert.trackerErrorColor.tooltip"))
+            .setSaveConsumer(
+                color -> ModConfig.getInstance().trackerErrorColor = color | 0xFF000000)
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.audioBoostReminderMode"),
+                AudioBoostReminderMode.class,
+                ModConfig.getInstance().audioBoostReminderMode)
+            .setDefaultValue(ConfigDefaults.AUDIO_BOOST_REMINDER_MODE)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.audioBoostReminderMode.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().audioBoostReminderMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.audioBoostReminderMode."
+                            + mode.name().toLowerCase()))
             .build());
 
     ConfigCategory rides =

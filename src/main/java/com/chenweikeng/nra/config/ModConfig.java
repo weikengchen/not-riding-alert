@@ -49,6 +49,11 @@ public class ModConfig {
   public boolean hibernationWhenRiding = ConfigDefaults.HIBERNATION_WHEN_RIDING;
   public StrategyHudRendererVersion strategyHudRendererVersion =
       ConfigDefaults.STRATEGY_HUD_RENDERER_VERSION;
+  public int trackerNormalColor = ConfigDefaults.TRACKER_NORMAL_COLOR;
+  public int trackerAutograbbingColor = ConfigDefaults.TRACKER_AUTOGRABBING_COLOR;
+  public int trackerRidingColor = ConfigDefaults.TRACKER_RIDING_COLOR;
+  public int trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
+  public AudioBoostReminderMode audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -108,6 +113,11 @@ public class ModConfig {
         && hibernationWhenRiding == modConfig.hibernationWhenRiding
         && hideLovePotionMessages == modConfig.hideLovePotionMessages
         && strategyHudRendererVersion == modConfig.strategyHudRendererVersion
+        && trackerNormalColor == modConfig.trackerNormalColor
+        && trackerAutograbbingColor == modConfig.trackerAutograbbingColor
+        && trackerRidingColor == modConfig.trackerRidingColor
+        && trackerErrorColor == modConfig.trackerErrorColor
+        && audioBoostReminderMode == modConfig.audioBoostReminderMode
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -140,6 +150,11 @@ public class ModConfig {
         minimizeWindow,
         hibernationWhenRiding,
         hideLovePotionMessages,
-        strategyHudRendererVersion);
+        strategyHudRendererVersion,
+        trackerNormalColor,
+        trackerAutograbbingColor,
+        trackerRidingColor,
+        trackerErrorColor,
+        audioBoostReminderMode);
   }
 }
