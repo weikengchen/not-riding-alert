@@ -1,6 +1,8 @@
 package com.chenweikeng.nra.handler;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ServerState;
+import com.chenweikeng.nra.config.FullbrightMode;
 import com.chenweikeng.nra.config.ModConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -13,7 +15,18 @@ public class DayTimeHandler {
     if (!ServerState.isImagineFunServer()) {
       return;
     }
-    if (!ModConfig.getInstance().fullbrightWhenNotRiding) {
+
+    boolean isRiding = client.player != null && NotRidingAlertClient.isRiding(client.player);
+    FullbrightMode mode = ModConfig.getInstance().fullbrightMode;
+    boolean shouldApplyFullbright =
+        switch (mode) {
+          case NONE -> false;
+          case ONLY_WHEN_RIDING -> isRiding;
+          case ONLY_WHEN_NOT_RIDING -> !isRiding;
+          case ALWAYS -> true;
+        };
+
+    if (!shouldApplyFullbright) {
       return;
     }
 

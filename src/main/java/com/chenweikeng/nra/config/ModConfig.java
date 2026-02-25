@@ -23,8 +23,8 @@ public class ModConfig {
   public boolean enabled = ConfigDefaults.ENABLED;
   public String soundId = ConfigDefaults.SOUND_ID;
   public boolean blindWhenRiding = ConfigDefaults.BLIND_WHEN_RIDING;
-  public boolean fullbrightWhenNotRiding = ConfigDefaults.FULLBRIGHT_WHEN_NOT_RIDING;
-  public boolean defocusCursor = ConfigDefaults.DEFOCUS_CURSOR;
+  public FullbrightMode fullbrightMode = ConfigDefaults.FULLBRIGHT_MODE;
+  public CursorReleaseTiming cursorReleaseTiming = ConfigDefaults.CURSOR_RELEASE_TIMING;
   public boolean silent = ConfigDefaults.SILENT;
   public boolean autograb = ConfigDefaults.AUTOGRAB;
   public Integer minRideTimeMinutes = null;
@@ -37,6 +37,7 @@ public class ModConfig {
   public boolean hideScoreboard = ConfigDefaults.HIDE_SCOREBOARD;
   public boolean hideChat = ConfigDefaults.HIDE_CHAT;
   public boolean hideHealth = ConfigDefaults.HIDE_HEALTH;
+  public boolean hideNameTag = ConfigDefaults.HIDE_NAME_TAG;
   public boolean onlyAutograbbing = ConfigDefaults.ONLY_AUTOGRABBING;
   public boolean alertAutograbFailure = ConfigDefaults.ALERT_AUTOGRAB_FAILURE;
   public boolean hideLovePotionMessages = ConfigDefaults.HIDE_LOVE_POTION_MESSAGES;
@@ -44,7 +45,10 @@ public class ModConfig {
   public boolean keepUnchanged = ConfigDefaults.KEEP_UNCHANGED;
   public boolean hasOpenedConfig = ConfigDefaults.HAS_OPENED_CONFIG;
   public int hudBackgroundOpacity = ConfigDefaults.HUD_BACKGROUND_OPACITY;
-  public boolean minimizeWindowWhenRiding = ConfigDefaults.MINIMIZE_WINDOW_WHEN_RIDING;
+  public WindowMinimizeTiming minimizeWindow = ConfigDefaults.MINIMIZE_WINDOW;
+  public boolean hibernationWhenRiding = ConfigDefaults.HIBERNATION_WHEN_RIDING;
+  public StrategyHudRendererVersion strategyHudRendererVersion =
+      ConfigDefaults.STRATEGY_HUD_RENDERER_VERSION;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -85,22 +89,25 @@ public class ModConfig {
     return globalEnable == modConfig.globalEnable
         && enabled == modConfig.enabled
         && blindWhenRiding == modConfig.blindWhenRiding
-        && fullbrightWhenNotRiding == modConfig.fullbrightWhenNotRiding
-        && defocusCursor == modConfig.defocusCursor
+        && fullbrightMode == modConfig.fullbrightMode
+        && cursorReleaseTiming == modConfig.cursorReleaseTiming
         && silent == modConfig.silent
         && autograb == modConfig.autograb
         && rideDisplayCount == modConfig.rideDisplayCount
         && hideScoreboard == modConfig.hideScoreboard
         && hideChat == modConfig.hideChat
         && hideHealth == modConfig.hideHealth
+        && hideNameTag == modConfig.hideNameTag
         && onlyAutograbbing == modConfig.onlyAutograbbing
         && alertAutograbFailure == modConfig.alertAutograbFailure
         && displayShortName == modConfig.displayShortName
         && keepUnchanged == modConfig.keepUnchanged
         && hasOpenedConfig == modConfig.hasOpenedConfig
         && hudBackgroundOpacity == modConfig.hudBackgroundOpacity
-        && minimizeWindowWhenRiding == modConfig.minimizeWindowWhenRiding
+        && minimizeWindow == modConfig.minimizeWindow
+        && hibernationWhenRiding == modConfig.hibernationWhenRiding
         && hideLovePotionMessages == modConfig.hideLovePotionMessages
+        && strategyHudRendererVersion == modConfig.strategyHudRendererVersion
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -113,8 +120,8 @@ public class ModConfig {
         enabled,
         soundId,
         blindWhenRiding,
-        fullbrightWhenNotRiding,
-        defocusCursor,
+        fullbrightMode,
+        cursorReleaseTiming,
         silent,
         autograb,
         minRideTimeMinutes,
@@ -123,13 +130,16 @@ public class ModConfig {
         hideScoreboard,
         hideChat,
         hideHealth,
+        hideNameTag,
         onlyAutograbbing,
         alertAutograbFailure,
         displayShortName,
         keepUnchanged,
         hasOpenedConfig,
         hudBackgroundOpacity,
-        minimizeWindowWhenRiding,
-        hideLovePotionMessages);
+        minimizeWindow,
+        hibernationWhenRiding,
+        hideLovePotionMessages,
+        strategyHudRendererVersion);
   }
 }

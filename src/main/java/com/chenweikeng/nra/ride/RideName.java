@@ -21,7 +21,7 @@ public enum RideName {
   FINDING_NEMO_SUBMARINE_VOYAGE("Finding Nemo Submarine Voyage", "nemo", 790),
   GREAT_MOMENTS_WITH_MR_LINCOLN("Great Moments with Mr. Lincoln", "lincoln", 372),
   HAUNTED_MANSION("Haunted Mansion", "hm", 445),
-  INDIANA_JONES_ADVENTURE("Indiana Jones Adventure", "Indiana Jones(TM) Adventure", "indy", 225),
+  INDIANA_JONES_ADVENTURE("Indiana Jones Adventure", "Indiana Jones Adventure", "indy", 225),
   JUNGLE_CRUISE("Jungle Cruise", "jungle", 431),
   KING_ARTHUR_CARROUSEL("King Arthur Carrousel", "kac", 130),
   MAD_TEA_PARTY("Mad Tea Party", "madtea", 90),

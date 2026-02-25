@@ -11,7 +11,8 @@
 		"ChatListenerMixin",
 		"ClientLevelMixin",
 		"MinecraftMixin",
-		"BossHealthOverlayAccessor"
+		"BossHealthOverlayAccessor",
+		"AvatarRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

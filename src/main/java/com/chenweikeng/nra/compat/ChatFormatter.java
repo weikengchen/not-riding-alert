@@ -28,7 +28,7 @@ final class ChatFormatter {
   static ChatMessageResult onOutgoingChat(OutgoingChatContext context) {
     String message = context.getMessage();
 
-    return processOutgoingMessage(message);
+    return processOutgoingMessage(context, message);
   }
 
   private static ChatMessageResult processIncomingMessage(
@@ -337,7 +337,23 @@ final class ChatFormatter {
     return result;
   }
 
-  private static ChatMessageResult processOutgoingMessage(String message) {
+  private static ChatMessageResult processOutgoingMessage(
+      OutgoingChatContext context, String message) {
+    String normalized =
+        message
+            .replace('\u2018', '\'')
+            .replace('\u2019', '\'')
+            .replace('\u201C', '"')
+            .replace('\u201D', '"')
+            .replace('\u2014', '-')
+            .replace('\u2013', '-')
+            .replace("\u2026", "...")
+            .replace('\u00A0', ' ');
+
+    if (!normalized.equals(message)) {
+      context.setMessage(normalized);
+      return ChatMessageResult.MODIFY;
+    }
     return ChatMessageResult.PASS;
   }
 }

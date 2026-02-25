@@ -2,7 +2,9 @@ package com.chenweikeng.nra;
 
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ClothConfigScreen;
+import com.chenweikeng.nra.config.CursorReleaseTiming;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.config.WindowMinimizeTiming;
 import com.chenweikeng.nra.handler.AutograbFailureHandler;
 import com.chenweikeng.nra.handler.ConfigReminderHandler;
 import com.chenweikeng.nra.handler.DayTimeHandler;
@@ -13,7 +15,7 @@ import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
-import com.chenweikeng.nra.strategy.StrategyHudRenderer;
+import com.chenweikeng.nra.strategy.StrategyHudRendererDispatcher;
 import com.chenweikeng.nra.tracker.PlayerMovementTracker;
 import com.chenweikeng.nra.tracker.RideStateTracker;
 import com.chenweikeng.nra.tracker.SuppressionRegionTracker;
@@ -54,6 +56,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private long absoluteTickCounter = 0;
   private static boolean isRiding = false;
   private boolean wasRiding = false;
+  private boolean wasOnVehicle = false;
   private RideName previousRegionRide = null;
   private static boolean automaticallyReleasedCursor = false;
 
@@ -101,6 +104,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
           dayTimeHandler.resetDayTimeIfNeeded(client);
           boolean autograbFailureActive =
               autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
+          if (autograbFailureActive && modConfig.minimizeWindow != WindowMinimizeTiming.NONE) {
+            windowMinimizeHandler.restoreWindow();
+          }
           HibernationHandler.getInstance().track(client, absoluteTickCounter);
           configReminderHandler.track(client, absoluteTickCounter);
           scoreboardHandler.track(client);
@@ -123,13 +129,18 @@ public class NotRidingAlertClient implements ClientModInitializer {
         Identifier.fromNamespaceAndPath(NotRidingAlertClient.MOD_ID, "before_chat");
     if (beforeChatId != null) {
       HudElementRegistry.attachElementBefore(
-          VanillaHudElements.CHAT, beforeChatId, StrategyHudRenderer::render);
+          VanillaHudElements.CHAT, beforeChatId, StrategyHudRendererDispatcher::render);
     }
   }
 
   private void handleCursorManagement(
       Minecraft client, ModConfig modConfig, boolean isPassenger, RideName regionRide) {
-    if (regionRide != null && !isPassenger && modConfig.autograb) {
+    CursorReleaseTiming timing = modConfig.cursorReleaseTiming;
+
+    if (timing == CursorReleaseTiming.ON_ZONE_ENTRY
+        && regionRide != null
+        && !isPassenger
+        && modConfig.autograb) {
       if (regionRide != previousRegionRide) {
         client.setScreen(null);
         if (client.mouseHandler.isMouseGrabbed()) {
@@ -142,27 +153,74 @@ public class NotRidingAlertClient implements ClientModInitializer {
       previousRegionRide = null;
     }
 
-    if (modConfig.defocusCursor) {
-      if (!wasRiding && isRiding) {
+    if (timing != CursorReleaseTiming.NONE) {
+      boolean isOnVehicle = isPassenger || CurrentRideHolder.getCurrentRide() != null;
+      boolean shouldReleaseOnThisTick =
+          switch (timing) {
+            case NONE -> false;
+            case ON_ZONE_ENTRY -> !wasRiding && isRiding;
+            case ON_VEHICLE_MOUNT -> !wasOnVehicle && isOnVehicle;
+          };
+
+      if (shouldReleaseOnThisTick) {
         client.mouseHandler.releaseMouse();
         automaticallyReleasedCursor = true;
-      } else if (wasRiding && !isRiding) {
+      }
+
+      boolean shouldGrabOnThisTick =
+          switch (timing) {
+            case NONE -> false;
+            case ON_ZONE_ENTRY -> wasRiding && !isRiding;
+            case ON_VEHICLE_MOUNT -> wasOnVehicle && !isOnVehicle;
+          };
+
+      if (shouldGrabOnThisTick) {
         automaticallyReleasedCursor = false;
         if (client.screen == null) {
           client.mouseHandler.grabMouse();
         }
-      } else if (automaticallyReleasedCursor
-          && isRiding
+      }
+
+      boolean isCurrentlyRiding =
+          switch (timing) {
+            case NONE -> false;
+            case ON_ZONE_ENTRY -> isRiding;
+            case ON_VEHICLE_MOUNT -> isOnVehicle;
+          };
+
+      if (automaticallyReleasedCursor
+          && isCurrentlyRiding
           && client.mouseHandler.isRightPressed()
           && client.screen == null) {
         client.mouseHandler.releaseMouse();
       }
+
+      wasOnVehicle = isOnVehicle;
     }
 
-    if (modConfig.minimizeWindowWhenRiding && !MonkeycraftCompat.isClientConnected()) {
-      if (!wasRiding && isRiding) {
+    if (modConfig.minimizeWindow != WindowMinimizeTiming.NONE) {
+      WindowMinimizeTiming minimizeTiming = modConfig.minimizeWindow;
+      boolean isOnVehicle = isPassenger || CurrentRideHolder.getCurrentRide() != null;
+
+      boolean shouldMinimizeOnThisTick =
+          switch (minimizeTiming) {
+            case NONE -> false;
+            case ON_ZONE_ENTRY -> !wasRiding && isRiding;
+            case ON_VEHICLE_MOUNT -> !wasOnVehicle && isOnVehicle;
+          };
+
+      if (shouldMinimizeOnThisTick && !MonkeycraftCompat.isClientConnected()) {
         windowMinimizeHandler.minimizeWindow();
-      } else if (wasRiding && !isRiding) {
+      }
+
+      boolean shouldRestoreOnThisTick =
+          switch (minimizeTiming) {
+            case NONE -> false;
+            case ON_ZONE_ENTRY -> wasRiding && !isRiding;
+            case ON_VEHICLE_MOUNT -> wasOnVehicle && !isOnVehicle;
+          };
+
+      if (shouldRestoreOnThisTick) {
         windowMinimizeHandler.restoreWindow();
       }
     }
@@ -203,6 +261,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     tickCounter = 0;
     absoluteTickCounter = 0;
     wasRiding = false;
+    wasOnVehicle = false;
     previousRegionRide = null;
     automaticallyReleasedCursor = false;
   }

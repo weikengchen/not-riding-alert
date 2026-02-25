@@ -3,7 +3,7 @@ package com.chenweikeng.nra.mixin;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
-import com.chenweikeng.nra.strategy.StrategyHudRenderer;
+import com.chenweikeng.nra.strategy.StrategyHudRendererDispatcher;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -142,7 +142,8 @@ public class ClientPacketListenerMixin {
               int count = Integer.parseInt(matcher.group(1));
               RideName ride = RideName.fromMatchString(nameString);
               if (ride == RideName.UNKNOWN) {
-                StrategyHudRenderer.setError("Unknown ride detected (name: " + nameString + ")");
+                StrategyHudRendererDispatcher.setError(
+                    "Unknown ride detected (name: " + nameString + ")");
               }
               RideCountManager countManager = RideCountManager.getInstance();
               countManager.updateRideCount(ride, count);

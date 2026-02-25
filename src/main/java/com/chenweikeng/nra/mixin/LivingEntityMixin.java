@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.FullbrightMode;
 import com.chenweikeng.nra.config.ModConfig;
 import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
@@ -25,14 +26,21 @@ public abstract class LivingEntityMixin {
     }
     LivingEntity entity = (LivingEntity) (Object) this;
     if (entity instanceof net.minecraft.client.player.LocalPlayer player) {
-      if (ModConfig.getInstance().blindWhenRiding
-          && effect == MobEffects.BLINDNESS
-          && NotRidingAlertClient.isRiding(player)) {
+      boolean isRiding = NotRidingAlertClient.isRiding(player);
+      if (ModConfig.getInstance().blindWhenRiding && effect == MobEffects.BLINDNESS && isRiding) {
         cir.setReturnValue(true);
-      } else if (ModConfig.getInstance().fullbrightWhenNotRiding
-          && effect == MobEffects.NIGHT_VISION
-          && !NotRidingAlertClient.isRiding(player)) {
-        cir.setReturnValue(true);
+      } else if (effect == MobEffects.NIGHT_VISION) {
+        FullbrightMode mode = ModConfig.getInstance().fullbrightMode;
+        boolean shouldHaveFullbright =
+            switch (mode) {
+              case NONE -> false;
+              case ONLY_WHEN_RIDING -> isRiding;
+              case ONLY_WHEN_NOT_RIDING -> !isRiding;
+              case ALWAYS -> true;
+            };
+        if (shouldHaveFullbright) {
+          cir.setReturnValue(true);
+        }
       }
     }
   }
@@ -49,16 +57,21 @@ public abstract class LivingEntityMixin {
     }
     LivingEntity entity = (LivingEntity) (Object) this;
     if (entity instanceof net.minecraft.client.player.LocalPlayer player) {
-      if (ModConfig.getInstance().blindWhenRiding
-          && effect == MobEffects.BLINDNESS
-          && NotRidingAlertClient.isRiding(player)) {
+      boolean isRiding = NotRidingAlertClient.isRiding(player);
+      if (ModConfig.getInstance().blindWhenRiding && effect == MobEffects.BLINDNESS && isRiding) {
         if (cir.getReturnValue() == null) {
           cir.setReturnValue(new MobEffectInstance(MobEffects.BLINDNESS, -1));
         }
-      } else if (ModConfig.getInstance().fullbrightWhenNotRiding
-          && effect == MobEffects.NIGHT_VISION
-          && !NotRidingAlertClient.isRiding(player)) {
-        if (cir.getReturnValue() == null) {
+      } else if (effect == MobEffects.NIGHT_VISION) {
+        FullbrightMode mode = ModConfig.getInstance().fullbrightMode;
+        boolean shouldHaveFullbright =
+            switch (mode) {
+              case NONE -> false;
+              case ONLY_WHEN_RIDING -> isRiding;
+              case ONLY_WHEN_NOT_RIDING -> !isRiding;
+              case ALWAYS -> true;
+            };
+        if (shouldHaveFullbright && cir.getReturnValue() == null) {
           cir.setReturnValue(new MobEffectInstance(MobEffects.NIGHT_VISION, -1));
         }
       }

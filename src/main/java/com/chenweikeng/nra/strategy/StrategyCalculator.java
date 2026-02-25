@@ -64,7 +64,8 @@ public class StrategyCalculator {
 
       // Skip if ride time is invalid (99999 means not provided)
       if (rideTimeSeconds >= 99999) {
-        StrategyHudRenderer.setError("Ride time not provided for: " + ride.getDisplayName());
+        StrategyHudRendererDispatcher.setError(
+            "Ride time not provided for: " + ride.getDisplayName());
         continue;
       }
 

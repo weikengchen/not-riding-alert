@@ -90,23 +90,34 @@ public class ClothConfigScreen {
 
     general.addEntry(
         entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.fullbrightWhenNotRiding"),
-                ModConfig.getInstance().fullbrightWhenNotRiding)
-            .setDefaultValue(ConfigDefaults.FULLBRIGHT_WHEN_NOT_RIDING)
-            .setTooltip(
-                Component.translatable("config.not-riding-alert.fullbrightWhenNotRiding.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().fullbrightWhenNotRiding = newValue)
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.fullbright"),
+                FullbrightMode.class,
+                ModConfig.getInstance().fullbrightMode)
+            .setDefaultValue(FullbrightMode.NONE)
+            .setTooltip(Component.translatable("config.not-riding-alert.fullbright.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().fullbrightMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.fullbright." + mode.name().toLowerCase()))
             .build());
 
     general.addEntry(
         entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.defocusCursor"),
-                ModConfig.getInstance().defocusCursor)
-            .setDefaultValue(ConfigDefaults.DEFOCUS_CURSOR)
-            .setTooltip(Component.translatable("config.not-riding-alert.defocusCursor.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().defocusCursor = newValue)
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.cursorReleaseTiming"),
+                CursorReleaseTiming.class,
+                ModConfig.getInstance().cursorReleaseTiming)
+            .setDefaultValue(CursorReleaseTiming.NONE)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.cursorReleaseTiming.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().cursorReleaseTiming = newValue)
+            .setEnumNameProvider(
+                timing ->
+                    Component.translatable(
+                        "config.not-riding-alert.cursorReleaseTiming."
+                            + timing.name().toLowerCase()))
             .build());
 
     general.addEntry(
@@ -152,11 +163,11 @@ public class ClothConfigScreen {
     general.addEntry(
         entryBuilder
             .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.onlyAutograbbing"),
-                ModConfig.getInstance().onlyAutograbbing)
-            .setDefaultValue(ConfigDefaults.ONLY_AUTOGRABBING)
-            .setTooltip(Component.translatable("config.not-riding-alert.onlyAutograbbing.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().onlyAutograbbing = newValue)
+                Component.translatable("config.not-riding-alert.hideNameTag"),
+                ModConfig.getInstance().hideNameTag)
+            .setDefaultValue(ConfigDefaults.HIDE_NAME_TAG)
+            .setTooltip(Component.translatable("config.not-riding-alert.hideNameTag.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideNameTag = newValue)
             .build());
 
     general.addEntry(
@@ -183,19 +194,41 @@ public class ClothConfigScreen {
 
     general.addEntry(
         entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.minimizeWindowWhenRiding"),
-                ModConfig.getInstance().minimizeWindowWhenRiding)
-            .setDefaultValue(ConfigDefaults.MINIMIZE_WINDOW_WHEN_RIDING)
-            .setTooltip(
-                Component.translatable("config.not-riding-alert.minimizeWindowWhenRiding.tooltip"))
-            .setSaveConsumer(
-                newValue -> ModConfig.getInstance().minimizeWindowWhenRiding = newValue)
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.minimizeWindow"),
+                WindowMinimizeTiming.class,
+                ModConfig.getInstance().minimizeWindow)
+            .setDefaultValue(WindowMinimizeTiming.NONE)
+            .setTooltip(Component.translatable("config.not-riding-alert.minimizeWindow.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().minimizeWindow = newValue)
+            .setEnumNameProvider(
+                timing ->
+                    Component.translatable(
+                        "config.not-riding-alert.minimizeWindow." + timing.name().toLowerCase()))
             .build());
 
     ConfigCategory tracker =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rides"));
+
+    tracker.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.strategyHudRendererVersion"),
+                StrategyHudRendererVersion.class,
+                ModConfig.getInstance().strategyHudRendererVersion)
+            .setDefaultValue(ConfigDefaults.STRATEGY_HUD_RENDERER_VERSION)
+            .setTooltip(
+                Component.translatable(
+                    "config.not-riding-alert.strategyHudRendererVersion.tooltip"))
+            .setSaveConsumer(
+                newValue -> ModConfig.getInstance().strategyHudRendererVersion = newValue)
+            .setEnumNameProvider(
+                version ->
+                    Component.translatable(
+                        "config.not-riding-alert.strategyHudRendererVersion."
+                            + version.name().toLowerCase()))
+            .build());
 
     tracker.addEntry(
         entryBuilder
@@ -254,6 +287,16 @@ public class ClothConfigScreen {
             .setSaveConsumer(newValue -> ModConfig.getInstance().hudBackgroundOpacity = newValue)
             .build());
 
+    tracker.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.onlyAutograbbing"),
+                ModConfig.getInstance().onlyAutograbbing)
+            .setDefaultValue(ConfigDefaults.ONLY_AUTOGRABBING)
+            .setTooltip(Component.translatable("config.not-riding-alert.onlyAutograbbing.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().onlyAutograbbing = newValue)
+            .build());
+
     ConfigCategory rides =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rideDisplay"));
@@ -292,6 +335,18 @@ public class ClothConfigScreen {
                   Component.literal(
                       "When enabled, the mod will not hide scoreboard, chat, or strategy bar when MonkeyCraft is attached."))
               .setSaveConsumer(newValue -> ModConfig.getInstance().keepUnchanged = newValue)
+              .build());
+
+      monkeyCraft.addEntry(
+          entryBuilder
+              .startBooleanToggle(
+                  Component.literal("Hibernating when riding"),
+                  ModConfig.getInstance().hibernationWhenRiding)
+              .setDefaultValue(ConfigDefaults.HIBERNATION_WHEN_RIDING)
+              .setTooltip(
+                  Component.literal(
+                      "When enabled, the mod will start hibernation when riding. When disabled, new hibernations won't start, but existing ones can still be updated or ended."))
+              .setSaveConsumer(newValue -> ModConfig.getInstance().hibernationWhenRiding = newValue)
               .build());
     }
 

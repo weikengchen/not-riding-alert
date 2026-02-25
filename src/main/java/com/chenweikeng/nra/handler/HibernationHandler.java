@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.handler;
 
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
+import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.strategy.RideGoal;
@@ -64,6 +65,11 @@ public class HibernationHandler {
 
   private void onRideStart(RideName ride) {
     if (ride == RideName.DAVY_CROCKETTS_EXPLORER_CANOES) {
+      wasHibernationEligibleRide = false;
+      return;
+    }
+
+    if (!ModConfig.getInstance().hibernationWhenRiding) {
       wasHibernationEligibleRide = false;
       return;
     }
