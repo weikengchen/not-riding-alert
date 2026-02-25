@@ -17,7 +17,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 
-public class StrategyHudRenderer {
+public class StrategyHudRendererV2 {
   private static List<RideGoal> topGoals = new ArrayList<>();
   private static int updateCounter = 0;
   private static final int UPDATE_INTERVAL_TICKS = 40;

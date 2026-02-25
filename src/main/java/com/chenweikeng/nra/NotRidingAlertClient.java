@@ -29,8 +29,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
   private static final int CHECK_INTERVAL = 200;
+  private static final int CANOE_MESSAGE_COOLDOWN_TICKS = 200;
 
   private static volatile boolean isMonkeyAttached = false;
 
@@ -54,6 +57,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
   private int tickCounter = 0;
   private long absoluteTickCounter = 0;
+  private long lastCanoeMessageTick = -CANOE_MESSAGE_COOLDOWN_TICKS;
   private static boolean isRiding = false;
   private boolean wasRiding = false;
   private boolean wasOnVehicle = false;
@@ -146,6 +150,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
         if (client.mouseHandler.isMouseGrabbed()) {
           client.mouseHandler.releaseMouse();
           automaticallyReleasedCursor = true;
+          sendCanoeMessageIfNeeded(client, regionRide);
         }
         previousRegionRide = regionRide;
       }
@@ -165,6 +170,11 @@ public class NotRidingAlertClient implements ClientModInitializer {
       if (shouldReleaseOnThisTick) {
         client.mouseHandler.releaseMouse();
         automaticallyReleasedCursor = true;
+        RideName currentRide = CurrentRideHolder.getCurrentRide();
+        if (currentRide == null) {
+          currentRide = RegionHolder.getRideAtLocation(client);
+        }
+        sendCanoeMessageIfNeeded(client, currentRide);
       }
 
       boolean shouldGrabOnThisTick =
@@ -226,6 +236,32 @@ public class NotRidingAlertClient implements ClientModInitializer {
     }
   }
 
+  private void sendCanoeMessageIfNeeded(Minecraft client, RideName ride) {
+    if (client.player == null || ride != RideName.DAVY_CROCKETTS_EXPLORER_CANOES) {
+      return;
+    }
+
+    if (absoluteTickCounter - lastCanoeMessageTick < CANOE_MESSAGE_COOLDOWN_TICKS) {
+      return;
+    }
+
+    lastCanoeMessageTick = absoluteTickCounter;
+
+    Component message =
+        Component.empty()
+            .withStyle(ChatFormatting.AQUA)
+            .append(
+                Component.literal("[NRA] ")
+                    .withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
+            .append(Component.literal("Please use ").withStyle(ChatFormatting.WHITE))
+            .append(
+                Component.literal("LEFT click")
+                    .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
+            .append(Component.literal(" to ride canoes.").withStyle(ChatFormatting.WHITE));
+
+    client.player.displayClientMessage(message, false);
+  }
+
   private void checkNotRidingAlert(Minecraft client, boolean autograbFailureActive) {
     if (client.player == null) {
       return;
@@ -260,6 +296,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     scoreboardHandler.reset();
     tickCounter = 0;
     absoluteTickCounter = 0;
+    lastCanoeMessageTick = -CANOE_MESSAGE_COOLDOWN_TICKS;
     wasRiding = false;
     wasOnVehicle = false;
     previousRegionRide = null;

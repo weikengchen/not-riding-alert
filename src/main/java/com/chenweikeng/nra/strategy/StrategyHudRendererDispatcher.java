@@ -12,7 +12,7 @@ public class StrategyHudRendererDispatcher {
     if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
       StrategyHudRendererV1.update();
     } else {
-      StrategyHudRenderer.update();
+      StrategyHudRendererV2.update();
     }
   }
 
@@ -20,7 +20,7 @@ public class StrategyHudRendererDispatcher {
     if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
       StrategyHudRendererV1.setError(error);
     } else {
-      StrategyHudRenderer.setError(error);
+      StrategyHudRendererV2.setError(error);
     }
   }
 
@@ -28,7 +28,7 @@ public class StrategyHudRendererDispatcher {
     if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
       return StrategyHudRendererV1.getError();
     } else {
-      return StrategyHudRenderer.getError();
+      return StrategyHudRendererV2.getError();
     }
   }
 
@@ -36,7 +36,7 @@ public class StrategyHudRendererDispatcher {
     if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
       StrategyHudRendererV1.render(context, tickCounter);
     } else {
-      StrategyHudRenderer.render(context, tickCounter);
+      StrategyHudRendererV2.render(context, tickCounter);
     }
   }
 
@@ -44,7 +44,7 @@ public class StrategyHudRendererDispatcher {
     if (ModConfig.getInstance().strategyHudRendererVersion == StrategyHudRendererVersion.V1) {
       return StrategyHudRendererV1.getTopGoals();
     } else {
-      return StrategyHudRenderer.getTopGoals();
+      return StrategyHudRendererV2.getTopGoals();
     }
   }
 }

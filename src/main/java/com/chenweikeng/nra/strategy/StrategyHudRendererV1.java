@@ -2,15 +2,20 @@ package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.mixin.BossHealthOverlayAccessor;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.BossHealthOverlay;
+import net.minecraft.client.gui.components.LerpingBossEvent;
 
 /** Handles rendering of strategy recommendations on the HUD. */
 public class StrategyHudRendererV1 {
@@ -101,6 +106,11 @@ public class StrategyHudRendererV1 {
     if (client == null || client.player == null || client.font == null) {
       return;
     }
+    BossHealthOverlay bossOverlay = client.gui.getBossOverlay();
+    Map<UUID, LerpingBossEvent> bossEvents = ((BossHealthOverlayAccessor) bossOverlay).getEvents();
+    if (bossEvents != null && !bossEvents.isEmpty()) {
+      return;
+    }
 
     int screenWidth = client.getWindow().getGuiScaledWidth();
     int textPadding = 10;
@@ -108,7 +118,7 @@ public class StrategyHudRendererV1 {
     int xRight = screenWidth - textPadding;
     int yStart = 0;
     int lineHeight = 10;
-    int colorRed = 0xFFFF0000;
+    int colorWhite = 0xFFFFFFFF;
     int colorGreen = 0xFF00FF00;
     int colorPurple = 0xFFEE00FF;
     int errorColor = 0xFFFF6600;
@@ -189,7 +199,8 @@ public class StrategyHudRendererV1 {
         FormattedRide formattedRide =
             formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
         String text = formatGoalText(formattedRide, goal);
-        int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
+        int color =
+            getColorForStatus(formattedRide.getStatus(), colorWhite, colorGreen, colorPurple);
         context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
       }
 
@@ -198,7 +209,8 @@ public class StrategyHudRendererV1 {
         FormattedRide formattedRide =
             formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
         String text = formatGoalText(formattedRide, goal);
-        int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
+        int color =
+            getColorForStatus(formattedRide.getStatus(), colorWhite, colorGreen, colorPurple);
         int textWidth = client.font.width(text);
         context.drawString(
             client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
@@ -214,7 +226,7 @@ public class StrategyHudRendererV1 {
           currentGoal != null
               ? formatGoalText(formattedRide, currentGoal)
               : "Riding: " + formattedRide.getName();
-      int color = getColorForStatus(formattedRide.getStatus(), colorRed, colorGreen, colorPurple);
+      int color = getColorForStatus(formattedRide.getStatus(), colorWhite, colorGreen, colorPurple);
       context.drawString(client.font, text, xLeft, extraY, color, false);
     }
   }
