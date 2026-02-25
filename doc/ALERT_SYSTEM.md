@@ -78,3 +78,37 @@ Key config options affecting alerts:
 - **Autograb regions**: Players waiting in ride queues are considered "riding"
 - **Lincoln show**: Special suppression during Great Moments with Mr. Lincoln
 - **ROTR areas**: Custom suppression zones for Rise of the Resistance ride
+
+## Reminder System
+
+### Canoe Ride Messages
+When entering Davy Crockett's Explorer Canoes region and releasing the cursor, the mod displays a helpful reminder message:
+
+- **Message**: "[NRA] Please use LEFT click to ride canoes."
+- **Purpose**: Reminds players that canoes require left-click interaction (unlike other rides)
+- **Rate Limiting**: Message is shown at most once every 10 seconds to avoid spam
+- **Trigger**: Activated when cursor is released in the canoe region
+
+### Audio Boost Reminders
+The mod can remind players to connect to the ImagineFun audio client:
+
+- **Message**: "MISSING AUDIO BOOST" (displayed in action bar)
+- **Handler**: `ReminderHandler` singleton
+- **Detection**: ChatListenerMixin detects connection messages:
+  - "You are now connected with the audio client!" → sets connected state
+  - "Your audio session has been ended" → clears connected state
+
+**AudioBoostReminderMode Options:**
+- `DISABLED`: Never show reminder
+- `ONLY_WHEN_RIDING`: Show only during rides (default use case)
+- `ALWAYS`: Always show when not connected
+
+### Configuration Reminders
+For new users who haven't configured the mod:
+
+- **Handler**: `ConfigReminderHandler`
+- **Trigger**: User hasn't opened config (`hasOpenedConfig` is false)
+- **Initial Delay**: Shows after 30 seconds (600 ticks) on server
+- **Repeat Interval**: Reminds every 10 minutes (12000 ticks)
+- **Message**: Guides user to run `/nra` command to open configuration
+- **Dismissal**: Setting `hasOpenedConfig` to true stops reminders

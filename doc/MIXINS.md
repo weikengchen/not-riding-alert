@@ -67,6 +67,24 @@ The Mixins system modifies Minecraft's client code to integrate the Not Riding A
   - Ensures proper initialization order
   - Provides reliable tick timing for all tracking systems
 
+### AvatarRendererMixin
+**Target**: `AvatarRenderer`  
+**Purpose**: Controls player nametag visibility
+
+- **onSubmitNameTag()**: Intercepts nametag rendering
+  - Respects `hideNameTag` setting to hide player nametags
+  - Only applies on ImagineFun server
+  - Cancels rendering when setting is enabled
+
+### BossHealthOverlayAccessor
+**Target**: `BossHealthOverlay`  
+**Purpose**: Accessor mixin for boss event data
+
+- **getEvents()**: Provides access to boss health events map
+  - Used by other components to read boss event data
+  - Returns map of UUID to LerpingBossEvent
+  - Enables reading boss health overlay state
+
 ## Mixin Priority and Ordering
 
 Mixins are carefully ordered to ensure:

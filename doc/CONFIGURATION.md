@@ -12,7 +12,14 @@ Central configuration class managing all settings:
 - **Singleton Pattern**: Single instance accessed via `getInstance()`
 - **Persistent Storage**: Saves to `config/not-riding-alert.json`
 - **Field Validation**: Includes proper equals/hashCode implementations
-- **Default Values**: Sensible defaults for all settings
+- **Default Values**: Sensible defaults for all settings (managed via `ConfigDefaults`)
+
+### ConfigDefaults
+Provides default values for all configuration options:
+
+- Centralizes default value management
+- Ensures consistency across configuration loading
+- Provides fallback values for missing/invalid config fields
 
 ### ClothConfigScreen
 GUI interface for configuration using Cloth Config library:
@@ -21,6 +28,7 @@ GUI interface for configuration using Cloth Config library:
 - **Real-time Updates**: Changes apply immediately
 - **Progress Summary**: Shows overall progress toward milestones
 - **Input Validation**: Ensures valid values for all settings
+- **Color Pickers**: Visual color selection for tracker colors
 
 ### ModMenuApiImpl
 ModMenu integration for easy access:
@@ -32,30 +40,110 @@ ModMenu integration for easy access:
 ## Configuration Options
 
 ### General Settings
-- **globalEnable**: Master toggle for entire mod
-- **enabled**: Specific toggle for alert system
-- **silent**: Disables all sound alerts
-- **soundId**: Selects which Minecraft sound to use
-- **blindWhenRiding**: Applies blindness effect during rides
-- **fullbrightWhenNotRiding**: Forces full brightness when not riding
-- **defocusCursor**: Auto-releases mouse during rides
-- **hideScoreboard**: Toggles scoreboard visibility
-- **hideChat**: Toggles chat visibility
-- **hideHealth**: Toggles health bar visibility
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `globalEnable` | boolean | true | Master toggle for entire mod |
+| `enabled` | boolean | true | Specific toggle for alert system |
+| `silent` | boolean | false | Disables all sound alerts |
+| `soundId` | String | "entity.experience_orb.pickup" | Selects which Minecraft sound to use |
+| `blindWhenRiding` | boolean | false | Applies blindness effect during rides |
+
+### Fullbright Settings
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `fullbrightMode` | FullbrightMode | ONLY_WHEN_NOT_RIDING | Controls when fullbright is active |
+
+**FullbrightMode Enum:**
+- `NONE`: Fullbright never applied
+- `ONLY_WHEN_RIDING`: Fullbright only during rides
+- `ONLY_WHEN_NOT_RIDING`: Fullbright only when not riding (default)
+- `ALWAYS`: Fullbright always active
+
+### Cursor Settings
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `cursorReleaseTiming` | CursorReleaseTiming | NONE | Controls when cursor is released |
+
+**CursorReleaseTiming Enum:**
+- `NONE`: Never auto-release cursor
+- `ON_ZONE_ENTRY`: Release when entering autograb zone
+- `ON_VEHICLE_MOUNT`: Release when mounting ride vehicle
+
+### Window Minimize Settings
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `minimizeWindow` | WindowMinimizeTiming | NONE | Controls when window is minimized |
+
+**WindowMinimizeTiming Enum:**
+- `NONE`: Never auto-minimize
+- `ON_ZONE_ENTRY`: Minimize when entering autograb zone
+- `ON_VEHICLE_MOUNT`: Minimize when mounting ride vehicle
+
+### Display Settings
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hideScoreboard` | boolean | false | Toggles scoreboard visibility |
+| `hideChat` | boolean | false | Toggles chat visibility |
+| `hideHealth` | boolean | true | Toggles health bar visibility |
+| `hideNameTag` | boolean | false | Toggles player nametag visibility |
+| `hideLovePotionMessages` | boolean | false | Filters love potion effect messages |
 
 ### Tracker Settings
-- **autograb**: Enables region-based ride detection
-- **rideDisplayCount**: Number of rides to show in Strategy HUD (1-16)
-- **minRideTimeMinutes**: Filter out rides shorter than X minutes
-- **displayShortName**: Use abbreviated ride names
-- **onlyAutograbbing**: Show only autograbbing-supported rides
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `autograb` | boolean | true | Enables region-based ride detection |
+| `rideDisplayCount` | int | 16 | Number of rides to show in Strategy HUD (1-60) |
+| `minRideTimeMinutes` | Integer | null | Filter out rides shorter than X minutes |
+| `displayShortName` | boolean | false | Use abbreviated ride names |
+| `onlyAutograbbing` | boolean | false | Show only autograbbing-supported rides |
+| `strategyHudRendererVersion` | StrategyHudRendererVersion | V2 | HUD renderer style |
+| `hudBackgroundOpacity` | int | 80 | Background opacity (0-100%) |
+
+**StrategyHudRendererVersion Enum:**
+- `V2`: Modern animated layout (default)
+- `V1`: Two-column layout from top-left
+- `V0`: Original centered layout
+
+### Tracker Colors
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `trackerNormalColor` | int (ARGB) | 0xFFFFFFFF | Default text color for ride entries |
+| `trackerAutograbbingColor` | int (ARGB) | 0xFFFFFF00 | Color when waiting for autograb |
+| `trackerRidingColor` | int (ARGB) | 0xFF00FF00 | Color for currently active ride |
+| `trackerErrorColor` | int (ARGB) | 0xFFFF0000 | Color for error messages |
+
+Colors are stored as ARGB integers (Alpha-Red-Green-Blue).
 
 ### Alert Settings
-- **alertAutograbFailure**: Alert when autograb times out
-- **alertAutograbFailure**: Toggle for autograb failure notifications
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `alertAutograbFailure` | boolean | true | Alert when autograb times out |
+
+### Reminder Settings
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `audioBoostReminderMode` | AudioBoostReminderMode | DISABLED | When to show audio boost reminder |
+
+**AudioBoostReminderMode Enum:**
+- `DISABLED`: Never show reminder
+- `ONLY_WHEN_RIDING`: Show only during rides
+- `ALWAYS`: Always show when not connected
+
+### Monkeycraft Settings
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hibernationWhenRiding` | boolean | true | Enable hibernation during rides (requires Monkeycraft) |
+
+### Internal Settings
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hasOpenedConfig` | boolean | false | Tracks if user has opened config (for reminders) |
+| `keepUnchanged` | boolean | false | Internal flag for config handling |
 
 ### Ride Management
-- **hiddenRides**: List of rides to hide from Strategy HUD
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `hiddenRides` | List<String> | seasonal rides | List of rides to hide from Strategy HUD |
 
 ## GUI Organization
 
@@ -65,14 +153,19 @@ Core mod settings:
 - Master toggles
 - Sound configuration
 - Visual effects toggles
+- Fullbright and cursor settings
 
 ### Tracker Tab
 Strategy HUD and autograbbing:
+- Renderer version selector
 - Ride display count slider
 - Minimum ride time filter
 - Short names toggle
 - Autograbbing toggle
 - Only autograbbing filter
+- Background opacity slider
+- Tracker color pickers
+- Audio boost reminder mode
 
 ### Rides Tab
 Individual ride toggles:
@@ -100,6 +193,7 @@ All mod components access configuration through:
 ModConfig config = ModConfig.getInstance();
 boolean enabled = config.enabled;
 String soundId = config.soundId;
+FullbrightMode mode = config.fullbrightMode;
 ```
 
 ## Command Integration
@@ -118,9 +212,9 @@ The `/nra` command provides access to the configuration screen:
   "enabled": true,
   "soundId": "entity.experience_orb.pickup",
   "blindWhenRiding": false,
-  "fullbrightWhenNotRiding": false,
-  "defocusCursor": true,
-  "silent": true,
+  "fullbrightMode": "ONLY_WHEN_NOT_RIDING",
+  "cursorReleaseTiming": "NONE",
+  "silent": false,
   "autograb": true,
   "minRideTimeMinutes": null,
   "rideDisplayCount": 16,
@@ -128,9 +222,22 @@ The `/nra` command provides access to the configuration screen:
   "hideScoreboard": false,
   "hideChat": false,
   "hideHealth": true,
+  "hideNameTag": false,
   "onlyAutograbbing": false,
   "alertAutograbFailure": true,
-  "displayShortName": false
+  "displayShortName": false,
+  "keepUnchanged": false,
+  "hasOpenedConfig": false,
+  "hudBackgroundOpacity": 80,
+  "minimizeWindow": "NONE",
+  "hibernationWhenRiding": true,
+  "hideLovePotionMessages": false,
+  "strategyHudRendererVersion": "V2",
+  "trackerNormalColor": -1,
+  "trackerAutograbbingColor": -256,
+  "trackerRidingColor": -16711936,
+  "trackerErrorColor": -65536,
+  "audioBoostReminderMode": "DISABLED"
 }
 ```
 
@@ -152,11 +259,17 @@ The `/nra` command provides access to the configuration screen:
 - Uses ride match strings for identification
 - Automatically updates when rides are renamed
 - Preserves during config updates
+- Default hides seasonal rides
 
 ### Ride Display Count
-- Minimum of 1, maximum of 16 rides
+- Minimum of 1, maximum of 60 rides
 - Clamping in GUI prevents invalid values
 - Affects Strategy HUD layout dynamically
+
+### Color Fields
+- Stored as ARGB integers
+- Cloth Config color pickers provide visual selection
+- Alpha channel preserved (0xFF000000 mask applied when saving)
 
 ## Integration Points
 
@@ -164,7 +277,9 @@ The Configuration System integrates with:
 - **All Mod Components**: Access settings via singleton
 - **Cloth Config**: Provides GUI framework
 - **ModMenu**: Entry point for configuration
-- **Mixins**: Apply visual settings (hide scoreboard/chat/health)
-- **HUD Renderer**: Uses display count and filtering options
+- **Mixins**: Apply visual settings (hide scoreboard/chat/health/nametag)
+- **HUD Renderer**: Uses display count, colors, and filtering options
 - **Alert System**: Respects enabled/silent settings
 - **Autograbbing**: Checks autograb toggle before region detection
+- **ReminderHandler**: Uses audioBoostReminderMode setting
+- **HibernationHandler**: Uses hibernationWhenRiding setting

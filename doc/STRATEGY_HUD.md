@@ -6,12 +6,37 @@ The Strategy HUD (Heads-Up Display) provides real-time recommendations for which
 
 ## Key Components
 
-### Renderer
-- **StrategyHudRenderer**: Main rendering class
-  - Draws the Strategy HUD overlay
-  - Handles layout (single/double column based on ride count)
-  - Manages text formatting and positioning
-  - Integrates with Minecraft's HUD rendering system
+### Renderer Versions
+
+The mod offers three different HUD renderer styles:
+
+| Version | Description |
+|---------|-------------|
+| **V2** (default) | Modern animated layout with smooth transitions, collapsing/expanding animations, and state-based display (full, collapsed, waiting) |
+| **V1** | Two-column layout anchored to the top-left corner |
+| **V0** | Original classic layout centered on screen |
+
+### Dispatcher
+- **StrategyHudRendererDispatcher**: Routes rendering to the appropriate version
+  - Reads `strategyHudRendererVersion` from ModConfig
+  - Delegates to the correct renderer implementation
+  - Provides unified interface for HUD rendering
+
+### Renderers
+- **StrategyHudRendererV2**: Modern animated renderer (default)
+  - Smooth transitions between states
+  - Collapsing/expanding animations
+  - Three display states: full, collapsed, waiting
+
+- **StrategyHudRendererV1**: Two-column top-left renderer
+  - Anchored to top-left corner of screen
+  - Two-column layout with left/right split
+  - Static positioning
+
+- **StrategyHudRendererV0**: Original centered renderer
+  - Centered on screen
+  - Classic layout with offset positioning
+  - Simple and stable
 
 ### Calculator
 - **StrategyCalculator**: Core logic for ride recommendations
@@ -29,20 +54,30 @@ The Strategy HUD (Heads-Up Display) provides real-time recommendations for which
 ## Display Features
 
 ### Layout
-- **Single Column**: 1-7 rides shown in one column
-- **Double Column**: 8+ rides split into two columns for better visibility
-- **Configurable Count**: User can set 1-16 rides to display
+- **Dynamic Columns**: Automatically calculates optimal column layout (1-8 columns) based on content width and screen size
+- **Row Minimization**: Prefers fewer columns when row count is the same to reduce wasted horizontal space
+- **Horizontal Centering**: All content is automatically centered on screen (V0, V2)
+- **Configurable Count**: User can set 1-60 rides to display
 
 ### Visual Elements
-- **Current Ride Highlighting**: Shows in green with progress percentage
+- **Current Ride Highlighting**: Shows with Riding color with progress percentage
 - **Autograbbing Status**: Displays "(Autograbbing...)" when waiting
 - **Goal Information**: Shows rides needed to reach next milestone
 - **Progress Indicators**: Current count and next goal displayed
 
 ### Text Formatting
 - **Short Names Option**: Abbreviated ride names for cleaner display
-- **Color Coding**: Green for current ride, normal for others
+- **Color Coding**: Uses configurable tracker colors
 - **Error Messages**: Display of ride time warnings and other issues
+
+### Customizable Tracker Colors
+All HUD versions support customizable colors for different states:
+- **Normal Color**: Default color for ride entries
+- **Autograbbing Color**: Color when waiting to be picked up by a ride
+- **Riding Color**: Color for the currently active ride
+- **Error Color**: Color for error messages
+
+Colors are stored as ARGB integers in the configuration.
 
 ## Calculation Logic
 
@@ -68,7 +103,7 @@ Supported milestones for each ride:
 
 4. **Select Top N** rides for display
    - Default: 16 rides
-   - Configurable 1-16 via settings
+   - Configurable 1-60 via settings
 
 ### Time Calculations
 - **Ride Duration**: Based on predefined ride times
@@ -86,24 +121,32 @@ Supported milestones for each ride:
 - **RideCountManager**: Provides current ride statistics
 - **CurrentRideHolder**: Supplies current ride and progress
 - **RegionHolder**: Identifies autograbbing status
-- **ModConfig**: Supplies display preferences and filters
+- **ModConfig**: Supplies display preferences, filters, and renderer version
 
 ## Configuration Options
 
 ### Display Settings
-- `rideDisplayCount`: Number of rides to show (1-16)
+- `strategyHudRendererVersion`: Choose between V0, V1, and V2 renderer styles
+- `rideDisplayCount`: Number of rides to show (1-60)
 - `displayShortName`: Toggle for abbreviated ride names
 - `onlyAutograbbing`: Filter to only autograbbing-supported rides
+- `hudBackgroundOpacity`: Background opacity (0-100%, default: 80%)
 
 ### Filtering
 - `minRideTimeMinutes`: Exclude rides shorter than X minutes
 - `hiddenRides`: User-configured list of rides to hide
 
+### Colors
+- `trackerNormalColor`: Default text color (ARGB)
+- `trackerAutograbbingColor`: Color for autograbbing state (ARGB)
+- `trackerRidingColor`: Color for current ride (ARGB)
+- `trackerErrorColor`: Color for error messages (ARGB)
+
 ## Special Cases
 
 ### Current Ride Display
 - Always shows the current ride even if filtered out
-- Displays progress percentage in green
+- Displays progress percentage in Riding color
 - Shows "Autograbbing..." status when applicable
 - Uses different calculation path (applies no filters)
 

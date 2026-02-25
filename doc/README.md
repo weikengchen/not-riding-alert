@@ -37,7 +37,8 @@ The Not Riding Alert is a Fabric mod for Minecraft that helps players efficientl
 - **ModConfig**: Configuration management and persistence
 - **RideCountManager**: Ride statistics tracking and storage
 - **StrategyCalculator**: Goal calculations and recommendations
-- **StrategyHudRenderer**: HUD display and rendering
+- **StrategyHudRendererDispatcher**: Routes HUD rendering to appropriate version
+- **StrategyHudRendererV0/V1/V2**: HUD display and rendering implementations
 
 ### Tracking Systems
 - **PlayerMovementTracker**: Player movement detection
@@ -48,12 +49,24 @@ The Not Riding Alert is a Fabric mod for Minecraft that helps players efficientl
 - **AutograbFailureHandler**: Autograbbing timeout and failure alerts
 - **DayTimeHandler**: Time of day manipulation for visual effects
 - **HibernationHandler**: Monkeycraft hibernation and notifications
+- **ReminderHandler**: Audio boost reminders (displays when not connected to ImagineFun audio)
+- **ConfigReminderHandler**: First-time configuration screen reminders
+- **WindowMinimizeHandler**: Automatic window minimization during rides
+- **ScoreboardHandler**: Scoreboard data extraction and processing
 
 ### Utility Classes
 - **RegionHolder**: Ride region mapping and detection
 - **SoundHelper**: Alert sound playback management
 - **TimeFormatUtil**: Time formatting utilities
 - **CurrentRideHolder/LastRideHolder**: Ride state management
+- **ServerState**: Server connection state management
+
+### Enum Classes
+- **StrategyHudRendererVersion**: HUD renderer version selection (V0, V1, V2)
+- **AudioBoostReminderMode**: Audio boost reminder timing
+- **FullbrightMode**: Fullbright application timing
+- **CursorReleaseTiming**: Cursor release timing options
+- **WindowMinimizeTiming**: Window minimization timing options
 
 ## Architecture Patterns
 
@@ -92,4 +105,4 @@ See [CONFIGURATION.md](CONFIGURATION.md) for all user-configurable options and t
 
 ## Version Information
 
-These documents describe the current implementation of the mod (v2.3.0). The mod is designed specifically for the ImagineFun server and may not function correctly on other servers.
+These documents describe the current implementation of the mod (v2.3.3). The mod is designed specifically for the ImagineFun server and may not function correctly on other servers.

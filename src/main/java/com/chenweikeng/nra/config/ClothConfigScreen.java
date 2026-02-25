@@ -306,8 +306,8 @@ public class ClothConfigScreen {
             .setDefaultValue(TextColor.fromRgb(ConfigDefaults.TRACKER_NORMAL_COLOR & 0x00FFFFFF))
             .setTooltip(
                 Component.translatable("config.not-riding-alert.trackerNormalColor.tooltip"))
-            .setSaveConsumer(
-                color -> ModConfig.getInstance().trackerNormalColor = color | 0xFF000000)
+            .setSaveConsumer2(
+                color -> ModConfig.getInstance().trackerNormalColor = color.getColor() | 0xFF000000)
             .build());
 
     tracker.addEntry(
@@ -319,8 +319,10 @@ public class ClothConfigScreen {
                 TextColor.fromRgb(ConfigDefaults.TRACKER_AUTOGRABBING_COLOR & 0x00FFFFFF))
             .setTooltip(
                 Component.translatable("config.not-riding-alert.trackerAutograbbingColor.tooltip"))
-            .setSaveConsumer(
-                color -> ModConfig.getInstance().trackerAutograbbingColor = color | 0xFF000000)
+            .setSaveConsumer2(
+                color ->
+                    ModConfig.getInstance().trackerAutograbbingColor =
+                        color.getColor() | 0xFF000000)
             .build());
 
     tracker.addEntry(
@@ -331,8 +333,8 @@ public class ClothConfigScreen {
             .setDefaultValue(TextColor.fromRgb(ConfigDefaults.TRACKER_RIDING_COLOR & 0x00FFFFFF))
             .setTooltip(
                 Component.translatable("config.not-riding-alert.trackerRidingColor.tooltip"))
-            .setSaveConsumer(
-                color -> ModConfig.getInstance().trackerRidingColor = color | 0xFF000000)
+            .setSaveConsumer2(
+                color -> ModConfig.getInstance().trackerRidingColor = color.getColor() | 0xFF000000)
             .build());
 
     tracker.addEntry(

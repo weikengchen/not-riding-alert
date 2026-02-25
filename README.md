@@ -19,9 +19,25 @@ A thid-party quality-of-life mod for the ImagineFun server (https://modrinth.com
 - **Smart Dynamic Layout**: Automatically calculates optimal column layout (1-8 columns) based on content width and screen size
 - **Row Minimization**: Prefers fewer columns when row count is the same to reduce wasted horizontal space
 - **Horizontal Centering**: All content is automatically centered on screen for a polished appearance
-- **Current Ride Highlighting**: Your current ride is highlighted in green with progress percentage
+- **Current Ride Highlighting**: Your current ride is highlighted with progress percentage
 - **Customizable Display**: Configure how many rides to show (default: 16)
 - **Short Name Option**: Use abbreviated ride names in the tracker for a cleaner display
+
+#### Strategy HUD Versions
+The mod offers three different HUD renderer styles:
+
+| Version | Description |
+|---------|-------------|
+| **V2** (default) | Modern animated layout with smooth transitions, collapsing/expanding animations, and state-based display (full, collapsed, waiting) |
+| **V1** | Two-column layout anchored to the top-left corner |
+| **V0** | Original classic layout centered on screen |
+
+#### Customizable Tracker Colors
+All HUD versions support customizable colors for different states:
+- **Normal Color**: Default color for ride entries
+- **Autograbbing Color**: Color when waiting to be picked up by a ride
+- **Riding Color**: Color for the currently active ride
+- **Error Color**: Color for error messages
 
 ### 📈 Ride Progress Tracking
 - **Real-Time Progress**: Automatically calculates and displays ride completion percentage based on elapsed time
@@ -51,6 +67,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Sound Suppression**: Automatically suppresses game sounds when riding
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
 - **Configurable Sound**: Customize the alert sound to your preference
+- **Audio Boost Reminder**: Displays "MISSING AUDIO BOOST" in the action bar when you're not connected to the ImagineFun audio client. Configurable to show always, only when riding, or disabled.
 
 ### 🐵 Monkeycraft Integration
 Optional integration with the Monkeycraft mod for enhanced mobile/remote play experience. When Monkeycraft is installed and connected:
@@ -126,10 +143,13 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional).
 
 ### 📊 Tracker Settings (Tracker Tab)
+- **Strategy HUD Version**: Choose between V0, V1, and V2 renderer styles.
 - **Auto-grabbing detection**: Toggle region-based autograbbing feature.
 - **Ride Display Count**: Slider to set how many rides to show in the HUD (1-60).
 - **Minimum Ride Time Filter**: Filter out rides shorter than X minutes.
 - **Strategy HUD Background Opacity**: Adjust the background opacity of the strategy HUD (0-100%, default: 80%).
+- **Tracker Colors**: Customize colors for Normal, Autograbbing, Riding, and Error states.
+- **Audio Boost Reminder**: Configure when to show audio boost reminders (Disabled, Only when riding, Always).
 
 ### 🎢 Ride Management (Rides Tab)
 - **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD. Useful for hiding completed rides.

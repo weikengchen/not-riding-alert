@@ -78,7 +78,7 @@ Located in **NotRidingAlertClient.handleCursorManagement()**:
 
 - `autograb`: Master toggle for autograbbing feature
 - `alertAutograbFailure`: Toggle for failure alerts
-- `defocusCursor`: Cursor management for all rides (not just autograb)
+- `cursorReleaseTiming`: Cursor release timing (NONE, ON_ZONE_ENTRY, ON_VEHICLE_MOUNT)
 
 ## Integration Points
 
