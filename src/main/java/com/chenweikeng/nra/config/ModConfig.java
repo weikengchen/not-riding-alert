@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ModConfig {
@@ -29,11 +29,11 @@ public class ModConfig {
   public boolean autograb = ConfigDefaults.AUTOGRAB;
   public Integer minRideTimeMinutes = null;
   public int rideDisplayCount = ConfigDefaults.RIDE_DISPLAY_COUNT;
-  public List<String> hiddenRides =
+  public Set<String> hiddenRides =
       Arrays.stream(RideName.values())
           .filter(RideName::isSeasonal)
           .map(RideName::toMatchString)
-          .collect(Collectors.toList());
+          .collect(Collectors.toSet());
   public boolean hideScoreboard = ConfigDefaults.HIDE_SCOREBOARD;
   public boolean hideChat = ConfigDefaults.HIDE_CHAT;
   public boolean hideHealth = ConfigDefaults.HIDE_HEALTH;
