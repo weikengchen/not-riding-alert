@@ -104,11 +104,6 @@ public class StrategyHudRendererV0 {
     if (client == null || client.player == null || client.font == null) {
       return;
     }
-    BossHealthOverlay bossOverlay = client.gui.getBossOverlay();
-    Map<UUID, LerpingBossEvent> bossEvents = ((BossHealthOverlayAccessor) bossOverlay).getEvents();
-    if (bossEvents != null && !bossEvents.isEmpty()) {
-      return;
-    }
 
     update();
 
