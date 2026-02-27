@@ -2,20 +2,15 @@ package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
-import com.chenweikeng.nra.mixin.BossHealthOverlayAccessor;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.BossHealthOverlay;
-import net.minecraft.client.gui.components.LerpingBossEvent;
 
 /** Handles rendering of strategy recommendations on the HUD. */
 public class StrategyHudRendererV0 {
