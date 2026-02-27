@@ -23,6 +23,13 @@ public final class MonkeycraftCompat {
     return MonkeycraftCompatImpl.isClientConnected();
   }
 
+  public static boolean isServerStarted() {
+    if (!isAvailable()) {
+      return false;
+    }
+    return MonkeycraftCompatImpl.isServerStarted();
+  }
+
   public static boolean isHibernating() {
     if (!isAvailable()) {
       return false;

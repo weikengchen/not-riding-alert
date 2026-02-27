@@ -34,6 +34,10 @@ final class MonkeycraftCompatImpl {
     return MonkeycraftApi.isClientConnected();
   }
 
+  static boolean isServerStarted() {
+    return MonkeycraftApi.isServerStarted();
+  }
+
   static boolean isHibernating() {
     return MonkeycraftApi.isHibernating();
   }

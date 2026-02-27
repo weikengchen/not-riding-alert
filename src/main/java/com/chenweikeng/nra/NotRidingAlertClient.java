@@ -218,7 +218,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
             case ON_VEHICLE_MOUNT -> !wasOnVehicle && isOnVehicle;
           };
 
-      if (shouldMinimizeOnThisTick && !MonkeycraftCompat.isClientConnected()) {
+      if (shouldMinimizeOnThisTick && !MonkeycraftCompat.isServerStarted()) {
         windowMinimizeHandler.minimizeWindow();
       }
 
