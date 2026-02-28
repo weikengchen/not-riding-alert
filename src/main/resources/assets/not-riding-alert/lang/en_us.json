@@ -69,5 +69,7 @@
   "config.not-riding-alert.audioBoostReminderMode.tooltip": "When to show reminders for missing audio boost",
   "config.not-riding-alert.audioBoostReminderMode.disabled": "Disabled",
   "config.not-riding-alert.audioBoostReminderMode.only_when_riding": "Only when riding",
-  "config.not-riding-alert.audioBoostReminderMode.always": "Always"
+  "config.not-riding-alert.audioBoostReminderMode.always": "Always",
+  "config.not-riding-alert.relocateClosedCaption": "Relocate closed caption",
+  "config.not-riding-alert.relocateClosedCaption.tooltip": "Move [CC] messages from chat to the overlay area on screen"
 }

@@ -53,6 +53,65 @@ final class ChatFormatter {
     return EmojiManager.isEmoji(input);
   }
 
+  private static boolean isAllowedLatinCharacter(int codePoint) {
+    Character.UnicodeScript script = Character.UnicodeScript.of(codePoint);
+    if (script == Character.UnicodeScript.LATIN) {
+      return true;
+    }
+    Character.UnicodeBlock block = Character.UnicodeBlock.of(codePoint);
+    return block == Character.UnicodeBlock.LATIN_1_SUPPLEMENT
+        || block == Character.UnicodeBlock.LATIN_EXTENDED_A
+        || block == Character.UnicodeBlock.LATIN_EXTENDED_B
+        || block == Character.UnicodeBlock.GENERAL_PUNCTUATION;
+  }
+
+  private static boolean isUnknownUnicode(int codePoint) {
+    if (codePoint <= 127) {
+      return false;
+    }
+    if (codePoint == 0x00A7) {
+      return false;
+    }
+    String str = new String(Character.toChars(codePoint));
+    if (containsEmoji(str)) {
+      return false;
+    }
+    if (REPLACEMENT_TABLE.containsKey(str)) {
+      return false;
+    }
+    if (isAllowedLatinCharacter(codePoint)) {
+      return false;
+    }
+    return true;
+  }
+
+  private static MutableComponent replaceUnknownUnicode(String text, Style style) {
+    MutableComponent result = Component.empty();
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < text.length(); ) {
+      int codePoint = text.codePointAt(i);
+      int charCount = Character.charCount(codePoint);
+
+      if (isUnknownUnicode(codePoint)) {
+        if (sb.length() > 0) {
+          result.append(Component.literal(sb.toString()).withStyle(style));
+          sb.setLength(0);
+        }
+        result.append(Component.literal("\uFFFD").withStyle(style));
+      } else {
+        sb.appendCodePoint(codePoint);
+      }
+      i += charCount;
+    }
+
+    if (sb.length() > 0) {
+      result.append(Component.literal(sb.toString()).withStyle(style));
+    }
+
+    return result;
+  }
+
   private static int findFirstReplacementChar(String text) {
     for (int i = 0; i < text.length(); i++) {
       String ch = text.substring(i, i + 1);
@@ -68,7 +127,7 @@ final class ChatFormatter {
     int matchIndex = findFirstReplacementChar(text);
 
     if (matchIndex < 0) {
-      result.append(Component.literal(text).withStyle(style));
+      result.append(replaceUnknownUnicode(text, style));
       return result;
     }
 
@@ -77,20 +136,18 @@ final class ChatFormatter {
     String after = text.substring(matchIndex + 1);
 
     if (!before.isEmpty()) {
-      result.append(Component.literal(before).withStyle(style));
+      result.append(replaceUnknownUnicode(before, style));
     }
 
     Function<Style, Component> replacementFactory = REPLACEMENT_TABLE.get(matchChar);
     if (replacementFactory != null) {
       result.append(replacementFactory.apply(style));
-    } else if (!REPLACEMENT_TABLE.containsKey(matchChar)) {
-      result.append(Component.literal(matchChar).withStyle(style));
     }
 
     while (!after.isEmpty()) {
       int nextMatch = findFirstReplacementChar(after);
       if (nextMatch < 0) {
-        result.append(Component.literal(after).withStyle(style));
+        result.append(replaceUnknownUnicode(after, style));
         break;
       }
       String nextBefore = after.substring(0, nextMatch);
@@ -98,14 +155,12 @@ final class ChatFormatter {
       after = after.substring(nextMatch + 1);
 
       if (!nextBefore.isEmpty()) {
-        result.append(Component.literal(nextBefore).withStyle(style));
+        result.append(replaceUnknownUnicode(nextBefore, style));
       }
 
       Function<Style, Component> nextReplacementFactory = REPLACEMENT_TABLE.get(nextChar);
       if (nextReplacementFactory != null) {
         result.append(nextReplacementFactory.apply(style));
-      } else if (!REPLACEMENT_TABLE.containsKey(nextChar)) {
-        result.append(Component.literal(nextChar).withStyle(style));
       }
     }
 
@@ -126,7 +181,13 @@ final class ChatFormatter {
             modified[0] = true;
             result.append(applyReplacements(text, style));
           } else {
-            result.append(Component.literal(text).withStyle(style));
+            MutableComponent finalComponent = replaceUnknownUnicode(text, style);
+            if (finalComponent.getSiblings().size() > 1
+                || (finalComponent.getSiblings().isEmpty()
+                    && !finalComponent.getString().equals(text))) {
+              modified[0] = true;
+            }
+            result.append(finalComponent);
           }
 
           return Optional.empty();
@@ -328,7 +389,13 @@ final class ChatFormatter {
             }
           }
 
-          result.append(Component.literal(text).withStyle(newStyle));
+          MutableComponent finalComponent = replaceUnknownUnicode(text, newStyle);
+          if (finalComponent.getSiblings().size() > 1
+              || (finalComponent.getSiblings().isEmpty()
+                  && !finalComponent.getString().equals(text))) {
+            modified[0] = true;
+          }
+          result.append(finalComponent);
 
           return Optional.empty();
         },

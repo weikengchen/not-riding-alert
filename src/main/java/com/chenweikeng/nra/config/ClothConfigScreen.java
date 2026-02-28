@@ -195,6 +195,17 @@ public class ClothConfigScreen {
 
     general.addEntry(
         entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.relocateClosedCaption"),
+                ModConfig.getInstance().relocateClosedCaption)
+            .setDefaultValue(ConfigDefaults.RELOCATE_CLOSED_CAPTION)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.relocateClosedCaption.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().relocateClosedCaption = newValue)
+            .build());
+
+    general.addEntry(
+        entryBuilder
             .startEnumSelector(
                 Component.translatable("config.not-riding-alert.minimizeWindow"),
                 WindowMinimizeTiming.class,

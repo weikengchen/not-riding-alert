@@ -34,4 +34,5 @@ public final class ConfigDefaults {
   public static final int TRACKER_ERROR_COLOR = 0xFFFF6600;
   public static final AudioBoostReminderMode AUDIO_BOOST_REMINDER_MODE =
       AudioBoostReminderMode.ONLY_WHEN_RIDING;
+  public static final boolean RELOCATE_CLOSED_CAPTION = true;
 }

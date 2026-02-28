@@ -54,6 +54,7 @@ public class ModConfig {
   public int trackerRidingColor = ConfigDefaults.TRACKER_RIDING_COLOR;
   public int trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
   public AudioBoostReminderMode audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
+  public boolean relocateClosedCaption = ConfigDefaults.RELOCATE_CLOSED_CAPTION;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -118,6 +119,7 @@ public class ModConfig {
         && trackerRidingColor == modConfig.trackerRidingColor
         && trackerErrorColor == modConfig.trackerErrorColor
         && audioBoostReminderMode == modConfig.audioBoostReminderMode
+        && relocateClosedCaption == modConfig.relocateClosedCaption
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -155,6 +157,7 @@ public class ModConfig {
         trackerAutograbbingColor,
         trackerRidingColor,
         trackerErrorColor,
-        audioBoostReminderMode);
+        audioBoostReminderMode,
+        relocateClosedCaption);
   }
 }
