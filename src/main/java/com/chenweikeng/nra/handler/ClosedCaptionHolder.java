@@ -4,7 +4,7 @@ import net.minecraft.network.chat.Component;
 
 public class ClosedCaptionHolder {
   private static final ClosedCaptionHolder INSTANCE = new ClosedCaptionHolder();
-  private static final int DELAY_TICKS = 2;
+  private static final int DELAY_TICKS = 1;
 
   private Component currentCaption = null;
   private Component pendingCaption = null;

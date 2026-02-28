@@ -54,8 +54,11 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 ### 🎨 Visual Customization
 - **Hide Scoreboard**: Option to hide the scoreboard while still tracking ride data
 - **Hide Chat**: Option to hide the chat for a cleaner interface
-- **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional)
 - **Hide Health**: Option to hide the health bar (both player and vehicle) for a cleaner interface (default: enabled)
+- **Hide Hotbar**: Option to hide the hotbar for a cleaner interface
+- **Hide Name Tags**: Option to hide player name tags for a cleaner interface
+- **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional)
+- **Relocate Closed Caption**: Move [CC] messages from chat to a centered overlay with styled text and 8-way shadow outline
 - **Ride Filtering**: Hide specific rides from the strategy display
 
 ### ⚙️ Additional Features
@@ -131,34 +134,39 @@ Autograbbing detection is a smart feature that automatically detects when you en
 
 The mod provides a comprehensive configuration screen accessible via the `/nra` command. This replaces all previous chat commands.
 
-### ⚙️ General Settings
+### ⚙️ General Settings (General Tab)
 - **Progress Summary**: The configuration screen title displays your overall progress towards 1k, 5k, and 10k ride goals (e.g., "1k (10%, 2d 5h)").
-- **Silent Mode**: Toggle the alert sound on/off.
-- **Sound ID**: Select the alert sound from a dropdown menu of all available game sounds.
-- **Blindness Effect**: Toggle blindness effect when riding.
-- **Fullbright**: Force full brightness when not riding (client-side only).
-- **Defocus Cursor**: Toggle automatic cursor release when riding.
-- **Minimize Window When Riding**: Automatically minimize the game window when riding and restore it when the ride ends.
-- **Only show known autograbbing rides**: Filter the strategy HUD to only show rides that support autograbbing.
-- **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional).
+- **Enable Alerts**: Toggle the alert sound when not riding
+- **Sound ID**: Select the alert sound from a dropdown menu of available game sounds
+- **Defocus Cursor**: Configure when to automatically release the mouse cursor (None, On autograbbing, On ride start)
+- **Silent Mode**: Suppress game sounds when riding
+- **Alert on Autograb Failure**: Play alert sound if autograbbing fails to detect a vehicle
+- **Minimize Window When Riding**: Configure when to automatically minimize the game window
 
 ### 📊 Tracker Settings (Tracker Tab)
-- **Strategy HUD Version**: Choose between V0, V1, and V2 renderer styles.
-- **Auto-grabbing detection**: Toggle region-based autograbbing feature.
-- **Ride Display Count**: Slider to set how many rides to show in the HUD (1-60).
-- **Minimum Ride Time Filter**: Filter out rides shorter than X minutes.
-- **Strategy HUD Background Opacity**: Adjust the background opacity of the strategy HUD (0-100%, default: 80%).
-- **Tracker Colors**: Customize colors for Normal, Autograbbing, Riding, and Error states.
-- **Audio Boost Reminder**: Configure when to show audio boost reminders (Disabled, Only when riding, Always).
+- **Display Tracker**: Toggle the strategy HUD visibility
+- **Strategy HUD Version**: Choose between V0, V1, and V2 renderer styles
+- **Auto-grabbing Detection**: Toggle region-based autograbbing feature
+- **Ride Display Count**: Set how many rides to show in the HUD (1-60)
+- **Minimum Ride Time Filter**: Filter out rides shorter than X minutes
+- **Strategy HUD Background Opacity**: Adjust the background opacity (0-100%, default: 80%)
+- **Only Show Autograbbing Rides**: Filter to only show rides that support autograbbing
+- **Tracker Colors**: Customize colors for Normal, Autograbbing, Riding, and Error states
+- **Audio Boost Reminder**: Configure when to show audio boost reminders
 
 ### 🎢 Ride Management (Rides Tab)
-- **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD. Useful for hiding completed rides.
+- **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD
 
-### 🎨 Display Settings (General Tab)
-- **Hide Scoreboard**: Toggle scoreboard visibility.
-- **Hide Chat**: Toggle chat visibility.
-- **Hide Health**: Toggle health bar visibility.
-- **Strategy HUD Background Opacity**: Adjust the opacity of the strategy HUD background (0-100%, default: 80%).
+### 🎨 Visual Settings (Visual Tab)
+- **Dim Screen When Riding**: Toggle screen dimming effect when riding
+- **Fullbright**: Force full brightness (None, Only when riding, Only when not riding, Always)
+- **Hide Scoreboard**: Toggle scoreboard visibility
+- **Hide Chat**: Toggle chat visibility
+- **Hide Health**: Toggle health bar visibility
+- **Hide Name Tags**: Toggle player name tags visibility
+- **Hide Hotbar**: Toggle hotbar visibility
+- **Hide Love Potion Messages**: Filter out system messages containing love potion effects
+- **Relocate Closed Caption**: Move [CC] messages from chat to a centered overlay with styled text
 
 ## Known Limitations
 
@@ -169,7 +177,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.3.4
+- **Version**: 2.3.5
 
 ## License
 
