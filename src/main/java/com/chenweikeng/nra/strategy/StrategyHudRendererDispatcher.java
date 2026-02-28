@@ -32,6 +32,9 @@ public class StrategyHudRendererDispatcher {
   }
 
   public static void render(GuiGraphics context, DeltaTracker tickCounter) {
+    if (!ModConfig.getInstance().enableTracker) {
+      return;
+    }
     switch (ModConfig.getInstance().strategyHudRendererVersion) {
       case V0 -> StrategyHudRendererV0.render(context, tickCounter);
       case V1 -> StrategyHudRendererV1.render(context, tickCounter);

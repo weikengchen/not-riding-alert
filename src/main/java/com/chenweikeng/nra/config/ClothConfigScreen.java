@@ -81,31 +81,6 @@ public class ClothConfigScreen {
 
     general.addEntry(
         entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.blindWhenRiding"),
-                ModConfig.getInstance().blindWhenRiding)
-            .setDefaultValue(ConfigDefaults.BLIND_WHEN_RIDING)
-            .setTooltip(Component.translatable("config.not-riding-alert.blindWhenRiding.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().blindWhenRiding = newValue)
-            .build());
-
-    general.addEntry(
-        entryBuilder
-            .startEnumSelector(
-                Component.translatable("config.not-riding-alert.fullbright"),
-                FullbrightMode.class,
-                ModConfig.getInstance().fullbrightMode)
-            .setDefaultValue(FullbrightMode.NONE)
-            .setTooltip(Component.translatable("config.not-riding-alert.fullbright.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().fullbrightMode = newValue)
-            .setEnumNameProvider(
-                mode ->
-                    Component.translatable(
-                        "config.not-riding-alert.fullbright." + mode.name().toLowerCase()))
-            .build());
-
-    general.addEntry(
-        entryBuilder
             .startEnumSelector(
                 Component.translatable("config.not-riding-alert.cursorReleaseTiming"),
                 CursorReleaseTiming.class,
@@ -134,74 +109,12 @@ public class ClothConfigScreen {
     general.addEntry(
         entryBuilder
             .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.hideScoreboard"),
-                ModConfig.getInstance().hideScoreboard)
-            .setDefaultValue(ConfigDefaults.HIDE_SCOREBOARD)
-            .setTooltip(Component.translatable("config.not-riding-alert.hideScoreboard.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().hideScoreboard = newValue)
-            .build());
-
-    general.addEntry(
-        entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.hideChat"),
-                ModConfig.getInstance().hideChat)
-            .setDefaultValue(ConfigDefaults.HIDE_CHAT)
-            .setTooltip(Component.translatable("config.not-riding-alert.hideChat.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().hideChat = newValue)
-            .build());
-
-    general.addEntry(
-        entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.hideHealth"),
-                ModConfig.getInstance().hideHealth)
-            .setDefaultValue(ConfigDefaults.HIDE_HEALTH)
-            .setTooltip(Component.translatable("config.not-riding-alert.hideHealth.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().hideHealth = newValue)
-            .build());
-
-    general.addEntry(
-        entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.hideNameTag"),
-                ModConfig.getInstance().hideNameTag)
-            .setDefaultValue(ConfigDefaults.HIDE_NAME_TAG)
-            .setTooltip(Component.translatable("config.not-riding-alert.hideNameTag.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().hideNameTag = newValue)
-            .build());
-
-    general.addEntry(
-        entryBuilder
-            .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.alertAutograbFailure"),
                 ModConfig.getInstance().alertAutograbFailure)
             .setDefaultValue(ConfigDefaults.ALERT_AUTOGRAB_FAILURE)
             .setTooltip(
                 Component.translatable("config.not-riding-alert.alertAutograbFailure.tooltip"))
             .setSaveConsumer(newValue -> ModConfig.getInstance().alertAutograbFailure = newValue)
-            .build());
-
-    general.addEntry(
-        entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.hideLovePotionMessages"),
-                ModConfig.getInstance().hideLovePotionMessages)
-            .setDefaultValue(ConfigDefaults.HIDE_LOVE_POTION_MESSAGES)
-            .setTooltip(
-                Component.translatable("config.not-riding-alert.hideLovePotionMessages.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().hideLovePotionMessages = newValue)
-            .build());
-
-    general.addEntry(
-        entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.relocateClosedCaption"),
-                ModConfig.getInstance().relocateClosedCaption)
-            .setDefaultValue(ConfigDefaults.RELOCATE_CLOSED_CAPTION)
-            .setTooltip(
-                Component.translatable("config.not-riding-alert.relocateClosedCaption.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().relocateClosedCaption = newValue)
             .build());
 
     general.addEntry(
@@ -219,9 +132,120 @@ public class ClothConfigScreen {
                         "config.not-riding-alert.minimizeWindow." + timing.name().toLowerCase()))
             .build());
 
+    ConfigCategory visual =
+        builder.getOrCreateCategory(
+            Component.translatable("config.not-riding-alert.category.visual"));
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.blindWhenRiding"),
+                ModConfig.getInstance().blindWhenRiding)
+            .setDefaultValue(ConfigDefaults.BLIND_WHEN_RIDING)
+            .setTooltip(Component.translatable("config.not-riding-alert.blindWhenRiding.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().blindWhenRiding = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.fullbright"),
+                FullbrightMode.class,
+                ModConfig.getInstance().fullbrightMode)
+            .setDefaultValue(FullbrightMode.NONE)
+            .setTooltip(Component.translatable("config.not-riding-alert.fullbright.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().fullbrightMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.fullbright." + mode.name().toLowerCase()))
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideScoreboard"),
+                ModConfig.getInstance().hideScoreboard)
+            .setDefaultValue(ConfigDefaults.HIDE_SCOREBOARD)
+            .setTooltip(Component.translatable("config.not-riding-alert.hideScoreboard.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideScoreboard = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideChat"),
+                ModConfig.getInstance().hideChat)
+            .setDefaultValue(ConfigDefaults.HIDE_CHAT)
+            .setTooltip(Component.translatable("config.not-riding-alert.hideChat.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideChat = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideHealth"),
+                ModConfig.getInstance().hideHealth)
+            .setDefaultValue(ConfigDefaults.HIDE_HEALTH)
+            .setTooltip(Component.translatable("config.not-riding-alert.hideHealth.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideHealth = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideNameTag"),
+                ModConfig.getInstance().hideNameTag)
+            .setDefaultValue(ConfigDefaults.HIDE_NAME_TAG)
+            .setTooltip(Component.translatable("config.not-riding-alert.hideNameTag.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideNameTag = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideHotbar"),
+                ModConfig.getInstance().hideHotbar)
+            .setDefaultValue(ConfigDefaults.HIDE_HOTBAR)
+            .setTooltip(Component.translatable("config.not-riding-alert.hideHotbar.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideHotbar = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideLovePotionMessages"),
+                ModConfig.getInstance().hideLovePotionMessages)
+            .setDefaultValue(ConfigDefaults.HIDE_LOVE_POTION_MESSAGES)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.hideLovePotionMessages.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideLovePotionMessages = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.relocateClosedCaption"),
+                ModConfig.getInstance().relocateClosedCaption)
+            .setDefaultValue(ConfigDefaults.RELOCATE_CLOSED_CAPTION)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.relocateClosedCaption.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().relocateClosedCaption = newValue)
+            .build());
+
     ConfigCategory tracker =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rides"));
+
+    tracker.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.enableTracker"),
+                ModConfig.getInstance().enableTracker)
+            .setDefaultValue(ConfigDefaults.ENABLE_TRACKER)
+            .setTooltip(Component.translatable("config.not-riding-alert.enableTracker.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().enableTracker = newValue)
+            .build());
 
     tracker.addEntry(
         entryBuilder

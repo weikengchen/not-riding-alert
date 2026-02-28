@@ -38,6 +38,7 @@ public class ModConfig {
   public boolean hideChat = ConfigDefaults.HIDE_CHAT;
   public boolean hideHealth = ConfigDefaults.HIDE_HEALTH;
   public boolean hideNameTag = ConfigDefaults.HIDE_NAME_TAG;
+  public boolean hideHotbar = ConfigDefaults.HIDE_HOTBAR;
   public boolean onlyAutograbbing = ConfigDefaults.ONLY_AUTOGRABBING;
   public boolean alertAutograbFailure = ConfigDefaults.ALERT_AUTOGRAB_FAILURE;
   public boolean hideLovePotionMessages = ConfigDefaults.HIDE_LOVE_POTION_MESSAGES;
@@ -55,6 +56,7 @@ public class ModConfig {
   public int trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
   public AudioBoostReminderMode audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
   public boolean relocateClosedCaption = ConfigDefaults.RELOCATE_CLOSED_CAPTION;
+  public boolean enableTracker = ConfigDefaults.ENABLE_TRACKER;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -104,6 +106,7 @@ public class ModConfig {
         && hideChat == modConfig.hideChat
         && hideHealth == modConfig.hideHealth
         && hideNameTag == modConfig.hideNameTag
+        && hideHotbar == modConfig.hideHotbar
         && onlyAutograbbing == modConfig.onlyAutograbbing
         && alertAutograbFailure == modConfig.alertAutograbFailure
         && displayShortName == modConfig.displayShortName
@@ -120,6 +123,7 @@ public class ModConfig {
         && trackerErrorColor == modConfig.trackerErrorColor
         && audioBoostReminderMode == modConfig.audioBoostReminderMode
         && relocateClosedCaption == modConfig.relocateClosedCaption
+        && enableTracker == modConfig.enableTracker
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -143,6 +147,7 @@ public class ModConfig {
         hideChat,
         hideHealth,
         hideNameTag,
+        hideHotbar,
         onlyAutograbbing,
         alertAutograbFailure,
         displayShortName,
@@ -158,6 +163,7 @@ public class ModConfig {
         trackerRidingColor,
         trackerErrorColor,
         audioBoostReminderMode,
-        relocateClosedCaption);
+        relocateClosedCaption,
+        enableTracker);
   }
 }

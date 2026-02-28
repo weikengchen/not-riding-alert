@@ -2,6 +2,7 @@ package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.handler.ClosedCaptionHolder;
 import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.handler.ReminderHandler;
 import com.chenweikeng.nra.ride.LastRideHolder;
@@ -106,8 +107,8 @@ public class ChatListenerMixin {
       overlayComponent.append(parts.get(i).copy());
     }
 
+    ClosedCaptionHolder.getInstance().setCaption(overlayComponent);
     Minecraft.getInstance().gui.setTitle(Component.empty());
     Minecraft.getInstance().gui.setTimes(0, 200, 0);
-    Minecraft.getInstance().gui.setSubtitle(overlayComponent);
   }
 }

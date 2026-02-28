@@ -6,6 +6,7 @@ import com.chenweikeng.nra.config.CursorReleaseTiming;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.WindowMinimizeTiming;
 import com.chenweikeng.nra.handler.AutograbFailureHandler;
+import com.chenweikeng.nra.handler.ClosedCaptionHolder;
 import com.chenweikeng.nra.handler.ConfigReminderHandler;
 import com.chenweikeng.nra.handler.DayTimeHandler;
 import com.chenweikeng.nra.handler.HibernationHandler;
@@ -117,6 +118,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
           configReminderHandler.track(client, absoluteTickCounter);
           scoreboardHandler.track(client);
           reminderHandler.track(client, absoluteTickCounter);
+          ClosedCaptionHolder.getInstance().tick();
 
           RideCountManager.getInstance().checkAndSaveIfNeeded();
 
@@ -296,6 +298,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     HibernationHandler.getInstance().reset();
     scoreboardHandler.reset();
     reminderHandler.reset();
+    ClosedCaptionHolder.getInstance().clear();
     tickCounter = 0;
     absoluteTickCounter = 0;
     lastCanoeMessageTick = -CANOE_MESSAGE_COOLDOWN_TICKS;

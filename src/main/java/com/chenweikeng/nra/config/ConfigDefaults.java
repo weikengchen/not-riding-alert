@@ -16,6 +16,7 @@ public final class ConfigDefaults {
   public static final boolean HIDE_CHAT = false;
   public static final boolean HIDE_HEALTH = true;
   public static final boolean HIDE_NAME_TAG = false;
+  public static final boolean HIDE_HOTBAR = false;
   public static final boolean ONLY_AUTOGRABBING = false;
   public static final boolean HIDE_LOVE_POTION_MESSAGES = false;
   public static final boolean ALERT_AUTOGRAB_FAILURE = true;
@@ -35,4 +36,5 @@ public final class ConfigDefaults {
   public static final AudioBoostReminderMode AUDIO_BOOST_REMINDER_MODE =
       AudioBoostReminderMode.ONLY_WHEN_RIDING;
   public static final boolean RELOCATE_CLOSED_CAPTION = true;
+  public static final boolean ENABLE_TRACKER = true;
 }
