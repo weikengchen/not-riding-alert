@@ -57,6 +57,7 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Hide Health**: Option to hide the health bar (both player and vehicle) for a cleaner interface (default: enabled)
 - **Hide Hotbar**: Option to hide the hotbar for a cleaner interface
 - **Hide Name Tags**: Option to hide player name tags for a cleaner interface
+- **Hide Experience Level**: Option to hide the experience level number for a cleaner interface
 - **Hide Love Potion Messages**: Filter out system messages containing love potion effects (optional)
 - **Relocate Closed Caption**: Move [CC] messages from chat to a centered overlay with styled text and 8-way shadow outline
 - **Ride Filtering**: Hide specific rides from the strategy display
@@ -165,6 +166,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Hide Health**: Toggle health bar visibility
 - **Hide Name Tags**: Toggle player name tags visibility
 - **Hide Hotbar**: Toggle hotbar visibility
+- **Hide Experience Level**: Toggle experience level number visibility
 - **Hide Love Potion Messages**: Filter out system messages containing love potion effects
 - **Relocate Closed Caption**: Move [CC] messages from chat to a centered overlay with styled text
 

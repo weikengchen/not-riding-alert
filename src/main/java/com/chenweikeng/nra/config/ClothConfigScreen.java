@@ -214,6 +214,17 @@ public class ClothConfigScreen {
     visual.addEntry(
         entryBuilder
             .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.hideExperienceLevel"),
+                ModConfig.getInstance().hideExperienceLevel)
+            .setDefaultValue(ConfigDefaults.HIDE_EXPERIENCE_LEVEL)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.hideExperienceLevel.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().hideExperienceLevel = newValue)
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
                 Component.translatable("config.not-riding-alert.hideLovePotionMessages"),
                 ModConfig.getInstance().hideLovePotionMessages)
             .setDefaultValue(ConfigDefaults.HIDE_LOVE_POTION_MESSAGES)

@@ -39,6 +39,7 @@ public class ModConfig {
   public boolean hideHealth = ConfigDefaults.HIDE_HEALTH;
   public boolean hideNameTag = ConfigDefaults.HIDE_NAME_TAG;
   public boolean hideHotbar = ConfigDefaults.HIDE_HOTBAR;
+  public boolean hideExperienceLevel = ConfigDefaults.HIDE_EXPERIENCE_LEVEL;
   public boolean onlyAutograbbing = ConfigDefaults.ONLY_AUTOGRABBING;
   public boolean alertAutograbFailure = ConfigDefaults.ALERT_AUTOGRAB_FAILURE;
   public boolean hideLovePotionMessages = ConfigDefaults.HIDE_LOVE_POTION_MESSAGES;
@@ -107,6 +108,7 @@ public class ModConfig {
         && hideHealth == modConfig.hideHealth
         && hideNameTag == modConfig.hideNameTag
         && hideHotbar == modConfig.hideHotbar
+        && hideExperienceLevel == modConfig.hideExperienceLevel
         && onlyAutograbbing == modConfig.onlyAutograbbing
         && alertAutograbFailure == modConfig.alertAutograbFailure
         && displayShortName == modConfig.displayShortName
@@ -148,6 +150,7 @@ public class ModConfig {
         hideHealth,
         hideNameTag,
         hideHotbar,
+        hideExperienceLevel,
         onlyAutograbbing,
         alertAutograbFailure,
         displayShortName,

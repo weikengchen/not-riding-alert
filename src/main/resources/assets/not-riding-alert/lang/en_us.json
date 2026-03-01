@@ -51,6 +51,8 @@
   "config.not-riding-alert.hideNameTag.tooltip": "Hide player name tags for a cleaner interface",
   "config.not-riding-alert.hideHotbar": "Hide hotbar",
   "config.not-riding-alert.hideHotbar.tooltip": "Hide the hotbar for a cleaner interface",
+  "config.not-riding-alert.hideExperienceLevel": "Hide experience level",
+  "config.not-riding-alert.hideExperienceLevel.tooltip": "Hide the experience level number for a cleaner interface",
   "config.not-riding-alert.onlyAutograbbing": "Only show known autograbbing rides",
   "config.not-riding-alert.onlyAutograbbing.tooltip": "Only show rides that have auto-grabbing support in the tracker",
   "config.not-riding-alert.alertAutograbFailure": "Alert when autograbbing fails",
