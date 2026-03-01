@@ -370,19 +370,17 @@ public class NotRidingAlertClient implements ClientModInitializer {
                   return 1;
                 }));
 
-    if (false) {
-      dispatcher.register(
-          ClientCommandManager.literal("setupnra")
-              .executes(
-                  context -> {
-                    TutorialManager.getInstance().resetTutorial();
-                    Minecraft client = Minecraft.getInstance();
-                    client.execute(
-                        () -> {
-                          client.setScreen(new WizardScreen());
-                        });
-                    return 1;
-                  }));
-    }
+    dispatcher.register(
+        ClientCommandManager.literal("setupnra")
+            .executes(
+                context -> {
+                  TutorialManager.getInstance().resetTutorial();
+                  Minecraft client = Minecraft.getInstance();
+                  client.execute(
+                      () -> {
+                        client.setScreen(new WizardScreen());
+                      });
+                  return 1;
+                }));
   }
 }

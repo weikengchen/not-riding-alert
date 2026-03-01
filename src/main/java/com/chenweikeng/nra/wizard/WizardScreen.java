@@ -17,30 +17,30 @@ public class WizardScreen extends Screen {
   private static final Identifier BOOK_TEXTURE =
       Identifier.tryParse("not-riding-alert:textures/gui/tutorial/book_background.png");
 
-  private static final int BOOK_WIDTH = 1024;
-  private static final int BOOK_HEIGHT = 640;
+  private static final int BOOK_WIDTH = 512;
+  private static final int BOOK_HEIGHT = 320;
 
-  private static final int CONTENT_X = 160;
-  private static final int CONTENT_Y = 90;
-  private static final int CONTENT_WIDTH = 700;
-  private static final int CONTENT_HEIGHT = 450;
-  private static final int TEXT_MARGIN = 20;
+  private static final int CONTENT_X = 80;
+  private static final int CONTENT_Y = 45;
+  private static final int CONTENT_WIDTH = 350;
+  private static final int CONTENT_HEIGHT = 225;
+  private static final int TEXT_MARGIN = 10;
 
-  private static final int CLOSE_X = BOOK_WIDTH - 140;
-  private static final int CLOSE_Y = 40;
-  private static final int CLOSE_WIDTH = 30;
-  private static final int CLOSE_HEIGHT = 30;
+  private static final int CLOSE_X = BOOK_WIDTH - 70;
+  private static final int CLOSE_Y = 20;
+  private static final int CLOSE_WIDTH = 15;
+  private static final int CLOSE_HEIGHT = 15;
 
-  private static final int ARROW_WIDTH = 48;
-  private static final int ARROW_HEIGHT = 27;
+  private static final int ARROW_WIDTH = 24;
+  private static final int ARROW_HEIGHT = 14;
   private static final int BACK_X = CONTENT_X + TEXT_MARGIN;
-  private static final int BACK_Y = CONTENT_Y + CONTENT_HEIGHT - 40;
+  private static final int BACK_Y = CONTENT_Y + CONTENT_HEIGHT - 20;
   private static final int NEXT_X = CONTENT_X + CONTENT_WIDTH - TEXT_MARGIN - ARROW_WIDTH;
-  private static final int NEXT_Y = CONTENT_Y + CONTENT_HEIGHT - 40;
+  private static final int NEXT_Y = CONTENT_Y + CONTENT_HEIGHT - 20;
 
-  private static final int TITLE_Y_OFFSET = 20;
-  private static final int TEXT_START_Y_OFFSET = 70;
-  private static final int LINE_HEIGHT = 24;
+  private static final int TITLE_Y_OFFSET = 10;
+  private static final int TEXT_START_Y_OFFSET = 35;
+  private static final int LINE_HEIGHT = 12;
 
   private static final int TITLE_COLOR = 0xFF333333;
   private static final int TEXT_COLOR = 0xFF222222;
@@ -107,14 +107,15 @@ public class WizardScreen extends Screen {
   }
 
   private void calculateScale() {
+    float fontBasedScale = (float) font.lineHeight / LINE_HEIGHT;
+
     float maxBookWidth = this.width * 0.8f;
     float maxBookHeight = this.height * 0.8f;
-
     float scaleX = maxBookWidth / BOOK_WIDTH;
     float scaleY = maxBookHeight / BOOK_HEIGHT;
+    float screenFitScale = Math.min(scaleX, scaleY);
 
-    this.scale = Math.min(scaleX, scaleY);
-    this.scale = Math.min(scale, 1.0f);
+    this.scale = Math.min(fontBasedScale, screenFitScale);
 
     int scaledWidth = (int) (BOOK_WIDTH * scale);
     int scaledHeight = (int) (BOOK_HEIGHT * scale);

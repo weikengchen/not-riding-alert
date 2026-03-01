@@ -7,37 +7,37 @@ Edit the values below and run to see where buttons will be placed.
 from PIL import Image, ImageDraw, ImageFont
 
 # Book dimensions (original texture size)
-BOOK_WIDTH = 1024
-BOOK_HEIGHT = 640
+BOOK_WIDTH = 512
+BOOK_HEIGHT = 320
 
 # ============================================================
 # EDIT THESE VALUES TO DEFINE THE CONTENT AREA
 # ============================================================
 
 # Content area - where text and title appear
-CONTENT_X = 160
-CONTENT_Y = 90
-CONTENT_WIDTH = 700
-CONTENT_HEIGHT = 450
-TEXT_MARGIN = 20
+CONTENT_X = 80
+CONTENT_Y = 45
+CONTENT_WIDTH = 350
+CONTENT_HEIGHT = 225
+TEXT_MARGIN = 10
 
 # Close button (X) - relative to book top-left
-CLOSE_X = BOOK_WIDTH - 140
-CLOSE_Y = 40
-CLOSE_WIDTH = 30
-CLOSE_HEIGHT = 30
+CLOSE_X = BOOK_WIDTH - 70
+CLOSE_Y = 20
+CLOSE_WIDTH = 15
+CLOSE_HEIGHT = 15
 
 # PageButton arrows (scaled proportionally from 23x13)
-ARROW_WIDTH = 48
-ARROW_HEIGHT = 27
+ARROW_WIDTH = 24
+ARROW_HEIGHT = 14
 
 # Back arrow position
 BACK_X = CONTENT_X + TEXT_MARGIN
-BACK_Y = CONTENT_Y + CONTENT_HEIGHT - 40
+BACK_Y = CONTENT_Y + CONTENT_HEIGHT - 20
 
 # Next arrow position
 NEXT_X = CONTENT_X + CONTENT_WIDTH - TEXT_MARGIN - ARROW_WIDTH
-NEXT_Y = CONTENT_Y + CONTENT_HEIGHT - 40
+NEXT_Y = CONTENT_Y + CONTENT_HEIGHT - 20
 
 # ============================================================
 

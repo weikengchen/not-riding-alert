@@ -7,8 +7,6 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
 
 public class CloseButton extends AbstractButton {
-  private static final int BG_COLOR = 0x33FFFFFF;
-  private static final int BG_HOVER_COLOR = 0x66FFFFFF;
   private static final int X_COLOR = 0xFF666666;
   private static final int X_HOVER_COLOR = 0xFFCC0000;
 
@@ -26,20 +24,20 @@ public class CloseButton extends AbstractButton {
     int size = getWidth();
     int halfSize = size / 2;
 
-    int bgColor = isHoveredOrFocused() ? BG_HOVER_COLOR : BG_COLOR;
     int color = isHoveredOrFocused() ? X_HOVER_COLOR : X_COLOR;
 
-    graphics.fill(
-        centerX - halfSize, centerY - halfSize, centerX + halfSize, centerY + halfSize, bgColor);
-
     int thickness = Math.max(2, size / 15);
-    int armLength = halfSize - 3;
+    int armLength = halfSize - 4;
+    int halfThick = thickness / 2;
 
-    for (int t = -thickness / 2; t <= thickness / 2; t++) {
-      graphics.fill(
-          centerX - armLength, centerY + t, centerX + armLength + 1, centerY + t + 1, color);
-      graphics.fill(
-          centerX + t, centerY - armLength, centerX + t + 1, centerY + armLength + 1, color);
+    for (int i = -armLength; i <= armLength; i++) {
+      int x1 = centerX + i;
+      int y1 = centerY + i;
+      graphics.fill(x1 - halfThick, y1, x1 + halfThick + 1, y1 + 1, color);
+
+      int x2 = centerX + i;
+      int y2 = centerY - i;
+      graphics.fill(x2 - halfThick, y2, x2 + halfThick + 1, y2 + 1, color);
     }
   }
 
