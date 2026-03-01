@@ -11,6 +11,7 @@
 		"ChatListenerMixin",
 		"ClientLevelMixin",
 		"MinecraftMixin",
+		"MinecraftScreenMixin",
 		"BossHealthOverlayAccessor",
 		"AvatarRendererMixin"
 	],

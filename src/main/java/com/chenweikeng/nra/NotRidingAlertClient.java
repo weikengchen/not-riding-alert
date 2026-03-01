@@ -22,6 +22,8 @@ import com.chenweikeng.nra.tracker.PlayerMovementTracker;
 import com.chenweikeng.nra.tracker.RideStateTracker;
 import com.chenweikeng.nra.tracker.SuppressionRegionTracker;
 import com.chenweikeng.nra.util.SoundHelper;
+import com.chenweikeng.nra.wizard.TutorialManager;
+import com.chenweikeng.nra.wizard.WizardScreen;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -64,6 +66,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private static boolean isRiding = false;
   private boolean wasRiding = false;
   private boolean wasOnVehicle = false;
+  private boolean minimizedDuringAutograb = false;
   private RideName previousRegionRide = null;
   private static boolean automaticallyReleasedCursor = false;
 
@@ -75,6 +78,14 @@ public class NotRidingAlertClient implements ClientModInitializer {
     ClientPlayConnectionEvents.JOIN.register(
         (handler, sender, client) -> {
           ServerState.onJoin(client);
+          if (TutorialManager.getInstance().shouldStartTutorial()) {
+            client.execute(
+                () -> {
+                  if (client.screen == null) {
+                    client.setScreen(new WizardScreen());
+                  }
+                });
+          }
         });
 
     ClientPlayConnectionEvents.DISCONNECT.register(
@@ -213,15 +224,26 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
     if (modConfig.minimizeWindow != WindowMinimizeTiming.NONE) {
       WindowMinimizeTiming minimizeTiming = modConfig.minimizeWindow;
+      boolean shouldMinimizeOnZoneEntry = !wasRiding && isRiding;
+      boolean shouldMinimizeOnVehicleMount =
+          !wasOnVehicle && isOnVehicle && !minimizedDuringAutograb;
+
       boolean shouldMinimizeOnThisTick =
           switch (minimizeTiming) {
             case NONE -> false;
-            case ON_ZONE_ENTRY -> !wasRiding && isRiding;
-            case ON_VEHICLE_MOUNT -> !wasOnVehicle && isOnVehicle;
+            case ON_ZONE_ENTRY -> shouldMinimizeOnZoneEntry || shouldMinimizeOnVehicleMount;
+            case ON_VEHICLE_MOUNT -> shouldMinimizeOnVehicleMount;
           };
 
       if (shouldMinimizeOnThisTick && !MonkeycraftCompat.isServerStarted()) {
+        if (shouldMinimizeOnZoneEntry && minimizeTiming == WindowMinimizeTiming.ON_ZONE_ENTRY) {
+          minimizedDuringAutograb = true;
+        }
         windowMinimizeHandler.minimizeWindow();
+      }
+
+      if (!isRiding) {
+        minimizedDuringAutograb = false;
       }
 
       boolean shouldRestoreOnThisTick =
@@ -347,5 +369,20 @@ public class NotRidingAlertClient implements ClientModInitializer {
                       });
                   return 1;
                 }));
+
+    if (false) {
+      dispatcher.register(
+          ClientCommandManager.literal("setupnra")
+              .executes(
+                  context -> {
+                    TutorialManager.getInstance().resetTutorial();
+                    Minecraft client = Minecraft.getInstance();
+                    client.execute(
+                        () -> {
+                          client.setScreen(new WizardScreen());
+                        });
+                    return 1;
+                  }));
+    }
   }
 }

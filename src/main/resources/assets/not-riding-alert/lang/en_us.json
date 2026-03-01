@@ -39,6 +39,11 @@
   "config.not-riding-alert.rideDisplay.tooltip": "Toggle whether this ride appears in the tracker",
   "config.not-riding-alert.minRideTimeMinutes": "Minimum ride time filter (minutes)",
   "config.not-riding-alert.minRideTimeMinutes.tooltip": "Do not display rides lower than this ride time in the tracker (0 = no filter)",
+  "config.not-riding-alert.maxGoal": "Maximum ride goals",
+  "config.not-riding-alert.maxGoal.tooltip": "The maximum goal to track for rides (1K, 5K, or 10K)",
+  "config.not-riding-alert.maxGoal.k1": "1K",
+  "config.not-riding-alert.maxGoal.k5": "5K",
+  "config.not-riding-alert.maxGoal.k10": "10K",
   "config.not-riding-alert.hudBackgroundOpacity": "Strategy HUD background opacity",
   "config.not-riding-alert.hudBackgroundOpacity.tooltip": "Opacity of the background for the strategy HUD (0-100)",
   "config.not-riding-alert.hideScoreboard": "Hide scoreboard",
@@ -77,6 +82,9 @@
   "config.not-riding-alert.audioBoostReminderMode.disabled": "Disabled",
   "config.not-riding-alert.audioBoostReminderMode.only_when_riding": "Only when riding",
   "config.not-riding-alert.audioBoostReminderMode.always": "Always",
-  "config.not-riding-alert.relocateClosedCaption": "Relocate closed caption",
-  "config.not-riding-alert.relocateClosedCaption.tooltip": "Move [CC] messages from chat to the overlay area on screen"
+  "config.not-riding-alert.closedCaptionMode": "Modernized closed caption",
+  "config.not-riding-alert.closedCaptionMode.tooltip": "Move [CC] messages from chat to the overlay area on screen, with optional color coding by announcer",
+  "config.not-riding-alert.closedCaptionMode.none": "None",
+  "config.not-riding-alert.closedCaptionMode.plain": "Plain",
+  "config.not-riding-alert.closedCaptionMode.recolored": "Recolored"
 }

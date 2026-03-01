@@ -8,10 +8,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/** Calculates the best strategy for reaching ride count goals. */
 public class StrategyCalculator {
-  private static final int[] GOALS = {1, 10, 100, 500, 1000, 5000, 10000};
-  private static final int MAX_GOAL = 10000;
+  private static final int[] BASE_GOALS = {1, 10, 100, 500};
 
   /**
    * Calculates the top N easiest goals (goals that take the least time to reach).
@@ -46,8 +44,9 @@ public class StrategyCalculator {
 
       int currentCount = countManager.getRideCount(ride);
 
-      // Skip if already at max goal
-      if (currentCount >= MAX_GOAL) {
+      int maxGoal = ModConfig.getInstance().maxGoal.getValue();
+
+      if (currentCount >= maxGoal) {
         continue;
       }
 
@@ -121,11 +120,15 @@ public class StrategyCalculator {
    * @return The next goal, or -1 if no more goals (already at max)
    */
   private static int findNextGoal(int currentCount) {
-    for (int goal : GOALS) {
+    int maxGoal = ModConfig.getInstance().maxGoal.getValue();
+    for (int goal : BASE_GOALS) {
       if (currentCount < goal) {
         return goal;
       }
     }
-    return -1; // Already at max goal
+    if (currentCount < 1000) return 1000;
+    if (maxGoal >= 5000 && currentCount < 5000) return 5000;
+    if (maxGoal >= 10000 && currentCount < 10000) return 10000;
+    return -1;
   }
 }

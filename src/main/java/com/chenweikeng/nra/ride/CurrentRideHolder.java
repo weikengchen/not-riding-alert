@@ -1,5 +1,7 @@
 package com.chenweikeng.nra.ride;
 
+import com.chenweikeng.nra.handler.ClosedCaptionHolder;
+
 /**
  * Holds the currently ridden ride from the scoreboard sidebar. Null when the "Current Ride" block
  * is not shown (player not riding).
@@ -14,10 +16,14 @@ public class CurrentRideHolder {
   }
 
   public static void setCurrentRide(RideName ride) {
+    boolean isNewRide = currentRide == null && ride != null;
     currentRide = ride;
     if (ride == null) {
       currentProgressPercent = null;
       elapsedSeconds = null;
+    }
+    if (isNewRide) {
+      ClosedCaptionHolder.getInstance().randomizeColorSeed();
     }
   }
 

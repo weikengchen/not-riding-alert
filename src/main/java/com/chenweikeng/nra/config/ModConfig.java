@@ -56,8 +56,9 @@ public class ModConfig {
   public int trackerRidingColor = ConfigDefaults.TRACKER_RIDING_COLOR;
   public int trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
   public AudioBoostReminderMode audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
-  public boolean relocateClosedCaption = ConfigDefaults.RELOCATE_CLOSED_CAPTION;
+  public ClosedCaptionMode closedCaptionMode = ConfigDefaults.CLOSED_CAPTION_MODE;
   public boolean enableTracker = ConfigDefaults.ENABLE_TRACKER;
+  public MaxGoal maxGoal = ConfigDefaults.MAX_GOAL;
 
   public static ModConfig getInstance() {
     if (instance == null) {
@@ -88,6 +89,49 @@ public class ModConfig {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public void resetToDefaults() {
+    globalEnable = ConfigDefaults.GLOBAL_ENABLE;
+    enabled = ConfigDefaults.ENABLED;
+    soundId = ConfigDefaults.SOUND_ID;
+    blindWhenRiding = ConfigDefaults.BLIND_WHEN_RIDING;
+    fullbrightMode = ConfigDefaults.FULLBRIGHT_MODE;
+    cursorReleaseTiming = ConfigDefaults.CURSOR_RELEASE_TIMING;
+    silent = ConfigDefaults.SILENT;
+    autograb = ConfigDefaults.AUTOGRAB;
+    minRideTimeMinutes = null;
+    rideDisplayCount = ConfigDefaults.RIDE_DISPLAY_COUNT;
+    hiddenRides =
+        Arrays.stream(RideName.values())
+            .filter(RideName::isSeasonal)
+            .map(RideName::toMatchString)
+            .collect(Collectors.toSet());
+    hideScoreboard = ConfigDefaults.HIDE_SCOREBOARD;
+    hideChat = ConfigDefaults.HIDE_CHAT;
+    hideHealth = ConfigDefaults.HIDE_HEALTH;
+    hideNameTag = ConfigDefaults.HIDE_NAME_TAG;
+    hideHotbar = ConfigDefaults.HIDE_HOTBAR;
+    hideExperienceLevel = ConfigDefaults.HIDE_EXPERIENCE_LEVEL;
+    onlyAutograbbing = ConfigDefaults.ONLY_AUTOGRABBING;
+    alertAutograbFailure = ConfigDefaults.ALERT_AUTOGRAB_FAILURE;
+    hideLovePotionMessages = ConfigDefaults.HIDE_LOVE_POTION_MESSAGES;
+    displayShortName = ConfigDefaults.DISPLAY_SHORT_NAME;
+    keepUnchanged = ConfigDefaults.KEEP_UNCHANGED;
+    hasOpenedConfig = ConfigDefaults.HAS_OPENED_CONFIG;
+    hudBackgroundOpacity = ConfigDefaults.HUD_BACKGROUND_OPACITY;
+    minimizeWindow = ConfigDefaults.MINIMIZE_WINDOW;
+    hibernationWhenRiding = ConfigDefaults.HIBERNATION_WHEN_RIDING;
+    strategyHudRendererVersion = ConfigDefaults.STRATEGY_HUD_RENDERER_VERSION;
+    trackerNormalColor = ConfigDefaults.TRACKER_NORMAL_COLOR;
+    trackerAutograbbingColor = ConfigDefaults.TRACKER_AUTOGRABBING_COLOR;
+    trackerRidingColor = ConfigDefaults.TRACKER_RIDING_COLOR;
+    trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
+    audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
+    closedCaptionMode = ConfigDefaults.CLOSED_CAPTION_MODE;
+    enableTracker = ConfigDefaults.ENABLE_TRACKER;
+    maxGoal = ConfigDefaults.MAX_GOAL;
+    save();
   }
 
   @Override
@@ -124,8 +168,9 @@ public class ModConfig {
         && trackerRidingColor == modConfig.trackerRidingColor
         && trackerErrorColor == modConfig.trackerErrorColor
         && audioBoostReminderMode == modConfig.audioBoostReminderMode
-        && relocateClosedCaption == modConfig.relocateClosedCaption
+        && closedCaptionMode == modConfig.closedCaptionMode
         && enableTracker == modConfig.enableTracker
+        && maxGoal == modConfig.maxGoal
         && Objects.equals(soundId, modConfig.soundId)
         && Objects.equals(minRideTimeMinutes, modConfig.minRideTimeMinutes)
         && Objects.equals(hiddenRides, modConfig.hiddenRides);
@@ -166,7 +211,8 @@ public class ModConfig {
         trackerRidingColor,
         trackerErrorColor,
         audioBoostReminderMode,
-        relocateClosedCaption,
-        enableTracker);
+        closedCaptionMode,
+        enableTracker,
+        maxGoal);
   }
 }

@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.ClosedCaptionMode;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.handler.ClosedCaptionHolder;
 import com.chenweikeng.nra.handler.HibernationHandler;
@@ -8,8 +9,8 @@ import com.chenweikeng.nra.handler.ReminderHandler;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
+import java.awt.Color;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -36,7 +37,8 @@ public class ChatListenerMixin {
 
     String msg = message.getString();
 
-    if (msg.startsWith(CC_MARKER) && ModConfig.getInstance().relocateClosedCaption) {
+    if (msg.startsWith(CC_MARKER)
+        && ModConfig.getInstance().closedCaptionMode != ClosedCaptionMode.NONE) {
       handleClosedCaption(message);
       ci.cancel();
       return;
@@ -102,13 +104,39 @@ public class ChatListenerMixin {
       return;
     }
 
-    MutableComponent overlayComponent = Component.empty();
+    StringBuilder contentBuilder = new StringBuilder();
     for (int i = startIndex; i < parts.size(); i++) {
-      overlayComponent.append(parts.get(i).copy());
+      contentBuilder.append(parts.get(i).getString());
+    }
+    String contentText = contentBuilder.toString();
+
+    String announcerName = null;
+    int colonIndex = contentText.indexOf(": ");
+    if (colonIndex > 0) {
+      announcerName = contentText.substring(0, colonIndex).trim();
+    }
+
+    MutableComponent overlayComponent = Component.empty();
+
+    boolean shouldRecolor =
+        ModConfig.getInstance().closedCaptionMode == ClosedCaptionMode.RECOLORED
+            && announcerName != null
+            && !announcerName.equals("immediately seeing");
+
+    TextColor textColor = null;
+    if (shouldRecolor) {
+      Color announcerColor = ClosedCaptionHolder.getInstance().colorFromName(announcerName);
+      textColor = TextColor.fromRgb(announcerColor.getRGB() & 0xFFFFFF);
+    }
+
+    for (int i = startIndex; i < parts.size(); i++) {
+      Component part = parts.get(i).copy();
+      if (textColor != null) {
+        part = part.copy().withStyle(part.getStyle().withColor(textColor));
+      }
+      overlayComponent.append(part);
     }
 
     ClosedCaptionHolder.getInstance().setCaption(overlayComponent);
-    Minecraft.getInstance().gui.setTitle(Component.empty());
-    Minecraft.getInstance().gui.setTimes(0, 200, 0);
   }
 }

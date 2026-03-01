@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.config.ClosedCaptionMode;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.handler.ClosedCaptionHolder;
 import java.util.List;
@@ -24,10 +25,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
-  @Shadow private int titleTime;
-  @Shadow private int titleFadeInTime;
-  @Shadow private int titleStayTime;
-  @Shadow private int titleFadeOutTime;
   @Shadow @Final private Minecraft minecraft;
 
   @Inject(
@@ -114,12 +111,10 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (!ModConfig.getInstance().relocateClosedCaption) {
+    if (ModConfig.getInstance().closedCaptionMode == ClosedCaptionMode.NONE) {
       return;
     }
-    boolean isRiding = NotRidingAlertClient.isRiding(minecraft.player);
-    if (!isRiding && titleTime <= 0) {
-      ClosedCaptionHolder.getInstance().clear();
+    if (!ClosedCaptionHolder.getInstance().shouldDisplay()) {
       return;
     }
     Component caption = ClosedCaptionHolder.getInstance().getCaption();
@@ -134,12 +129,11 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (!ModConfig.getInstance().relocateClosedCaption) {
+    if (ModConfig.getInstance().closedCaptionMode == ClosedCaptionMode.NONE) {
       return;
     }
 
-    boolean isRiding = NotRidingAlertClient.isRiding(minecraft.player);
-    if (!isRiding && titleTime <= 0) {
+    if (!ClosedCaptionHolder.getInstance().shouldDisplay()) {
       return;
     }
 
@@ -157,7 +151,7 @@ public abstract class GuiMixin {
     float scale = 2.0f;
     int maxWidth = (int) (guiWidth * 0.8f / scale);
     int textColor = ARGB.color(255, 255, 255, 255);
-    int shadowColor = ARGB.color(77, 255, 255, 255);
+    int shadowColor = ARGB.color(128, 255, 255, 255);
     Component shadowCaption = scaleCaptionColors(caption);
     List<net.minecraft.util.FormattedCharSequence> linesShadow =
         font.split(shadowCaption, maxWidth);
@@ -177,7 +171,11 @@ public abstract class GuiMixin {
 
     for (int[] dir : directions) {
       guiGraphics.pose().pushMatrix();
-      guiGraphics.pose().translate((float) guiWidth / 2 + dir[0], (float) guiHeight / 2 + dir[1]);
+      guiGraphics
+          .pose()
+          .translate(
+              (float) guiWidth / 2 + (float) dir[0] * 1.5f,
+              (float) guiHeight / 2 + (float) dir[1] * 1.5f);
       guiGraphics.pose().pushMatrix();
       guiGraphics.pose().scale(scale, scale);
 

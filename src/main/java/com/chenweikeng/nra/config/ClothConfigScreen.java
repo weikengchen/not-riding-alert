@@ -235,13 +235,34 @@ public class ClothConfigScreen {
 
     visual.addEntry(
         entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.relocateClosedCaption"),
-                ModConfig.getInstance().relocateClosedCaption)
-            .setDefaultValue(ConfigDefaults.RELOCATE_CLOSED_CAPTION)
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.closedCaptionMode"),
+                ClosedCaptionMode.class,
+                ModConfig.getInstance().closedCaptionMode)
+            .setDefaultValue(ConfigDefaults.CLOSED_CAPTION_MODE)
+            .setTooltip(Component.translatable("config.not-riding-alert.closedCaptionMode.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().closedCaptionMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.closedCaptionMode." + mode.name().toLowerCase()))
+            .build());
+
+    visual.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.audioBoostReminderMode"),
+                AudioBoostReminderMode.class,
+                ModConfig.getInstance().audioBoostReminderMode)
+            .setDefaultValue(ConfigDefaults.AUDIO_BOOST_REMINDER_MODE)
             .setTooltip(
-                Component.translatable("config.not-riding-alert.relocateClosedCaption.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().relocateClosedCaption = newValue)
+                Component.translatable("config.not-riding-alert.audioBoostReminderMode.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().audioBoostReminderMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.audioBoostReminderMode."
+                            + mode.name().toLowerCase()))
             .build());
 
     ConfigCategory tracker =
@@ -323,6 +344,21 @@ public class ClothConfigScreen {
 
     tracker.addEntry(
         entryBuilder
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.maxGoal"),
+                MaxGoal.class,
+                ModConfig.getInstance().maxGoal)
+            .setDefaultValue(ConfigDefaults.MAX_GOAL)
+            .setTooltip(Component.translatable("config.not-riding-alert.maxGoal.tooltip"))
+            .setSaveConsumer(newValue -> ModConfig.getInstance().maxGoal = newValue)
+            .setEnumNameProvider(
+                goal ->
+                    Component.translatable(
+                        "config.not-riding-alert.maxGoal." + goal.name().toLowerCase()))
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
             .startIntSlider(
                 Component.translatable("config.not-riding-alert.hudBackgroundOpacity"),
                 ModConfig.getInstance().hudBackgroundOpacity,
@@ -392,23 +428,6 @@ public class ClothConfigScreen {
             .setTooltip(Component.translatable("config.not-riding-alert.trackerErrorColor.tooltip"))
             .setSaveConsumer(
                 color -> ModConfig.getInstance().trackerErrorColor = color | 0xFF000000)
-            .build());
-
-    tracker.addEntry(
-        entryBuilder
-            .startEnumSelector(
-                Component.translatable("config.not-riding-alert.audioBoostReminderMode"),
-                AudioBoostReminderMode.class,
-                ModConfig.getInstance().audioBoostReminderMode)
-            .setDefaultValue(ConfigDefaults.AUDIO_BOOST_REMINDER_MODE)
-            .setTooltip(
-                Component.translatable("config.not-riding-alert.audioBoostReminderMode.tooltip"))
-            .setSaveConsumer(newValue -> ModConfig.getInstance().audioBoostReminderMode = newValue)
-            .setEnumNameProvider(
-                mode ->
-                    Component.translatable(
-                        "config.not-riding-alert.audioBoostReminderMode."
-                            + mode.name().toLowerCase()))
             .build());
 
     ConfigCategory rides =
