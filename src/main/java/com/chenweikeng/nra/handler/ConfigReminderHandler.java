@@ -1,9 +1,10 @@
 package com.chenweikeng.nra.handler;
 
 import com.chenweikeng.nra.ServerState;
-import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.wizard.TutorialManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 
 public class ConfigReminderHandler {
@@ -18,7 +19,7 @@ public class ConfigReminderHandler {
       return;
     }
 
-    if (ModConfig.getInstance().hasOpenedConfig) {
+    if (TutorialManager.getInstance().isCompletedForCurrentVersion()) {
       return;
     }
 
@@ -47,23 +48,23 @@ public class ConfigReminderHandler {
 
     Component message =
         Component.empty()
-            .withStyle(ChatFormatting.GOLD)
-            .append(Component.literal("========== ").withStyle(ChatFormatting.YELLOW))
+            .withStyle(ChatFormatting.AQUA)
             .append(
-                Component.literal("Not Riding Alert")
-                    .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
-            .append(Component.literal(" ==========").withStyle(ChatFormatting.YELLOW))
-            .append(Component.literal("\n"))
+                Component.literal("[NRA] ")
+                    .withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
             .append(
-                Component.literal("This mod modifies your gameplay experience significantly.\n"))
-            .append(Component.literal("To customize it to your preferences, please run "))
+                Component.literal(
+                        "This mod modifies your gameplay experience significantly. To set up the mod, please run ")
+                    .withStyle(ChatFormatting.WHITE))
             .append(
-                Component.literal("/nra").withStyle(ChatFormatting.AQUA, ChatFormatting.UNDERLINE))
-            .append(Component.literal(" to open the configuration screen."))
-            .append(Component.literal("\n"))
+                Component.literal("/nra setup")
+                    .withStyle(
+                        s ->
+                            s.withColor(ChatFormatting.AQUA)
+                                .withUnderlined(true)
+                                .withClickEvent(new ClickEvent.RunCommand("nra setup"))))
             .append(
-                Component.literal("========================================")
-                    .withStyle(ChatFormatting.YELLOW));
+                Component.literal(" to open the setup wizard.").withStyle(ChatFormatting.WHITE));
 
     client.player.displayClientMessage(message, false);
   }

@@ -7,16 +7,29 @@ public class RideGoal {
   private final RideName ride;
   private final int currentCount;
   private final int nextGoal;
-  private final int ridesNeeded;
-  private final long timeNeededSeconds; // Time in seconds needed to reach the goal
+  private final int nextGoalRidesNeeded;
+  private final long nextGoalTimeNeeded; // Time in seconds needed to reach the goal
+  private final int maxGoal;
+  private final int maxRidesNeeded;
+  private final long maxTimeNeeded;
 
   public RideGoal(
-      RideName ride, int currentCount, int nextGoal, int ridesNeeded, long timeNeededSeconds) {
+      RideName ride,
+      int currentCount,
+      int nextGoal,
+      int nextGoalRidesNeeded,
+      long nextGoalTimeNeeded,
+      int maxGoal,
+      int maxRidesNeeded,
+      long maxTimeNeeded) {
     this.ride = ride;
     this.currentCount = currentCount;
     this.nextGoal = nextGoal;
-    this.ridesNeeded = ridesNeeded;
-    this.timeNeededSeconds = timeNeededSeconds;
+    this.nextGoalRidesNeeded = nextGoalRidesNeeded;
+    this.nextGoalTimeNeeded = nextGoalTimeNeeded;
+    this.maxGoal = maxGoal;
+    this.maxRidesNeeded = maxRidesNeeded;
+    this.maxTimeNeeded = maxTimeNeeded;
   }
 
   public RideName getRide() {
@@ -31,19 +44,36 @@ public class RideGoal {
     return nextGoal;
   }
 
-  public int getRidesNeeded() {
-    return ridesNeeded;
+  public int getNextGoalRidesNeeded() {
+    return nextGoalRidesNeeded;
   }
 
-  public long getTimeNeededSeconds() {
-    return timeNeededSeconds;
+  public long getNextGoalTimeNeeded() {
+    return nextGoalTimeNeeded;
   }
 
-  @Override
-  public String toString() {
+  public int getMaxGoal() {
+    return maxGoal;
+  }
+
+  public int getMaxRidesNeeded() {
+    return maxRidesNeeded;
+  }
+
+  public long getMaxTimeNeeded() {
+    return maxTimeNeeded;
+  }
+
+  public String nextToString() {
     return String.format(
         "%s - %d rides needed, %s",
-        ride.getDisplayName(), ridesNeeded, formatTime(timeNeededSeconds));
+        ride.getDisplayName(), nextGoalRidesNeeded, formatTime(nextGoalTimeNeeded));
+  }
+
+  public String maxToString() {
+    return String.format(
+        "%s - %d rides needed, %s",
+        ride.getDisplayName(), maxRidesNeeded, formatTime(maxTimeNeeded));
   }
 
   private String formatTime(long seconds) {

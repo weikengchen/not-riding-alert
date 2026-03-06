@@ -1,7 +1,8 @@
 package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.config.ModConfig;
-import com.chenweikeng.nra.ride.RegionHolder;
+import com.chenweikeng.nra.config.SortingRules;
+import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import java.util.ArrayList;
@@ -21,9 +22,8 @@ public class StrategyCalculator {
     List<RideGoal> allGoals = new ArrayList<>();
     RideCountManager countManager = RideCountManager.getInstance();
 
-    // Get config for filtering
-    Integer minRideTimeMinutes = ModConfig.getInstance().minRideTimeMinutes;
-    boolean onlyAutograbbing = ModConfig.getInstance().onlyAutograbbing;
+    Integer minRideTimeMinutes = ModConfig.currentSetting.minRideTimeMinutes;
+    boolean onlyAutograbbing = ModConfig.currentSetting.onlyAutograbbing;
 
     // Calculate goals for each ride
     for (RideName ride : RideName.values()) {
@@ -33,18 +33,18 @@ public class StrategyCalculator {
       }
 
       // Skip non-autograbbing rides if onlyAutograbbing is enabled
-      if (onlyAutograbbing && !RegionHolder.hasAutograb(ride)) {
+      if (onlyAutograbbing && !AutograbHolder.hasAutograb(ride)) {
         continue;
       }
 
       // Skip hidden rides
-      if (ModConfig.getInstance().hiddenRides.contains(ride.toMatchString())) {
+      if (ModConfig.currentSetting.hiddenRides.contains(ride.toMatchString())) {
         continue;
       }
 
       int currentCount = countManager.getRideCount(ride);
 
-      int maxGoal = ModConfig.getInstance().maxGoal.getValue();
+      int maxGoal = ModConfig.currentSetting.maxGoal.getValue();
 
       if (currentCount >= maxGoal) {
         continue;
@@ -58,7 +58,8 @@ public class StrategyCalculator {
       }
 
       // Calculate rides needed and time
-      int ridesNeeded = nextGoal - currentCount;
+      int nextRidesNeeded = nextGoal - currentCount;
+      int maxRidesNeeded = maxGoal - currentCount;
       int rideTimeSeconds = ride.getRideTime();
 
       // Skip if ride time is invalid (99999 means not provided)
@@ -76,13 +77,48 @@ public class StrategyCalculator {
         }
       }
 
-      long timeNeededSeconds = (long) ridesNeeded * rideTimeSeconds;
+      long nextTimeNeeded = (long) nextRidesNeeded * rideTimeSeconds;
+      long maxTimeNeeded = (long) maxRidesNeeded * rideTimeSeconds;
 
-      allGoals.add(new RideGoal(ride, currentCount, nextGoal, ridesNeeded, timeNeededSeconds));
+      allGoals.add(
+          new RideGoal(
+              ride,
+              currentCount,
+              nextGoal,
+              nextRidesNeeded,
+              nextTimeNeeded,
+              maxGoal,
+              maxRidesNeeded,
+              maxTimeNeeded));
     }
 
-    // Sort by time needed (easiest first)
-    allGoals.sort(Comparator.comparingLong(RideGoal::getTimeNeededSeconds));
+    // Sort based on sortingRules config
+    SortingRules rules = ModConfig.currentSetting.sortingRules;
+    if (rules == null) {
+      rules = SortingRules.NEXT_GOAL_ASC;
+    }
+
+    switch (rules) {
+      case TOTAL_TIME_ASC:
+        allGoals.sort(Comparator.comparingLong(RideGoal::getMaxTimeNeeded));
+        break;
+      case TOTAL_TIME_DESC:
+        allGoals.sort(Comparator.comparingLong(RideGoal::getMaxTimeNeeded).reversed());
+        break;
+      case RIDE_TIME_ASC:
+        allGoals.sort(Comparator.comparingInt((RideGoal g) -> (int) g.getRide().getRideTime()));
+        break;
+      case RIDE_TIME_DESC:
+        allGoals.sort(
+            Comparator.comparingInt((RideGoal g) -> (int) g.getRide().getRideTime()).reversed());
+        break;
+      case NEXT_GOAL_ASC:
+        allGoals.sort(Comparator.comparingLong(RideGoal::getNextGoalTimeNeeded));
+        break;
+      case NEXT_GOAL_DESC:
+        allGoals.sort(Comparator.comparingLong(RideGoal::getNextGoalTimeNeeded).reversed());
+        break;
+    }
 
     // Return top N
     int returnCount = Math.min(topN, allGoals.size());
@@ -101,16 +137,37 @@ public class StrategyCalculator {
     RideCountManager countManager = RideCountManager.getInstance();
     int currentCount = countManager.getRideCount(ride);
     int nextGoal = findNextGoal(currentCount);
-    if (nextGoal == -1) {
-      return new RideGoal(ride, currentCount, currentCount, 0, 0);
-    }
-    int ridesNeeded = nextGoal - currentCount;
+    int maxGoal = ModConfig.currentSetting.maxGoal.getValue();
+
     int rideTimeSeconds = ride.getRideTime();
     if (rideTimeSeconds >= 99999) {
       return null;
     }
+
+    if (nextGoal == -1) {
+      if (currentCount >= maxGoal) {
+        return new RideGoal(ride, currentCount, currentCount, 0, 0, maxGoal, 0, 0);
+      } else {
+        int maxRidesNeeded = maxGoal - currentCount;
+        long maxTimeNeeded = (long) maxRidesNeeded * rideTimeSeconds;
+        return new RideGoal(
+            ride, currentCount, currentCount, 0, 0, maxGoal, maxRidesNeeded, maxTimeNeeded);
+      }
+    }
+
+    int ridesNeeded = nextGoal - currentCount;
+    int maxRidesNeeded = maxGoal - currentCount;
     long timeNeededSeconds = (long) ridesNeeded * rideTimeSeconds;
-    return new RideGoal(ride, currentCount, nextGoal, ridesNeeded, timeNeededSeconds);
+    long maxTimeNeeded = (long) maxRidesNeeded * rideTimeSeconds;
+    return new RideGoal(
+        ride,
+        currentCount,
+        nextGoal,
+        ridesNeeded,
+        timeNeededSeconds,
+        maxGoal,
+        maxRidesNeeded,
+        maxTimeNeeded);
   }
 
   /**
@@ -120,7 +177,7 @@ public class StrategyCalculator {
    * @return The next goal, or -1 if no more goals (already at max)
    */
   private static int findNextGoal(int currentCount) {
-    int maxGoal = ModConfig.getInstance().maxGoal.getValue();
+    int maxGoal = ModConfig.currentSetting.maxGoal.getValue();
     for (int goal : BASE_GOALS) {
       if (currentCount < goal) {
         return goal;

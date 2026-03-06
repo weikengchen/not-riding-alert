@@ -1,63 +1,41 @@
 package com.chenweikeng.nra.wizard;
 
+import com.chenweikeng.nra.wizard.layout.ColumnBlock;
+import com.chenweikeng.nra.wizard.layout.RenderBlock;
+import com.chenweikeng.nra.wizard.layout.RowBlock;
+import com.chenweikeng.nra.wizard.layout.TextBlock;
 import java.util.List;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 
 public class WizardScreen extends Screen {
-  private static final Identifier BOOK_TEXTURE =
-      Identifier.tryParse("not-riding-alert:textures/gui/tutorial/book_background.png");
+  private static final int HEADER_HEIGHT = 40;
+  private static final int FOOTER_HEIGHT = 40;
+  private static final int PADDING = 20;
+  private static final int BUTTON_WIDTH = 80;
+  private static final int BUTTON_HEIGHT = 20;
 
-  private static final int BOOK_WIDTH = 512;
-  private static final int BOOK_HEIGHT = 320;
-
-  private static final int CONTENT_X = 80;
-  private static final int CONTENT_Y = 45;
-  private static final int CONTENT_WIDTH = 350;
-  private static final int CONTENT_HEIGHT = 225;
-  private static final int TEXT_MARGIN = 10;
-
-  private static final int CLOSE_X = BOOK_WIDTH - 70;
-  private static final int CLOSE_Y = 20;
-  private static final int CLOSE_WIDTH = 15;
-  private static final int CLOSE_HEIGHT = 15;
-
-  private static final int ARROW_WIDTH = 24;
-  private static final int ARROW_HEIGHT = 14;
-  private static final int BACK_X = CONTENT_X + TEXT_MARGIN;
-  private static final int BACK_Y = CONTENT_Y + CONTENT_HEIGHT - 20;
-  private static final int NEXT_X = CONTENT_X + CONTENT_WIDTH - TEXT_MARGIN - ARROW_WIDTH;
-  private static final int NEXT_Y = CONTENT_Y + CONTENT_HEIGHT - 20;
-
-  private static final int TITLE_Y_OFFSET = 10;
-  private static final int TEXT_START_Y_OFFSET = 35;
-  private static final int LINE_HEIGHT = 12;
-
-  private static final int TITLE_COLOR = 0xFF333333;
-  private static final int TEXT_COLOR = 0xFF222222;
+  private static final int TITLE_COLOR = 0xFFFFFFFF;
+  private static final int HEADER_BG_COLOR = 0xDD000000;
+  private static final int FOOTER_BG_COLOR = 0xDD000000;
   private static final String ACTION_PREFIX = "wizard_action:";
 
   private int currentPageIndex;
   private WizardPage currentPage;
 
-  private PageButton backButton;
-  private PageButton nextButton;
-  private CloseButton closeButton;
+  private Button backButton;
+  private Button nextButton;
+  private Button closeButton;
 
-  private float scale;
-  private int bookLeft;
-  private int bookTop;
-
-  private int textStartY;
+  private int scrollOffset;
+  private int maxScrollOffset;
 
   public WizardScreen() {
     this(0);
@@ -67,68 +45,80 @@ public class WizardScreen extends Screen {
     super(Component.literal("Tutorial"));
     this.currentPageIndex = Math.max(0, pageIndex);
     this.currentPage = TutorialPages.getPage(this.currentPageIndex);
+    this.scrollOffset = 0;
   }
 
   @Override
   protected void init() {
     super.init();
 
-    calculateScale();
-
     if (currentPage != null) {
       currentPage.onPageOpen(minecraft);
     }
 
-    int scaledCloseX = bookLeft + (int) (CLOSE_X * scale);
-    int scaledCloseY = bookTop + (int) (CLOSE_Y * scale);
-    int scaledCloseW = (int) (CLOSE_WIDTH * scale);
-    int scaledCloseH = (int) (CLOSE_HEIGHT * scale);
+    int footerY = height - FOOTER_HEIGHT + 10;
 
-    closeButton = new CloseButton(scaledCloseX, scaledCloseY, scaledCloseW, this::onCloseClicked);
-    addRenderableWidget(closeButton);
+    backButton =
+        Button.builder(Component.literal("< Back"), this::onBackClicked)
+            .bounds(PADDING, footerY, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .build();
 
-    int scaledBackX = bookLeft + (int) (BACK_X * scale);
-    int scaledBackY = bookTop + (int) (BACK_Y * scale);
-    int scaledArrowW = (int) (ARROW_WIDTH * scale);
-    int scaledArrowH = (int) (ARROW_HEIGHT * scale);
+    nextButton =
+        Button.builder(Component.literal("Next >"), this::onNextClicked)
+            .bounds(width / 2 - BUTTON_WIDTH / 2, footerY, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .build();
 
-    backButton = new PageButton(scaledBackX, scaledBackY, false, this::onBackClicked, true);
-
-    int scaledNextX = bookLeft + (int) (NEXT_X * scale);
-    int scaledNextY = bookTop + (int) (NEXT_Y * scale);
-
-    nextButton = new PageButton(scaledNextX, scaledNextY, true, this::onNextClicked, true);
+    closeButton =
+        Button.builder(Component.literal("Close"), this::onCloseClicked)
+            .bounds(width - PADDING - BUTTON_WIDTH, footerY, BUTTON_WIDTH, BUTTON_HEIGHT)
+            .build();
 
     updateButtonVisibility();
+    updateScrollBounds();
 
-    addRenderableWidget(closeButton);
     addRenderableWidget(backButton);
     addRenderableWidget(nextButton);
-  }
-
-  private void calculateScale() {
-    float fontBasedScale = (float) font.lineHeight / LINE_HEIGHT;
-
-    float maxBookWidth = this.width * 0.8f;
-    float maxBookHeight = this.height * 0.8f;
-    float scaleX = maxBookWidth / BOOK_WIDTH;
-    float scaleY = maxBookHeight / BOOK_HEIGHT;
-    float screenFitScale = Math.min(scaleX, scaleY);
-
-    this.scale = Math.min(fontBasedScale, screenFitScale);
-
-    int scaledWidth = (int) (BOOK_WIDTH * scale);
-    int scaledHeight = (int) (BOOK_HEIGHT * scale);
-
-    this.bookLeft = (this.width - scaledWidth) / 2;
-    this.bookTop = (this.height - scaledHeight) / 2;
+    addRenderableWidget(closeButton);
   }
 
   private void updateButtonVisibility() {
     boolean isFirstPage = currentPageIndex == 0;
+    boolean isLastPage = currentPageIndex >= TutorialPages.getPageCount() - 1;
 
     backButton.visible = !isFirstPage;
     nextButton.visible = true;
+    closeButton.visible = !isLastPage;
+
+    if (isLastPage) {
+      nextButton.setMessage(Component.literal("Finish"));
+    } else {
+      nextButton.setMessage(Component.literal("Next >"));
+    }
+  }
+
+  private void updateScrollBounds() {
+    int totalHeight = calculateTotalHeight();
+    int visibleHeight = height - HEADER_HEIGHT - FOOTER_HEIGHT - PADDING * 2;
+
+    if (totalHeight > visibleHeight) {
+      maxScrollOffset = totalHeight - visibleHeight;
+    } else {
+      maxScrollOffset = 0;
+    }
+
+    scrollOffset = Math.min(scrollOffset, maxScrollOffset);
+  }
+
+  private int calculateTotalHeight() {
+    if (currentPage == null) {
+      return 0;
+    }
+    int textWidth = width - PADDING * 2;
+    int total = 0;
+    for (RenderBlock block : currentPage.getBlocks(minecraft)) {
+      total += block.getHeight(textWidth, minecraft);
+    }
+    return total;
   }
 
   private void onBackClicked(Button button) {
@@ -147,7 +137,7 @@ public class WizardScreen extends Screen {
     }
   }
 
-  private void onCloseClicked(CloseButton button) {
+  private void onCloseClicked(Button button) {
     onClose();
   }
 
@@ -164,10 +154,31 @@ public class WizardScreen extends Screen {
     }
     this.currentPageIndex = pageIndex;
     this.currentPage = TutorialPages.getPage(pageIndex);
+    this.scrollOffset = 0;
     if (currentPage != null) {
       currentPage.onPageOpen(minecraft);
     }
     updateButtonVisibility();
+    updateScrollBounds();
+  }
+
+  public int getCurrentPageIndex() {
+    return currentPageIndex;
+  }
+
+  @Override
+  public boolean mouseScrolled(
+      double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    if (maxScrollOffset > 0) {
+      scrollOffset =
+          Math.max(
+              0,
+              Math.min(
+                  scrollOffset - (int) (verticalAmount * RenderBlock.LINE_HEIGHT),
+                  maxScrollOffset));
+      return true;
+    }
+    return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
   }
 
   @Override
@@ -176,10 +187,7 @@ public class WizardScreen extends Screen {
       int mouseX = (int) mouseButtonEvent.x();
       int mouseY = (int) mouseButtonEvent.y();
 
-      int unscaledMouseX = (int) ((mouseX - bookLeft) / scale);
-      int unscaledMouseY = (int) ((mouseY - bookTop) / scale);
-
-      Style clickedStyle = getStyleAtMouse(unscaledMouseX, unscaledMouseY);
+      Style clickedStyle = getStyleAtMouse(mouseX, mouseY);
       if (clickedStyle != null) {
         ClickEvent clickEvent = clickedStyle.getClickEvent();
         if (clickEvent instanceof ClickEvent.RunCommand runCommand) {
@@ -195,24 +203,85 @@ public class WizardScreen extends Screen {
     return super.mouseClicked(mouseButtonEvent, bl);
   }
 
-  private Style getStyleAtMouse(int unscaledMouseX, int unscaledMouseY) {
+  private Style getStyleAtMouse(int mouseX, int mouseY) {
     if (currentPage == null) {
       return null;
     }
 
-    int textX = CONTENT_X + TEXT_MARGIN;
-    int textWidth = CONTENT_WIDTH - TEXT_MARGIN * 2;
+    int contentY = HEADER_HEIGHT + PADDING;
+    int contentBottom = height - FOOTER_HEIGHT - PADDING;
+
+    if (mouseY < contentY || mouseY > contentBottom) {
+      return null;
+    }
+
+    int textWidth = width - PADDING * 2;
+    int offsetMouseY = mouseY - contentY + scrollOffset;
+
+    int y = 0;
+    for (RenderBlock block : currentPage.getBlocks(minecraft)) {
+      int blockHeight = block.getHeight(textWidth, minecraft);
+
+      if (offsetMouseY >= y && offsetMouseY < y + blockHeight) {
+        Style style = getStyleInBlock(block, mouseX, offsetMouseY - y, textWidth);
+        if (style != null) {
+          return style;
+        }
+      }
+
+      y += blockHeight;
+    }
+
+    return null;
+  }
+
+  private Style getStyleInBlock(RenderBlock block, int mouseX, int relativeY, int width) {
+    if (block instanceof TextBlock textBlock) {
+      return getStyleInTextBlock(textBlock, mouseX, relativeY, width);
+    } else if (block instanceof RowBlock rowBlock) {
+      return getStyleInRowBlock(rowBlock, mouseX, relativeY, width);
+    } else if (block instanceof ColumnBlock columnBlock) {
+      return getStyleInColumnBlock(columnBlock, mouseX, relativeY, width);
+    }
+    return null;
+  }
+
+  private Style getStyleInRowBlock(RowBlock rowBlock, int mouseX, int relativeY, int width) {
+    int columnWidth = width / rowBlock.columns().size();
+    int columnX = 0;
+
+    for (RenderBlock column : rowBlock.columns()) {
+      if (mouseX >= columnX && mouseX < columnX + columnWidth) {
+        return getStyleInBlock(column, mouseX - columnX, relativeY, columnWidth);
+      }
+      columnX += columnWidth;
+    }
+    return null;
+  }
+
+  private Style getStyleInColumnBlock(
+      ColumnBlock columnBlock, int mouseX, int relativeY, int width) {
+    int y = 0;
+    for (RenderBlock child : columnBlock.blocks()) {
+      int childHeight = child.getHeight(width, minecraft);
+      if (relativeY >= y && relativeY < y + childHeight) {
+        return getStyleInBlock(child, mouseX, relativeY - y, width);
+      }
+      y += childHeight;
+    }
+    return null;
+  }
+
+  private Style getStyleInTextBlock(TextBlock textBlock, int mouseX, int relativeY, int width) {
+    List<FormattedCharSequence> lines = font.split(textBlock.text(), width);
 
     ActiveTextCollector.ClickableStyleFinder finder =
-        new ActiveTextCollector.ClickableStyleFinder(font, unscaledMouseX, unscaledMouseY);
+        new ActiveTextCollector.ClickableStyleFinder(font, mouseX, relativeY);
 
-    Component textComponent = currentPage.getText(minecraft);
-    List<FormattedCharSequence> lines = font.split(textComponent, textWidth);
-
-    int y = CONTENT_Y + TEXT_START_Y_OFFSET;
+    int y = 0;
     for (FormattedCharSequence line : lines) {
-      finder.accept(textX, y, line);
-      y += LINE_HEIGHT;
+      finder.accept(PADDING, y, line);
+      y += RenderBlock.LINE_HEIGHT;
     }
 
     return finder.result();
@@ -221,62 +290,48 @@ public class WizardScreen extends Screen {
   @Override
   public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
     renderDarkBackground(graphics);
-
-    graphics.pose().pushMatrix();
-    graphics.pose().translate(bookLeft, bookTop);
-    graphics.pose().scale(scale, scale);
-
-    renderBookBackground(graphics);
-
-    if (currentPage != null) {
-      renderPageContent(graphics);
-    } else {
-      int centerX = BOOK_WIDTH / 2;
-      graphics.drawCenteredString(font, "Tutorial", centerX, BOOK_HEIGHT / 2 - 40, 0xFFFFFF);
-      graphics.drawCenteredString(
-          font, "Page content not found", centerX, BOOK_HEIGHT / 2, 0xFF5555);
-    }
-
-    graphics.pose().popMatrix();
+    renderHeader(graphics);
+    renderBlocks(graphics);
+    renderFooter(graphics);
 
     super.render(graphics, mouseX, mouseY, delta);
   }
 
-  private void renderPageContent(GuiGraphics graphics) {
-    renderTitle(graphics);
-    renderBodyText(graphics);
+  private void renderHeader(GuiGraphics graphics) {
+    graphics.fill(0, 0, width, HEADER_HEIGHT, HEADER_BG_COLOR);
+
+    if (currentPage != null) {
+      graphics.drawCenteredString(
+          font, currentPage.getTitle(), width / 2, (HEADER_HEIGHT - 8) / 2, TITLE_COLOR);
+    }
   }
 
-  private void renderTitle(GuiGraphics graphics) {
+  private void renderBlocks(GuiGraphics graphics) {
     if (currentPage == null) {
       return;
     }
-    int titleY = CONTENT_Y + TITLE_Y_OFFSET;
-    int centerX = CONTENT_X + CONTENT_WIDTH / 2;
 
-    graphics.drawCenteredString(font, currentPage.getTitle(), centerX, titleY, TITLE_COLOR);
+    int contentY = HEADER_HEIGHT + PADDING;
+    int contentHeight = height - HEADER_HEIGHT - FOOTER_HEIGHT - PADDING * 2;
+    int textWidth = width - PADDING * 2;
+
+    graphics.enableScissor(0, contentY, width, contentY + contentHeight);
+
+    int y = contentY - scrollOffset;
+    for (RenderBlock block : currentPage.getBlocks(minecraft)) {
+      int blockHeight = block.getHeight(textWidth, minecraft);
+      if (y + blockHeight > contentY && y < contentY + contentHeight) {
+        block.render(graphics, PADDING, y, textWidth, minecraft);
+      }
+      y += blockHeight;
+    }
+
+    graphics.disableScissor();
   }
 
-  private void renderBodyText(GuiGraphics graphics) {
-    if (currentPage == null) {
-      return;
-    }
-    int textX = CONTENT_X + TEXT_MARGIN;
-    int textWidth = CONTENT_WIDTH - TEXT_MARGIN * 2;
-    textStartY = CONTENT_Y + TEXT_START_Y_OFFSET;
-
-    Component textComponent = currentPage.getText(minecraft);
-    List<FormattedCharSequence> lines = font.split(textComponent, textWidth);
-
-    int y = textStartY;
-    for (FormattedCharSequence wrappedLine : lines) {
-      graphics.drawString(font, wrappedLine, textX, y, TEXT_COLOR, false);
-      y += LINE_HEIGHT;
-    }
-  }
-
-  private void renderBookBackground(GuiGraphics graphics) {
-    graphics.blit(BOOK_TEXTURE, 0, 0, BOOK_WIDTH, BOOK_HEIGHT, 0f, 1.0f, 0f, 1.0f);
+  private void renderFooter(GuiGraphics graphics) {
+    int footerY = height - FOOTER_HEIGHT;
+    graphics.fill(0, footerY, width, height, FOOTER_BG_COLOR);
   }
 
   private void renderDarkBackground(GuiGraphics graphics) {

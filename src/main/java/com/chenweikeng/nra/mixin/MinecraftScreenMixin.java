@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
+import com.chenweikeng.nra.tracker.OtherPlayerStatsTracker;
 import com.chenweikeng.nra.wizard.WizardScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -34,6 +35,12 @@ public abstract class MinecraftScreenMixin {
     } else if (newScreen == null && screen instanceof WizardScreen) {
       nra$wizardFlag = false;
       nra$savedWizardScreen = null;
+    }
+
+    if (newScreen == null
+        && screen instanceof AbstractContainerScreen
+        && OtherPlayerStatsTracker.getInstance().shouldSuppressUpdates()) {
+      OtherPlayerStatsTracker.getInstance().setSuppressUpdates(false);
     }
   }
 

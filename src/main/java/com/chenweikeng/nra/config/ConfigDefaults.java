@@ -10,7 +10,6 @@ public final class ConfigDefaults {
   public static final FullbrightMode FULLBRIGHT_MODE = FullbrightMode.NONE;
   public static final CursorReleaseTiming CURSOR_RELEASE_TIMING = CursorReleaseTiming.NONE;
   public static final boolean SILENT = true;
-  public static final boolean AUTOGRAB = true;
   public static final int RIDE_DISPLAY_COUNT = 10;
   public static final boolean HIDE_SCOREBOARD = false;
   public static final boolean HIDE_CHAT = false;
@@ -20,15 +19,14 @@ public final class ConfigDefaults {
   public static final boolean HIDE_EXPERIENCE_LEVEL = false;
   public static final boolean ONLY_AUTOGRABBING = false;
   public static final boolean HIDE_LOVE_POTION_MESSAGES = false;
-  public static final boolean ALERT_AUTOGRAB_FAILURE = true;
   public static final boolean DISPLAY_SHORT_NAME = false;
-  public static final boolean KEEP_UNCHANGED = true;
-  public static final boolean HAS_OPENED_CONFIG = false;
+  public static final boolean SHOW_AUTOGRAB_REGIONS = false;
   public static final int HUD_BACKGROUND_OPACITY = 80;
   public static final WindowMinimizeTiming MINIMIZE_WINDOW = WindowMinimizeTiming.NONE;
   public static final boolean HIBERNATION_WHEN_RIDING = true;
   public static final StrategyHudRendererVersion STRATEGY_HUD_RENDERER_VERSION =
       StrategyHudRendererVersion.V2;
+  public static final Integer MIN_RIDE_TIME_MINUTES = 0;
 
   public static final int TRACKER_NORMAL_COLOR = 0xFFFFFFFF;
   public static final int TRACKER_AUTOGRABBING_COLOR = 0xFFEE00FF;
@@ -39,4 +37,5 @@ public final class ConfigDefaults {
   public static final ClosedCaptionMode CLOSED_CAPTION_MODE = ClosedCaptionMode.RECOLORED;
   public static final boolean ENABLE_TRACKER = true;
   public static final MaxGoal MAX_GOAL = MaxGoal.K1;
+  public static final SortingRules SORTING_RULES = SortingRules.NEXT_GOAL_ASC;
 }

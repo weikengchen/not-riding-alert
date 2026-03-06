@@ -1,0 +1,126 @@
+package com.chenweikeng.nra.config.profile;
+
+import com.chenweikeng.nra.config.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public final class BuiltInProfiles {
+
+  private BuiltInProfiles() {}
+
+  public static StoredProfile grindingMode() {
+    ConfigSetting profile = new ConfigSetting();
+
+    profile.globalEnable = true;
+    profile.enabled = true;
+    profile.soundId = "entity.experience_orb.pickup";
+    profile.silent = true;
+    profile.cursorReleaseTiming = CursorReleaseTiming.ON_ZONE_ENTRY;
+    profile.minimizeWindow = WindowMinimizeTiming.ON_ZONE_ENTRY;
+
+    profile.blindWhenRiding = true;
+    profile.fullbrightMode = FullbrightMode.ALWAYS;
+    profile.hideScoreboard = true;
+    profile.hideChat = false;
+    profile.hideHealth = true;
+    profile.hideNameTag = false;
+    profile.hideHotbar = false;
+    profile.hideExperienceLevel = false;
+    profile.hideLovePotionMessages = true;
+    profile.closedCaptionMode = ClosedCaptionMode.PLAIN;
+    profile.audioBoostReminderMode = AudioBoostReminderMode.ALWAYS;
+
+    profile.enableTracker = true;
+    profile.strategyHudRendererVersion = StrategyHudRendererVersion.V2;
+    profile.rideDisplayCount = 10;
+    profile.minRideTimeMinutes = 0;
+    profile.maxGoal = MaxGoal.K1;
+    profile.hudBackgroundOpacity = 80;
+    profile.onlyAutograbbing = false;
+
+    profile.hibernationWhenRiding = true;
+
+    return StoredProfile.create(
+        "grinding-mode", "Grinding Mode", "Optimized for efficiency grinding", profile);
+  }
+
+  public static StoredProfile sightseeingMode() {
+    ConfigSetting profile = new ConfigSetting();
+
+    profile.globalEnable = true;
+    profile.enabled = true;
+    profile.soundId = "entity.experience_orb.pickup";
+    profile.silent = true;
+    profile.cursorReleaseTiming = CursorReleaseTiming.ON_ZONE_ENTRY;
+    profile.minimizeWindow = WindowMinimizeTiming.NONE;
+
+    profile.blindWhenRiding = false;
+    profile.fullbrightMode = FullbrightMode.ALWAYS;
+    profile.hideScoreboard = true;
+    profile.hideChat = true;
+    profile.hideHealth = true;
+    profile.hideNameTag = true;
+    profile.hideHotbar = true;
+    profile.hideExperienceLevel = true;
+    profile.hideLovePotionMessages = true;
+    profile.closedCaptionMode = ClosedCaptionMode.PLAIN;
+    profile.audioBoostReminderMode = AudioBoostReminderMode.DISABLED;
+
+    profile.enableTracker = false;
+    profile.strategyHudRendererVersion = StrategyHudRendererVersion.V2;
+    profile.rideDisplayCount = 10;
+    profile.minRideTimeMinutes = 0;
+    profile.maxGoal = MaxGoal.K1;
+    profile.hudBackgroundOpacity = 80;
+    profile.onlyAutograbbing = false;
+
+    profile.hibernationWhenRiding = true;
+
+    return StoredProfile.create(
+        "sightseeing-mode", "Sightseeing Mode", "Clean visuals for enjoying rides", profile);
+  }
+
+  public static StoredProfile minimalMode() {
+    ConfigSetting profile = new ConfigSetting();
+
+    profile.globalEnable = true;
+    profile.enabled = true;
+    profile.soundId = "entity.experience_orb.pickup";
+    profile.silent = true;
+    profile.cursorReleaseTiming = CursorReleaseTiming.ON_VEHICLE_MOUNT;
+    profile.minimizeWindow = WindowMinimizeTiming.NONE;
+
+    profile.blindWhenRiding = false;
+    profile.fullbrightMode = FullbrightMode.NONE;
+    profile.hideScoreboard = false;
+    profile.hideChat = false;
+    profile.hideHealth = false;
+    profile.hideNameTag = false;
+    profile.hideHotbar = false;
+    profile.hideExperienceLevel = false;
+    profile.hideLovePotionMessages = false;
+    profile.closedCaptionMode = ClosedCaptionMode.NONE;
+    profile.audioBoostReminderMode = AudioBoostReminderMode.DISABLED;
+
+    profile.enableTracker = false;
+    profile.strategyHudRendererVersion = StrategyHudRendererVersion.V2;
+    profile.rideDisplayCount = 10;
+    profile.minRideTimeMinutes = 0;
+    profile.maxGoal = MaxGoal.K1;
+    profile.hudBackgroundOpacity = 80;
+    profile.onlyAutograbbing = false;
+
+    profile.hibernationWhenRiding = true;
+
+    return StoredProfile.create(
+        "minimal-mode", "Minimal Mode", "Only essential alerts, no visual changes", profile);
+  }
+
+  public static List<StoredProfile> all() {
+    List<StoredProfile> profiles = new ArrayList<>();
+    profiles.add(grindingMode());
+    profiles.add(sightseeingMode());
+    profiles.add(minimalMode());
+    return profiles;
+  }
+}

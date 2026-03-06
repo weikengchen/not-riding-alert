@@ -4,6 +4,7 @@ import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.strategy.StrategyHudRendererDispatcher;
+import com.chenweikeng.nra.tracker.OtherPlayerStatsTracker;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +30,9 @@ public class ClientPacketListenerMixin {
   public void onInventory(
       ClientboundContainerSetContentPacket inventoryS2CPacket, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
+    if (OtherPlayerStatsTracker.getInstance().shouldSuppressUpdates()) {
       return;
     }
     var player = Minecraft.getInstance().player;
@@ -103,6 +107,9 @@ public class ClientPacketListenerMixin {
   @Inject(at = @At("HEAD"), method = "handleContainerSetSlot")
   public void onScreenHandlerSlotUpdate(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
+    if (OtherPlayerStatsTracker.getInstance().shouldSuppressUpdates()) {
       return;
     }
     var player = Minecraft.getInstance().player;

@@ -7,13 +7,15 @@
 	"client": [
 		"LivingEntityMixin",
 		"ClientPacketListenerMixin",
+		"ClientPacketListenerCommandMixin",
 		"GuiMixin",
 		"ChatListenerMixin",
 		"ClientLevelMixin",
 		"MinecraftMixin",
 		"MinecraftScreenMixin",
 		"BossHealthOverlayAccessor",
-		"AvatarRendererMixin"
+		"AvatarRendererMixin",
+		"EntityRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

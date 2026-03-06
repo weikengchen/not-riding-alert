@@ -2,6 +2,7 @@ package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.wizard.WizardScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.Identifier;
@@ -32,21 +33,25 @@ public class ClientLevelMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
+
     if (soundEvent != null) {
-      // Don't suppress the ride complete sound
       Identifier soundId = soundEvent.location();
+
+      // Don't suppress the ride complete sound
       if (soundId != null && soundId.equals(RIDE_COMPLETE_SOUND)) {
         return; // Let the ride complete sound play
       }
 
       // Suppress other sounds when riding
-      if (ModConfig.getInstance().silent) {
+      if (ModConfig.currentSetting.silent) {
         Minecraft client = Minecraft.getInstance();
 
-        // Check if player is riding (including autograb region check via isRiding helper)
-        if (client != null
-            && client.player != null
-            && NotRidingAlertClient.isRiding(client.player)) {
+        if (client.screen instanceof WizardScreen) {
+          return; // Don't suppress sounds when the wizard is open
+        }
+
+        // Check if player is riding (excluding autograb region check via isRiding helper)
+        if (NotRidingAlertClient.isRiding()) {
           // Cancel sound when riding (except ride.complete)
           ci.cancel();
         }

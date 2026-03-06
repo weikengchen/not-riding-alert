@@ -29,7 +29,7 @@ public class AvatarRendererMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (ModConfig.getInstance().hideNameTag) {
+    if (ModConfig.currentSetting.hideNameTag) {
       ci.cancel();
     }
   }

@@ -1,8 +1,7 @@
 package com.chenweikeng.nra.handler;
 
 import com.chenweikeng.nra.ServerState;
-import com.chenweikeng.nra.config.ModConfig;
-import com.chenweikeng.nra.ride.RegionHolder;
+import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.tracker.PlayerMovementTracker;
 import net.minecraft.client.Minecraft;
@@ -19,28 +18,22 @@ public class AutograbFailureHandler {
     if (!ServerState.isImagineFunServer()) {
       return false;
     }
-    if (!ModConfig.getInstance().alertAutograbFailure) {
-      return false;
-    }
     if (client.player == null) {
       return false;
     }
 
     boolean isPassenger = client.player.isPassenger();
-    RideName regionRide = null;
-    if (ModConfig.getInstance().autograb) {
-      regionRide = RegionHolder.getRideAtLocation(client);
-    }
+    RideName autograbRide = AutograbHolder.getRideAtLocation(client);
 
-    if (regionRide != null && !isPassenger) {
-      if (currentAutograbRegion != regionRide) {
-        currentAutograbRegion = regionRide;
+    if (autograbRide != null && !isPassenger) {
+      if (currentAutograbRegion != autograbRide) {
+        currentAutograbRegion = autograbRide;
         autograbRegionEntryTick = currentTick;
         autograbFailureAlertActive = false;
       }
 
       int timeoutTicks =
-          regionRide == RideName.DISNEYLAND_RAILROAD
+          autograbRide == RideName.DISNEYLAND_RAILROAD
               ? AUTOGRAB_DLRR_TIMEOUT_TICKS
               : AUTOGRAB_TIMEOUT_TICKS;
 

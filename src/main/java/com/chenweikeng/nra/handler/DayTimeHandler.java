@@ -16,8 +16,12 @@ public class DayTimeHandler {
       return;
     }
 
-    boolean isRiding = client.player != null && NotRidingAlertClient.isRiding(client.player);
-    FullbrightMode mode = ModConfig.getInstance().fullbrightMode;
+    if (FireworkViewingHandler.getInstance().isViewingFirework()) {
+      return;
+    }
+
+    boolean isRiding = NotRidingAlertClient.isRiding();
+    FullbrightMode mode = ModConfig.currentSetting.fullbrightMode;
     boolean shouldApplyFullbright =
         switch (mode) {
           case NONE -> false;

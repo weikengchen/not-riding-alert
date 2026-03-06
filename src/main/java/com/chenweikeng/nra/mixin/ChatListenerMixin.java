@@ -38,12 +38,12 @@ public class ChatListenerMixin {
     String msg = message.getString();
 
     if (msg.startsWith(CC_MARKER)
-        && ModConfig.getInstance().closedCaptionMode != ClosedCaptionMode.NONE) {
+        && ModConfig.currentSetting.closedCaptionMode != ClosedCaptionMode.NONE) {
       handleClosedCaption(message);
       ci.cancel();
       return;
     }
-    if (ModConfig.getInstance().hideLovePotionMessages && msg.contains(": §d§o")) {
+    if (ModConfig.currentSetting.hideLovePotionMessages && msg.contains(": §d§o")) {
       ci.cancel();
       return;
     }
@@ -119,7 +119,7 @@ public class ChatListenerMixin {
     MutableComponent overlayComponent = Component.empty();
 
     boolean shouldRecolor =
-        ModConfig.getInstance().closedCaptionMode == ClosedCaptionMode.RECOLORED
+        ModConfig.currentSetting.closedCaptionMode == ClosedCaptionMode.RECOLORED
             && announcerName != null
             && !announcerName.equals("immediately seeing");
 

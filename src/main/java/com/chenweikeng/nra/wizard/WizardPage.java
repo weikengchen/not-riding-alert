@@ -1,11 +1,22 @@
 package com.chenweikeng.nra.wizard;
 
+import com.chenweikeng.nra.wizard.layout.ColumnBlock;
+import com.chenweikeng.nra.wizard.layout.FloatImageBlock;
+import com.chenweikeng.nra.wizard.layout.ImageBlock;
+import com.chenweikeng.nra.wizard.layout.RenderBlock;
+import com.chenweikeng.nra.wizard.layout.RowBlock;
+import com.chenweikeng.nra.wizard.layout.SeparatorBlock;
+import com.chenweikeng.nra.wizard.layout.SpacerBlock;
+import com.chenweikeng.nra.wizard.layout.TextBlock;
+import com.chenweikeng.nra.wizard.layout.VerticalAlignment;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 
 public abstract class WizardPage {
   protected final int pageIndex;
@@ -17,9 +28,7 @@ public abstract class WizardPage {
 
   public abstract Component getTitle();
 
-  public abstract Component getText(Minecraft client);
-
-  public abstract boolean isSkipAllowed();
+  public abstract List<RenderBlock> getBlocks(Minecraft client);
 
   public int getPageIndex() {
     return pageIndex;
@@ -29,7 +38,52 @@ public abstract class WizardPage {
 
   public void onPageClose(Minecraft client) {}
 
+  protected TextBlock text(String content) {
+    return new TextBlock(Component.literal(content));
+  }
+
+  protected TextBlock text(Component content) {
+    return new TextBlock(content);
+  }
+
+  protected ImageBlock image(Identifier texture, int width, int height) {
+    return new ImageBlock(texture, width, height);
+  }
+
+  protected FloatImageBlock floatImage(
+      Identifier texture, double widthPercent, boolean left, Component text) {
+    return new FloatImageBlock(texture, widthPercent, left, text);
+  }
+
+  protected RowBlock row(RenderBlock... columns) {
+    return new RowBlock(List.of(columns));
+  }
+
+  protected RowBlock row(VerticalAlignment alignment, RenderBlock... columns) {
+    return new RowBlock(List.of(columns), alignment);
+  }
+
+  protected ColumnBlock column(RenderBlock... blocks) {
+    return new ColumnBlock(List.of(blocks));
+  }
+
+  protected SpacerBlock spacer(int height) {
+    return new SpacerBlock(height);
+  }
+
+  protected SeparatorBlock separator(int height) {
+    return new SeparatorBlock(height);
+  }
+
   protected Component link(String text, String action) {
+    return link(text, action, ChatFormatting.AQUA);
+  }
+
+  protected Component link(String text, String action, ChatFormatting color) {
+    return link(text, action, color, true);
+  }
+
+  protected Component link(String text, String action, ChatFormatting color, boolean underline) {
     String command = ACTION_PREFIX + action;
     ClickEvent clickEvent = new ClickEvent.RunCommand(command);
     HoverEvent hoverEvent =
@@ -37,8 +91,8 @@ public abstract class WizardPage {
 
     Style linkStyle =
         Style.EMPTY
-            .withColor(ChatFormatting.AQUA)
-            .withUnderlined(true)
+            .withColor(color)
+            .withUnderlined(underline)
             .withClickEvent(clickEvent)
             .withHoverEvent(hoverEvent);
 
@@ -57,7 +111,7 @@ public abstract class WizardPage {
     return Component.literal(text).withStyle(color);
   }
 
-  protected Component text(String text) {
+  protected Component literal(String text) {
     return Component.literal(text);
   }
 

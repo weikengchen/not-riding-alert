@@ -6,14 +6,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="${SCRIPT_DIR}"
 TARGET_DIR="/Users/cusgadmin/Library/Application Support/ModrinthApp/profiles/ImagineFun/mods/"
 
-JAR_NAME="not-riding-alert-2.3.6.jar"
+JAR_NAME="not-riding-alert-2.4.0.jar"
 SOURCE_JAR="${PROJECT_DIR}/build/libs/${JAR_NAME}"
 TARGET_JAR="${TARGET_DIR}/${JAR_NAME}"
 
 echo "Building Non-Riding Alert mod..."
 cd "${PROJECT_DIR}"
-./gradlew --no-daemon spotlessApply
-./gradlew --no-daemon clean build
+./gradlew spotlessApply
+./gradlew build
 
 if [ ! -f "${SOURCE_JAR}" ]; then
     echo "Error: Build artifact not found at ${SOURCE_JAR}"

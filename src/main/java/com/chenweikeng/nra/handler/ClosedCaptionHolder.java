@@ -1,10 +1,8 @@
 package com.chenweikeng.nra.handler;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
-import com.chenweikeng.nra.ride.CurrentRideHolder;
 import java.awt.Color;
 import java.util.Random;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
 public class ClosedCaptionHolder {
@@ -27,7 +25,7 @@ public class ClosedCaptionHolder {
   }
 
   public void tick() {
-    boolean isRiding = isPlayerRiding();
+    boolean isRiding = NotRidingAlertClient.isRiding();
 
     if (displayTicks > 0 && !isRiding) {
       displayTicks--;
@@ -44,15 +42,6 @@ public class ClosedCaptionHolder {
         pendingCaption = null;
       }
     }
-  }
-
-  private boolean isPlayerRiding() {
-    Minecraft client = Minecraft.getInstance();
-    if (client == null || client.player == null) {
-      return false;
-    }
-    return NotRidingAlertClient.isRiding(client.player)
-        || CurrentRideHolder.getCurrentRide() != null;
   }
 
   public void setCaption(Component caption) {

@@ -8,15 +8,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class TutorialManager {
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-  private static final Path CONFIG_PATH = Path.of("config/notridingalert_tutorial.json");
+  private static final Path CONFIG_PATH = Path.of("config/not-riding-alert-tutorial.json");
 
   private static TutorialManager instance;
 
   private TutorialState state = TutorialState.NOT_STARTED;
   private boolean completed = false;
+  private String completedVersion = null;
 
   private TutorialManager() {
     load();
@@ -29,16 +31,27 @@ public class TutorialManager {
     return instance;
   }
 
+  public static String getCurrentModVersion() {
+    return FabricLoader.getInstance()
+        .getModContainer(NotRidingAlertClient.MOD_ID)
+        .map(container -> container.getMetadata().getVersion().getFriendlyString())
+        .orElse("unknown");
+  }
+
   public boolean shouldStartTutorial() {
-    return !completed && state == TutorialState.NOT_STARTED;
+    return state == TutorialState.NOT_STARTED && NotRidingAlertClient.isImagineFunServer();
   }
 
   public boolean isTutorialActive() {
-    return !completed && state.isActive();
+    return state.isActive();
   }
 
-  public boolean isCompleted() {
-    return completed;
+  public boolean isCompletedForCurrentVersion() {
+    if (!completed) {
+      return false;
+    }
+    String currentVersion = getCurrentModVersion();
+    return currentVersion.equals(completedVersion);
   }
 
   public TutorialState getState() {
@@ -54,12 +67,15 @@ public class TutorialManager {
       state = state.getNext();
       if (state == TutorialState.FINISHED) {
         completed = true;
+        save();
       }
-      save();
     }
   }
 
   public void goToPage(int pageIndex) {
+    if (!NotRidingAlertClient.isImagineFunServer()) {
+      return;
+    }
     TutorialState newState = TutorialState.fromPageIndex(pageIndex);
     if (newState.isActive()) {
       state = newState;
@@ -70,13 +86,12 @@ public class TutorialManager {
   public void finishTutorial() {
     state = TutorialState.FINISHED;
     completed = true;
+    completedVersion = getCurrentModVersion();
     save();
   }
 
   public void resetTutorial() {
     state = TutorialState.NOT_STARTED;
-    completed = false;
-    save();
   }
 
   public void load() {
@@ -88,8 +103,8 @@ public class TutorialManager {
     try (FileReader reader = new FileReader(configFile)) {
       TutorialData data = GSON.fromJson(reader, TutorialData.class);
       if (data != null) {
-        this.state = data.state != null ? data.state : TutorialState.NOT_STARTED;
         this.completed = data.completed;
+        this.completedVersion = data.completedVersion;
       }
     } catch (IOException e) {
       NotRidingAlertClient.LOGGER.warn("Failed to load tutorial state", e);
@@ -102,9 +117,8 @@ public class TutorialManager {
       configFile.getParentFile().mkdirs();
 
       TutorialData data = new TutorialData();
-      data.version = 1;
-      data.state = this.state;
       data.completed = this.completed;
+      data.completedVersion = this.completedVersion;
 
       try (FileWriter writer = new FileWriter(configFile)) {
         GSON.toJson(data, writer);
@@ -115,8 +129,7 @@ public class TutorialManager {
   }
 
   private static class TutorialData {
-    int version;
-    TutorialState state;
     boolean completed;
+    String completedVersion;
   }
 }

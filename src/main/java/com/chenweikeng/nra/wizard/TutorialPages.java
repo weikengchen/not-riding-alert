@@ -6,12 +6,13 @@ import java.util.List;
 public final class TutorialPages {
   private static final List<WizardPage> PAGES =
       List.of(
-          new Page1Welcome(),
-          new Page2Alert(),
-          new Page3Hud(),
-          new Page4Autograb(),
-          new Page5Config(),
-          new Page6Done());
+          new Page1AlertSettings(),
+          new Page2VisualPreferences(),
+          new Page3AutograbbingWindow(),
+          new Page4UiHiding(),
+          new Page5RideSelection(),
+          new Page6TrackerSettings(),
+          new Page7Profiles());
 
   private TutorialPages() {}
 

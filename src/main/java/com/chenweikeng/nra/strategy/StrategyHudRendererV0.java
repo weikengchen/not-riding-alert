@@ -2,8 +2,9 @@ package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.config.SortingRules;
+import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
-import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class StrategyHudRendererV0 {
       Minecraft client,
       List<RideGoal> goals,
       RideName currentRide,
-      RideName regionRide,
+      RideName autograbRide,
       RideName effectiveRide,
       boolean currentRideInTop,
       boolean isPassenger,
@@ -62,7 +63,7 @@ public class StrategyHudRendererV0 {
     updateCounter++;
     if (updateCounter >= UPDATE_INTERVAL_TICKS) {
       updateCounter = 0;
-      int displayCount = ModConfig.getInstance().rideDisplayCount;
+      int displayCount = ModConfig.currentSetting.rideDisplayCount;
       topGoals = StrategyCalculator.getTopGoals(displayCount);
     }
   }
@@ -91,10 +92,6 @@ public class StrategyHudRendererV0 {
       return;
     }
 
-    if (!ModConfig.getInstance().keepUnchanged && NotRidingAlertClient.isMonkeyAttached()) {
-      return;
-    }
-
     Minecraft client = Minecraft.getInstance();
     if (client == null || client.player == null || client.font == null) {
       return;
@@ -107,17 +104,16 @@ public class StrategyHudRendererV0 {
     int xRight = screenWidth - 50;
     int yStart = 50;
     int lineHeight = 10;
-    int colorNormal = ModConfig.getInstance().trackerNormalColor;
-    int colorRiding = ModConfig.getInstance().trackerRidingColor;
-    int colorAutograbbing = ModConfig.getInstance().trackerAutograbbingColor;
-    int errorColor = ModConfig.getInstance().trackerErrorColor;
+    int colorNormal = ModConfig.currentSetting.trackerNormalColor;
+    int colorRiding = ModConfig.currentSetting.trackerRidingColor;
+    int colorAutograbbing = ModConfig.currentSetting.trackerAutograbbingColor;
+    int errorColor = ModConfig.currentSetting.trackerErrorColor;
 
-    int displayCount = ModConfig.getInstance().rideDisplayCount;
+    int displayCount = ModConfig.currentSetting.rideDisplayCount;
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
-    RideName regionRide =
-        ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(client) : null;
-    RideName effectiveRide = currentRide != null ? currentRide : regionRide;
+    RideName autograbRide = AutograbHolder.getRideAtLocation(client);
+    RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
     boolean isPassengerForLayout = client.player.isPassenger();
@@ -133,7 +129,7 @@ public class StrategyHudRendererV0 {
             client,
             goalsForFit,
             currentRide,
-            regionRide,
+            autograbRide,
             effectiveRide,
             currentRideInTop,
             isPassengerForLayout,
@@ -141,7 +137,7 @@ public class StrategyHudRendererV0 {
             availableWidth,
             gap);
     LayoutDecision decision =
-        decideLayout(layoutInput, ModConfig.getInstance().displayShortName, wantsTwoColumns);
+        decideLayout(layoutInput, ModConfig.currentSetting.displayShortName, wantsTwoColumns);
     if (!decision.visible) {
       return;
     }
@@ -178,25 +174,25 @@ public class StrategyHudRendererV0 {
     }
     for (RideGoal goal : leftGoals) {
       FormattedRide formattedRide =
-          formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
-      String text = formatGoalText(formattedRide, goal);
+          formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+      String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
       maxWidth = Math.max(maxWidth, client.font.width(text));
     }
     if (twoColumns) {
       for (RideGoal goal : rightGoals) {
         FormattedRide formattedRide =
-            formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
-        String text = formatGoalText(formattedRide, goal);
+            formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+        String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
         maxWidth = Math.max(maxWidth, client.font.width(text));
       }
     }
     if (hasExtraRide) {
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
       FormattedRide formattedRide =
-          formatRideName(effectiveRide, currentRide, regionRide, useShortNames, isPassenger);
+          formatRideName(effectiveRide, currentRide, autograbRide, useShortNames, isPassenger);
       String text =
           currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal)
+              ? formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules)
               : "Riding: " + formattedRide.getName();
       maxWidth = Math.max(maxWidth, client.font.width(text));
     }
@@ -212,8 +208,8 @@ public class StrategyHudRendererV0 {
       for (int i = 0; i < leftGoals.size(); i++) {
         RideGoal goal = leftGoals.get(i);
         FormattedRide formattedRide =
-            formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
-        String text = formatGoalText(formattedRide, goal);
+            formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+        String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
         int color =
             getColorForStatus(
                 formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
@@ -224,8 +220,8 @@ public class StrategyHudRendererV0 {
         for (int i = 0; i < rightGoals.size(); i++) {
           RideGoal goal = rightGoals.get(i);
           FormattedRide formattedRide =
-              formatRideName(goal.getRide(), currentRide, regionRide, useShortNames, isPassenger);
-          String text = formatGoalText(formattedRide, goal);
+              formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+          String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
           int color =
               getColorForStatus(
                   formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
@@ -240,10 +236,10 @@ public class StrategyHudRendererV0 {
       int extraY = yStart + ((hasError ? 1 : 0) + maxColumnHeight + 1) * lineHeight;
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
       FormattedRide formattedRide =
-          formatRideName(effectiveRide, currentRide, regionRide, useShortNames, isPassenger);
+          formatRideName(effectiveRide, currentRide, autograbRide, useShortNames, isPassenger);
       String text =
           currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal)
+              ? formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules)
               : "Riding: " + formattedRide.getName();
       int color =
           getColorForStatus(formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
@@ -270,7 +266,7 @@ public class StrategyHudRendererV0 {
   private static FormattedRide formatRideName(
       RideName ride,
       RideName currentRide,
-      RideName regionRide,
+      RideName autograbRide,
       boolean useShortNames,
       boolean isPassenger) {
     String rideName = useShortNames ? ride.getShortName() : ride.getDisplayName();
@@ -289,7 +285,10 @@ public class StrategyHudRendererV0 {
         rideName += " (" + progress + "%, " + timeLeft + " left)";
       }
       status = RideStatus.RIDING;
-    } else if (currentRide == null && regionRide != null && ride == regionRide && !isPassenger) {
+    } else if (currentRide == null
+        && autograbRide != null
+        && ride == autograbRide
+        && !isPassenger) {
       rideName += " (Autograbbing" + getAnimatedDots() + ")";
       status = RideStatus.AUTOGRABBING;
     }
@@ -297,12 +296,22 @@ public class StrategyHudRendererV0 {
     return new FormattedRide(rideName, status);
   }
 
-  private static String formatGoalText(FormattedRide formattedRide, RideGoal goal) {
-    return String.format(
-        "%s - %d more, %s",
-        formattedRide.getName(),
-        goal.getRidesNeeded(),
-        TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
+  private static String formatGoalText(
+      FormattedRide formattedRide, RideGoal goal, SortingRules sortingRules) {
+    if (sortingRules == SortingRules.TOTAL_TIME_ASC
+        || sortingRules == SortingRules.TOTAL_TIME_DESC) {
+      return String.format(
+          "%s - %d more, %s",
+          formattedRide.getName(),
+          goal.getMaxRidesNeeded(),
+          TimeFormatUtil.formatDuration(goal.getMaxTimeNeeded()));
+    } else {
+      return String.format(
+          "%s - %d more, %s",
+          formattedRide.getName(),
+          goal.getNextGoalRidesNeeded(),
+          TimeFormatUtil.formatDuration(goal.getNextGoalTimeNeeded()));
+    }
   }
 
   private static LayoutDecision decideLayout(
@@ -359,12 +368,12 @@ public class StrategyHudRendererV0 {
           formatRideName(
               layoutInput.effectiveRide,
               layoutInput.currentRide,
-              layoutInput.regionRide,
+              layoutInput.autograbRide,
               useShortNames,
               layoutInput.isPassenger);
       String text =
           currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal)
+              ? formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules)
               : "Riding: " + formattedRide.getName();
       maxWidth = Math.max(maxWidth, layoutInput.client.font.width(text) / 2);
     }
@@ -380,10 +389,10 @@ public class StrategyHudRendererV0 {
           formatRideName(
               goal.getRide(),
               layoutInput.currentRide,
-              layoutInput.regionRide,
+              layoutInput.autograbRide,
               useShortNames,
               layoutInput.isPassenger);
-      String text = formatGoalText(formattedRide, goal);
+      String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
       max = Math.max(max, layoutInput.client.font.width(text));
     }
     return max;

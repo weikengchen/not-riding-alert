@@ -37,8 +37,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if ((!ModConfig.getInstance().keepUnchanged && NotRidingAlertClient.isMonkeyAttached())
-        || ModConfig.getInstance().hideScoreboard) {
+    if (ModConfig.currentSetting.hideScoreboard) {
       ci.cancel();
     }
   }
@@ -52,8 +51,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if ((!ModConfig.getInstance().keepUnchanged && NotRidingAlertClient.isMonkeyAttached())
-        || ModConfig.getInstance().hideChat) {
+    if (ModConfig.currentSetting.hideChat) {
       ci.cancel();
     }
   }
@@ -63,7 +61,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideHealth) {
+    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.currentSetting.hideHealth) {
       ci.cancel();
     }
   }
@@ -73,7 +71,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.getInstance().hideHealth) {
+    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.currentSetting.hideHealth) {
       ci.cancel();
     }
   }
@@ -84,7 +82,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (ModConfig.getInstance().hideHotbar) {
+    if (ModConfig.currentSetting.hideHotbar) {
       ci.cancel();
     }
   }
@@ -99,7 +97,7 @@ public abstract class GuiMixin {
   private void redirectRenderExperienceLevel(
       GuiGraphics guiGraphics, net.minecraft.client.gui.Font font, int level) {
     if (!NotRidingAlertClient.isImagineFunServer()
-        || !ModConfig.getInstance().hideExperienceLevel) {
+        || !ModConfig.currentSetting.hideExperienceLevel) {
       net.minecraft.client.gui.contextualbar.ContextualBarRenderer.renderExperienceLevel(
           guiGraphics, font, level);
     }
@@ -111,7 +109,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (ModConfig.getInstance().closedCaptionMode == ClosedCaptionMode.NONE) {
+    if (ModConfig.currentSetting.closedCaptionMode == ClosedCaptionMode.NONE) {
       return;
     }
     if (!ClosedCaptionHolder.getInstance().shouldDisplay()) {
@@ -129,7 +127,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (ModConfig.getInstance().closedCaptionMode == ClosedCaptionMode.NONE) {
+    if (ModConfig.currentSetting.closedCaptionMode == ClosedCaptionMode.NONE) {
       return;
     }
 

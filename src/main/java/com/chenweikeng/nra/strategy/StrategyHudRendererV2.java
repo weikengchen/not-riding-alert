@@ -2,9 +2,10 @@ package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.mixin.BossHealthOverlayAccessor;
+import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
-import com.chenweikeng.nra.ride.RegionHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ public class StrategyHudRendererV2 {
     updateCounter++;
     if (updateCounter >= UPDATE_INTERVAL_TICKS) {
       updateCounter = 0;
-      int displayCount = ModConfig.getInstance().rideDisplayCount;
+      int displayCount = ModConfig.currentSetting.rideDisplayCount;
       topGoals = StrategyCalculator.getTopGoals(displayCount);
     }
   }
@@ -89,10 +90,6 @@ public class StrategyHudRendererV2 {
 
   public static void render(GuiGraphics context, DeltaTracker tickCounter) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
-      return;
-    }
-
-    if (!ModConfig.getInstance().keepUnchanged && NotRidingAlertClient.isMonkeyAttached()) {
       return;
     }
 
@@ -115,20 +112,19 @@ public class StrategyHudRendererV2 {
     int screenWidth = client.getWindow().getGuiScaledWidth();
     int yStart = 0;
     int lineHeight = 10;
-    int colorNormal = ModConfig.getInstance().trackerNormalColor;
-    int colorRiding = ModConfig.getInstance().trackerRidingColor;
-    int colorAutograbbing = ModConfig.getInstance().trackerAutograbbingColor;
-    int errorColor = ModConfig.getInstance().trackerErrorColor;
+    int colorNormal = ModConfig.currentSetting.trackerNormalColor;
+    int colorRiding = ModConfig.currentSetting.trackerRidingColor;
+    int colorAutograbbing = ModConfig.currentSetting.trackerAutograbbingColor;
+    int errorColor = ModConfig.currentSetting.trackerErrorColor;
 
-    int displayCount = ModConfig.getInstance().rideDisplayCount;
+    int displayCount = ModConfig.currentSetting.rideDisplayCount;
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
-    RideName regionRide =
-        ModConfig.getInstance().autograb ? RegionHolder.getRideAtLocation(client) : null;
-    RideName effectiveRide = currentRide != null ? currentRide : regionRide;
+    RideName autograbRide = AutograbHolder.getRideAtLocation(client);
+    RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
     boolean isPassenger = client.player.isPassenger();
 
-    RideStatus effectiveStatus = getEffectiveStatus(currentRide, regionRide, isPassenger);
+    RideStatus effectiveStatus = getEffectiveStatus(currentRide, autograbRide, isPassenger);
     updateState(effectiveStatus, effectiveRide);
 
     List<EntryComponents> entries = new ArrayList<>();
@@ -136,9 +132,16 @@ public class StrategyHudRendererV2 {
     if (displayCount > 0) {
       for (RideGoal goal : topGoals) {
         String name = goal.getRide().getShortName().toUpperCase();
-        String rides = goal.getRidesNeeded() + "+";
-        String time = TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds());
-        entries.add(new EntryComponents(name, rides, time));
+        if (ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_ASC
+            || ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_DESC) {
+          String rides = goal.getMaxRidesNeeded() + "+";
+          String time = TimeFormatUtil.formatDuration(goal.getMaxTimeNeeded());
+          entries.add(new EntryComponents(name, rides, time));
+        } else {
+          String rides = goal.getNextGoalRidesNeeded() + "+";
+          String time = TimeFormatUtil.formatDuration(goal.getNextGoalTimeNeeded());
+          entries.add(new EntryComponents(name, rides, time));
+        }
       }
     }
 
@@ -151,7 +154,6 @@ public class StrategyHudRendererV2 {
     LayoutResult layout = computeLayout(entries, screenWidth, client.font);
     int numColumns = layout.optimalColumns();
     java.util.List<int[]> entryXPositions = layout.entryXPositions();
-    int startOffset = layout.startOffset();
 
     int numRows = entries.isEmpty() ? 0 : (entries.size() + numColumns - 1) / numColumns;
     int fullHeight = ((hasError ? 1 : 0) + numRows) * lineHeight;
@@ -183,7 +185,7 @@ public class StrategyHudRendererV2 {
     int bgY1 = yStart;
     int bgY2 = yStart + bgHeight + 4;
 
-    int opacity = ModConfig.getInstance().hudBackgroundOpacity;
+    int opacity = ModConfig.currentSetting.hudBackgroundOpacity;
     if (opacity > 0) {
       int alpha = (int) (opacity * 2.55);
       int bgColor = (alpha << 24);
@@ -229,7 +231,7 @@ public class StrategyHudRendererV2 {
             y,
             trackedRide,
             currentRide,
-            regionRide,
+            autograbRide,
             isPassenger,
             colorRiding,
             colorAutograbbing);
@@ -421,11 +423,11 @@ public class StrategyHudRendererV2 {
   }
 
   private static RideStatus getEffectiveStatus(
-      RideName currentRide, RideName regionRide, boolean isPassenger) {
+      RideName currentRide, RideName autograbRide, boolean isPassenger) {
     if (currentRide != null) {
       return RideStatus.RIDING;
     }
-    if (regionRide != null && !isPassenger) {
+    if (autograbRide != null && !isPassenger) {
       return RideStatus.AUTOGRABBING;
     }
     return RideStatus.NORMAL;
@@ -474,7 +476,7 @@ public class StrategyHudRendererV2 {
       int y,
       RideName ride,
       RideName currentRide,
-      RideName regionRide,
+      RideName autograbRide,
       boolean isPassenger,
       int colorGreen,
       int colorPurple) {
@@ -482,7 +484,7 @@ public class StrategyHudRendererV2 {
       return;
     }
 
-    RideStatus status = getRideStatus(ride, currentRide, regionRide, isPassenger);
+    RideStatus status = getRideStatus(ride, currentRide, autograbRide, isPassenger);
     int color = status == RideStatus.AUTOGRABBING ? colorPurple : colorGreen;
 
     String text;
@@ -511,12 +513,22 @@ public class StrategyHudRendererV2 {
       }
 
       if (goal != null) {
-        sb.append(" ");
-        sb.append(goal.getRidesNeeded());
-        sb.append("+ rides (");
-        sb.append(TimeFormatUtil.formatDuration(goal.getTimeNeededSeconds()));
-        sb.append(") to reach ");
-        sb.append(formatGoalNumber(goal.getNextGoal()));
+        if (ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_ASC
+            || ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_DESC) {
+          sb.append(" - ");
+          sb.append(goal.getMaxRidesNeeded());
+          sb.append(" rides (");
+          sb.append(TimeFormatUtil.formatDuration(goal.getMaxTimeNeeded()));
+          sb.append(") to reach ");
+          sb.append(formatGoalNumber(goal.getMaxGoal()));
+        } else {
+          sb.append(" ");
+          sb.append(goal.getNextGoalRidesNeeded());
+          sb.append(" rides (");
+          sb.append(TimeFormatUtil.formatDuration(goal.getNextGoalTimeNeeded()));
+          sb.append(") to reach ");
+          sb.append(formatGoalNumber(goal.getNextGoal()));
+        }
       }
 
       text = sb.toString();
@@ -558,11 +570,11 @@ public class StrategyHudRendererV2 {
   }
 
   private static RideStatus getRideStatus(
-      RideName ride, RideName currentRide, RideName regionRide, boolean isPassenger) {
+      RideName ride, RideName currentRide, RideName autograbRide, boolean isPassenger) {
     if (currentRide != null && ride == currentRide) {
       return RideStatus.RIDING;
     }
-    if (currentRide == null && regionRide != null && ride == regionRide && !isPassenger) {
+    if (currentRide == null && autograbRide != null && ride == autograbRide && !isPassenger) {
       return RideStatus.AUTOGRABBING;
     }
     return RideStatus.NORMAL;

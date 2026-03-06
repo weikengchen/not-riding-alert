@@ -10,7 +10,7 @@ public class ServerState {
   private static boolean isImagineFunServer = false;
 
   public static boolean isImagineFunServer() {
-    return isImagineFunServer && ModConfig.getInstance().globalEnable;
+    return isImagineFunServer && ModConfig.currentSetting.globalEnable;
   }
 
   public static void onJoin(Minecraft client) {

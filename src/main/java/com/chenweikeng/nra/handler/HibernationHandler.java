@@ -2,6 +2,7 @@ package com.chenweikeng.nra.handler;
 
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.strategy.RideGoal;
@@ -23,6 +24,7 @@ public class HibernationHandler {
   private long rideStartEpochMs = -1;
   private int currentRideTimeSeconds = -1;
   private long lastMessageUpdateTick = -1;
+  private boolean previousHibernationSetting = true;
 
   private HibernationHandler() {}
 
@@ -38,15 +40,34 @@ public class HibernationHandler {
       return;
     }
 
+    boolean currentSetting = ModConfig.currentSetting.hibernationWhenRiding;
+
+    if (previousHibernationSetting && !currentSetting && hibernationActive) {
+      MonkeycraftCompat.endHibernation();
+      hibernationActive = false;
+    }
+
     RideName currentRide = CurrentRideHolder.getCurrentRide();
 
     if (currentRide != null && previousCurrentRide == null) {
-      onRideStart(currentRide);
+      onRideStart(currentRide, currentSetting);
     } else if (currentRide == null && previousCurrentRide != null) {
       onRideEnd(currentTick);
     } else if (currentRide != null && currentRide != previousCurrentRide) {
       onRideEnd(currentTick);
-      onRideStart(currentRide);
+      onRideStart(currentRide, currentSetting);
+    }
+
+    if (!previousHibernationSetting
+        && currentSetting
+        && currentRide != null
+        && !hibernationActive
+        && wasHibernationEligibleRide) {
+      Integer progressPercent = CurrentRideHolder.getCurrentProgressPercent();
+      int initialProgress = progressPercent != null ? progressPercent : 0;
+      MonkeycraftCompat.startHibernation(buildHibernationMessage(currentRide, initialProgress));
+      hibernationActive = true;
+      lastMessageUpdateTick = currentTick;
     }
 
     if (pendingCancellation && currentTick - rideEndTick >= CANCELLATION_DELAY_TICKS) {
@@ -61,15 +82,11 @@ public class HibernationHandler {
     }
 
     previousCurrentRide = currentRide;
+    previousHibernationSetting = currentSetting;
   }
 
-  private void onRideStart(RideName ride) {
+  private void onRideStart(RideName ride, boolean hibernationEnabled) {
     if (ride == RideName.DAVY_CROCKETTS_EXPLORER_CANOES) {
-      wasHibernationEligibleRide = false;
-      return;
-    }
-
-    if (!ModConfig.getInstance().hibernationWhenRiding) {
       wasHibernationEligibleRide = false;
       return;
     }
@@ -89,8 +106,11 @@ public class HibernationHandler {
     }
 
     int initialProgress = progressPercent != null ? progressPercent : 0;
-    MonkeycraftCompat.startHibernation(buildHibernationMessage(ride, initialProgress));
-    hibernationActive = true;
+
+    if (hibernationEnabled) {
+      MonkeycraftCompat.startHibernation(buildHibernationMessage(ride, initialProgress));
+      hibernationActive = true;
+    }
 
     scheduleRideCompletionNotification(ride);
   }
@@ -159,12 +179,22 @@ public class HibernationHandler {
     RideGoal goal = StrategyCalculator.getGoalForRide(ride);
     String rideName = ride.getDisplayName();
 
-    if (goal == null || goal.getRidesNeeded() <= 0) {
-      return rideName + " has finished";
-    }
+    if (ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_ASC
+        || ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_DESC) {
+      if (goal == null || goal.getMaxRidesNeeded() <= 0) {
+        return rideName + " has finished";
+      }
 
-    int ridesNeeded = goal.getRidesNeeded();
-    return rideName + " has finished (needs " + ridesNeeded + " more rides)";
+      int ridesNeeded = goal.getMaxRidesNeeded();
+      return rideName + " has finished (needs " + ridesNeeded + " more rides)";
+    } else {
+      if (goal == null || goal.getNextGoalRidesNeeded() <= 0) {
+        return rideName + " has finished";
+      }
+
+      int ridesNeeded = goal.getNextGoalRidesNeeded();
+      return rideName + " has finished (needs " + ridesNeeded + " more rides)";
+    }
   }
 
   public void cancelPendingCancellation() {

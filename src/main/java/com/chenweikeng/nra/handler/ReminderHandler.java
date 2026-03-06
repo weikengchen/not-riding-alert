@@ -44,14 +44,13 @@ public class ReminderHandler {
   }
 
   private void checkAudioBoostReminder(Minecraft client, long currentTick) {
-    AudioBoostReminderMode mode = ModConfig.getInstance().audioBoostReminderMode;
+    AudioBoostReminderMode mode = ModConfig.currentSetting.audioBoostReminderMode;
 
     if (mode == AudioBoostReminderMode.DISABLED) {
       return;
     }
 
-    if (mode == AudioBoostReminderMode.ONLY_WHEN_RIDING
-        && !NotRidingAlertClient.isRiding(client.player)) {
+    if (mode == AudioBoostReminderMode.ONLY_WHEN_RIDING && !NotRidingAlertClient.isRiding()) {
       return;
     }
 
