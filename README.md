@@ -154,6 +154,15 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Only Show Autograbbing Rides**: Filter to only show rides that support autograbbing
 - **Tracker Colors**: Customize colors for Normal, Autograbbing, Riding, and Error states
 - **Audio Boost Reminder**: Configure when to show audio boost reminders
+- **Max Goal**: Select your target milestone (1K, 5K, or 10K rides) for progress tracking
+- **Sorting Rules**: Configure how rides are sorted in the strategy HUD
+
+### 📁 Profiles Tab (New in v2.4.0)
+- **Save Current Settings as Profile**: Save your current configuration as a named profile
+- **Load Profile**: Quickly switch between saved configuration profiles
+- **Edit Profile**: Rename or modify existing profiles
+- **Delete Profile**: Remove unwanted profiles
+- **Built-in Profiles**: Pre-configured profiles for common use cases
 
 ### 🎢 Ride Management (Rides Tab)
 - **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD
@@ -175,6 +184,17 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - Progress tracking is not available for "Davy Crockett's Explorer Canoes" (ride time is player-dependent)
 - The mod requires scoreboard data to function properly
 - Ride counts are stored locally and don't sync across devices
+
+## Changelog
+
+### v2.4.0
+- **New Profile System**: Save, load, and manage multiple configuration profiles
+- **Closed Caption Enhancements**: Improved [CC] message display with configurable modes and color-coded text
+- **Max Goal Selection**: Choose between 1K, 5K, or 10K ride milestones
+- **Sorting Rules**: Configure how rides are sorted in the strategy HUD
+- **Bug Fixes**: Fixed hiddenRides duplication, V0 HUD bossbar issues, and autograbbing detection
+- **UI Improvements**: Enhanced configuration options and better user experience
+- **Documentation Consolidation**: Merged separate documentation files into main README
 
 ## Support
 
