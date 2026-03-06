@@ -422,7 +422,10 @@ public class NotRidingAlertClient implements ClientModInitializer {
             .executes(
                 context -> {
                   Minecraft client = Minecraft.getInstance();
-                  client.setScreen(new ProfileManagementScreen(client.screen));
+                  client.execute(
+                      () -> {
+                        client.setScreen(new ProfileManagementScreen(client.screen));
+                      });
                   return 1;
                 })
             .then(
@@ -431,7 +434,10 @@ public class NotRidingAlertClient implements ClientModInitializer {
                         context -> {
                           TutorialManager.getInstance().resetTutorial();
                           Minecraft client = Minecraft.getInstance();
-                          client.setScreen(new WizardScreen());
+                          client.execute(
+                              () -> {
+                                client.setScreen(new WizardScreen());
+                              });
                           return 1;
                         })));
   }

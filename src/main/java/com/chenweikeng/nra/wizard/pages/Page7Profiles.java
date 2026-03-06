@@ -26,23 +26,21 @@ public class Page7Profiles extends WizardPage {
 
     // Section 1: How to edit the current setting
     blocks.add(text(editCurrentSettingSection()));
-    blocks.add(spacer(20));
 
     Identifier editCurrentImg =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/setting.png");
     blocks.add(image(editCurrentImg, 1200, 70));
 
-    blocks.add(separator(25));
+    blocks.add(separator(10));
 
     // Section 2: How to use the profile management
     blocks.add(text(profileManagementSection()));
-    blocks.add(spacer(20));
 
     Identifier profileMgmtImg =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/profile.png");
     blocks.add(image(profileMgmtImg, 1200, 103));
 
-    blocks.add(separator(25));
+    blocks.add(separator(10));
 
     // Welcome message
     blocks.add(text(welcomeSection()));
@@ -64,7 +62,7 @@ public class Page7Profiles extends WizardPage {
 
   private Component profileManagementSection() {
     Component content = literal("");
-    content = append(content, literal("The Profile Management screen lets you:\n\n"));
+    content = append(content, literal("\nThe Profile Management screen lets you:\n\n"));
     content = append(content, colored("  • Apply", ChatFormatting.GREEN));
     content = append(content, literal(" - Switch to a saved profile\n"));
     content = append(content, colored("  • Rename", ChatFormatting.GREEN));
@@ -78,7 +76,7 @@ public class Page7Profiles extends WizardPage {
 
   private Component welcomeSection() {
     Component content = literal("");
-    content = append(content, colored("Welcome to Not Riding Alert!\n\n", ChatFormatting.GOLD));
+    content = append(content, colored("\nWelcome to Not Riding Alert!\n\n", ChatFormatting.GOLD));
     content = append(content, literal("Thank you for using this mod. "));
     content = append(content, colored("Enjoy your rides! ", ChatFormatting.GREEN));
     content = append(content, colored("🎢", ChatFormatting.WHITE));
