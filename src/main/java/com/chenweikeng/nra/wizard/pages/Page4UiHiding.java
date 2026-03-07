@@ -68,7 +68,7 @@ public class Page4UiHiding extends WizardPage {
     Component statusText =
         isHidden
             ? colored("Hidden", ChatFormatting.GREEN)
-            : colored("Visible", ChatFormatting.GREEN);
+            : colored("Visible", ChatFormatting.RED);
 
     Identifier imgScoreboard =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/scoreboard.png");
@@ -116,7 +116,7 @@ public class Page4UiHiding extends WizardPage {
     Component statusText =
         isHidden
             ? colored("Hidden", ChatFormatting.GREEN)
-            : colored("Visible", ChatFormatting.GREEN);
+            : colored("Visible", ChatFormatting.RED);
 
     Identifier imgHealthBar =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/healthbar.png");
@@ -148,7 +148,7 @@ public class Page4UiHiding extends WizardPage {
     Component statusText =
         isHidden
             ? colored("Hidden", ChatFormatting.GREEN)
-            : colored("Visible", ChatFormatting.GREEN);
+            : colored("Visible", ChatFormatting.RED);
 
     Identifier imgNameTag =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/nametag.png");
@@ -180,7 +180,7 @@ public class Page4UiHiding extends WizardPage {
     Component statusText =
         isHidden
             ? colored("Hidden", ChatFormatting.GREEN)
-            : colored("Visible", ChatFormatting.GREEN);
+            : colored("Visible", ChatFormatting.RED);
 
     Identifier imgHotbar =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/hotbar.png");
@@ -229,7 +229,7 @@ public class Page4UiHiding extends WizardPage {
     Component statusText =
         isHidden
             ? colored("Hidden", ChatFormatting.GREEN)
-            : colored("Visible", ChatFormatting.GREEN);
+            : colored("Visible", ChatFormatting.RED);
 
     Identifier imgLovePotion =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/lovepotion.png");
@@ -251,7 +251,7 @@ public class Page4UiHiding extends WizardPage {
     Component status =
         isHidden
             ? colored("Hidden", ChatFormatting.GREEN)
-            : colored("Visible", ChatFormatting.GREEN);
+            : colored("Visible", ChatFormatting.RED);
     return Component.empty().append(description).append(literal(": ")).append(status);
   }
 
