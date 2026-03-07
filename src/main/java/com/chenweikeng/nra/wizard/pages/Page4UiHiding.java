@@ -36,9 +36,9 @@ public class Page4UiHiding extends WizardPage {
     leftColumn.addAll(chatSectionBlocks());
 
     List<RenderBlock> rightColumn = new ArrayList<>();
-    rightColumn.addAll(nameTagSectionBlocks());
-    rightColumn.add(separator(20));
     rightColumn.addAll(xpLevelSectionBlocks());
+    rightColumn.add(separator(20));
+    rightColumn.addAll(nameTagSectionBlocks());
     rightColumn.add(separator(20));
     rightColumn.addAll(hotbarSectionBlocks());
     rightColumn.add(separator(20));

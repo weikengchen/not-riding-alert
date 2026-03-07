@@ -4,6 +4,7 @@ import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.CursorReleaseTiming;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.WindowMinimizeTiming;
+import com.chenweikeng.nra.config.profile.ProfileCommandHandler;
 import com.chenweikeng.nra.config.profile.ProfileManager;
 import com.chenweikeng.nra.config.profile.ui.ProfileManagementScreen;
 import com.chenweikeng.nra.handler.AutograbFailureHandler;
@@ -40,8 +41,10 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +56,16 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private static final int CHECK_INTERVAL = 200;
   private static final int CANOE_MESSAGE_COOLDOWN_TICKS = 200;
   private static final int DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS = 12000;
+
+  public static final Component DYNAMIC_FPS_COMPATIBILITY_MESSAGE =
+      Component.empty()
+          .withStyle(ChatFormatting.AQUA)
+          .append(
+              Component.literal("[NRA] ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
+          .append(
+              Component.literal(
+                      "For compatibility with Dynamic FPS, the window will not be minimized when MonkeyCraft client is connected.")
+                  .withStyle(ChatFormatting.WHITE));
 
   private static volatile boolean isMonkeyAttached = false;
 
@@ -117,7 +130,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
             return;
           }
 
-          boolean isPassenger = client.player.isPassenger();
+          boolean isPassenger = isValidPassenger(client.player);
           RideName autograbRide = AutograbHolder.getRideAtLocation(client);
           isRiding =
               isPassenger || CurrentRideHolder.getCurrentRide() != null || autograbRide != null;
@@ -138,13 +151,13 @@ public class NotRidingAlertClient implements ClientModInitializer {
           if (autograbFailureActive
               && ModConfig.currentSetting.minimizeWindow != WindowMinimizeTiming.NONE) {
             windowMinimizeHandler.restoreWindow();
+            minimizedDuringAutograb = false;
           }
           HibernationHandler.getInstance().track(client, absoluteTickCounter);
           configReminderHandler.track(client, absoluteTickCounter);
           scoreboardHandler.track(client);
           reminderHandler.track(client, absoluteTickCounter);
           ClosedCaptionHolder.getInstance().tick();
-          sendDynamicFpsMessageIfNeeded(client);
 
           RideCountManager.getInstance().checkAndSaveIfNeeded();
 
@@ -252,13 +265,16 @@ public class NotRidingAlertClient implements ClientModInitializer {
             case ON_VEHICLE_MOUNT -> shouldMinimizeOnVehicleMount;
           };
 
-      if (shouldMinimizeOnThisTick
-          && !(MonkeycraftCompat.isClientConnected()
-              && FabricLoader.getInstance().isModLoaded("dynamic_fps"))) {
-        if (shouldMinimizeOnZoneEntry && minimizeTiming == WindowMinimizeTiming.ON_ZONE_ENTRY) {
-          minimizedDuringAutograb = true;
+      if (shouldMinimizeOnThisTick) {
+        if (MonkeycraftCompat.isClientConnected()
+            && FabricLoader.getInstance().isModLoaded("dynamic_fps")) {
+          sendDynamicFpsMessageIfNeeded(client);
+        } else {
+          if (shouldMinimizeOnZoneEntry && minimizeTiming == WindowMinimizeTiming.ON_ZONE_ENTRY) {
+            minimizedDuringAutograb = true;
+          }
+          windowMinimizeHandler.minimizeWindow();
         }
-        windowMinimizeHandler.minimizeWindow();
       }
 
       if (!isRiding) {
@@ -284,6 +300,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
               GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_ICONIFIED) == GLFW.GLFW_TRUE;
           if (isMinimized) {
             windowMinimizeHandler.restoreWindow();
+            sendDynamicFpsMessageIfNeeded(client);
           }
         }
       }
@@ -323,32 +340,13 @@ public class NotRidingAlertClient implements ClientModInitializer {
       return;
     }
 
-    if (!MonkeycraftCompat.isClientConnected()) {
-      return;
-    }
-
-    if (!FabricLoader.getInstance().isModLoaded("dynamic_fps")) {
-      return;
-    }
-
     if (absoluteTickCounter - lastDynamicFpsMessageTick < DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS) {
       return;
     }
 
     lastDynamicFpsMessageTick = absoluteTickCounter;
 
-    Component message =
-        Component.empty()
-            .withStyle(ChatFormatting.AQUA)
-            .append(
-                Component.literal("[NRA] ")
-                    .withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-            .append(
-                Component.literal(
-                        "For compatibility with Dynamic FPS, the window will not be minimized when MonkeyCraft client is connected.")
-                    .withStyle(ChatFormatting.WHITE));
-
-    client.player.displayClientMessage(message, false);
+    client.player.displayClientMessage(DYNAMIC_FPS_COMPATIBILITY_MESSAGE, false);
   }
 
   private void checkNotRidingAlert(Minecraft client, boolean autograbFailureActive) {
@@ -416,6 +414,23 @@ public class NotRidingAlertClient implements ClientModInitializer {
     isMonkeyAttached = attached;
   }
 
+  public static boolean isValidPassenger(LocalPlayer player) {
+    if (player == null) {
+      return false;
+    }
+
+    // Check if player is a passenger
+    if (!player.isPassenger()) {
+      return false;
+    }
+
+    if (!(player.getVehicle() instanceof ArmorStand)) {
+      return false;
+    }
+
+    return true;
+  }
+
   private static void registerNraCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         ClientCommandManager.literal("nra")
@@ -439,6 +454,29 @@ public class NotRidingAlertClient implements ClientModInitializer {
                                 client.setScreen(new WizardScreen());
                               });
                           return 1;
-                        })));
+                        }))
+            .then(
+                ClientCommandManager.literal("profile")
+                    .then(
+                        ClientCommandManager.argument(
+                                "profileName",
+                                com.mojang.brigadier.arguments.StringArgumentType.greedyString())
+                            .suggests(
+                                (context, builder) -> {
+                                  String remaining = builder.getRemaining().toLowerCase();
+
+                                  ProfileManager.getAllProfiles().stream()
+                                      .map(profile -> profile.name)
+                                      .filter(name -> name.toLowerCase().startsWith(remaining))
+                                      .forEach(builder::suggest);
+                                  return builder.buildFuture();
+                                })
+                            .executes(
+                                context -> {
+                                  String profileName =
+                                      com.mojang.brigadier.arguments.StringArgumentType.getString(
+                                          context, "profileName");
+                                  return ProfileCommandHandler.executeProfileSwitch(profileName);
+                                }))));
   }
 }

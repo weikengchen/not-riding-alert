@@ -116,7 +116,7 @@ public class StrategyHudRendererV0 {
     RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
-    boolean isPassengerForLayout = client.player.isPassenger();
+    boolean isPassengerForLayout = NotRidingAlertClient.isValidPassenger(client.player);
 
     int topGoalsSize = topGoals.size();
     boolean wantsTwoColumns = topGoalsSize >= 8;
@@ -143,7 +143,7 @@ public class StrategyHudRendererV0 {
     }
     boolean useShortNames = decision.useShortNames;
     boolean twoColumns = decision.twoColumns;
-    boolean isPassenger = client.player.isPassenger();
+    boolean isPassenger = NotRidingAlertClient.isValidPassenger(client.player);
 
     List<RideGoal> leftGoals;
     List<RideGoal> rightGoals;

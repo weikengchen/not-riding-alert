@@ -8,6 +8,7 @@ import com.chenweikeng.nra.config.profile.StoredProfile;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,6 +20,8 @@ public class ProfileManagementScreen extends Screen {
   private static final int FOOTER_HEIGHT = 50;
   private static final int BUTTON_HEIGHT = 20;
   private static final int LABEL_COLOR = 0xFFFFFFFF;
+
+  private record ProgressData(double percentage, long timeRemainingSeconds) {}
 
   private final Screen parent;
   private CurrentSettingsEntry currentSettingsEntry;
@@ -41,11 +44,11 @@ public class ProfileManagementScreen extends Screen {
   protected void init() {
     super.init();
 
-    int currentSettingsHeight = 36;
-    int titleGap = 15;
+    int headerHeight = 60; // Increased to accommodate progress bars in same row
     int listGap = 15;
-    int listY = PADDING + titleGap + currentSettingsHeight + listGap;
-    int listHeight = height - FOOTER_HEIGHT - PADDING - titleGap - currentSettingsHeight - listGap;
+    int listY = PADDING + headerHeight + listGap;
+    int listHeight = height - FOOTER_HEIGHT - PADDING - headerHeight - listGap;
+    int currentSettingsY = PADDING + 30; // Move down to avoid overlap with progress bars
 
     int footerY = height - FOOTER_HEIGHT + 10;
     int buttonWidth = 100;
@@ -70,7 +73,7 @@ public class ProfileManagementScreen extends Screen {
         new CurrentSettingsEntry(
             minecraft,
             PADDING,
-            PADDING + titleGap,
+            currentSettingsY,
             width - PADDING * 2,
             this::openSettings,
             this::openSaveCurrent);
@@ -211,14 +214,30 @@ public class ProfileManagementScreen extends Screen {
   public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
     renderDarkBackground(graphics);
 
-    String progressDescription =
-        String.format(
-            " [1k (%s), 5k (%s), 10k (%s)]",
-            calculateProgress(1000), calculateProgress(5000), calculateProgress(10000));
-    Component titleWithProgress =
-        Component.literal("Not Riding Alert").append(Component.literal(progressDescription));
+    // Draw title
+    Component title =
+        Component.literal("Not Riding Alert").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
+    graphics.drawCenteredString(font, title, width / 2, 8, LABEL_COLOR);
 
-    graphics.drawCenteredString(font, titleWithProgress, width / 2, 8, LABEL_COLOR);
+    // Draw progress bars below title, all in same row divided by 3
+    int progressBarY = 30;
+    int sectionWidth = width / 3;
+
+    // 1k progress bar (left section)
+    ProgressData progress1k = calculateProgress(1000);
+    Component bar1k = createProgressBar("1k", progress1k);
+    graphics.drawCenteredString(font, bar1k, sectionWidth / 2, progressBarY, LABEL_COLOR);
+
+    // 5k progress bar (middle section)
+    ProgressData progress5k = calculateProgress(5000);
+    Component bar5k = createProgressBar("5k", progress5k);
+    graphics.drawCenteredString(font, bar5k, (int) (sectionWidth * 1.5), progressBarY, LABEL_COLOR);
+
+    // 10k progress bar (right section)
+    ProgressData progress10k = calculateProgress(10000);
+    Component bar10k = createProgressBar("10k", progress10k);
+    graphics.drawCenteredString(
+        font, bar10k, (int) (sectionWidth * 2.5), progressBarY, LABEL_COLOR);
 
     if (currentSettingsEntry != null) {
       currentSettingsEntry.render(graphics, mouseX, mouseY);
@@ -230,11 +249,28 @@ public class ProfileManagementScreen extends Screen {
     super.render(graphics, mouseX, mouseY, delta);
   }
 
+  private Component createProgressBar(String label, ProgressData data) {
+    net.minecraft.network.chat.MutableComponent progressBar =
+        Component.literal("[" + label + "] ").withStyle(ChatFormatting.WHITE);
+
+    progressBar.append(Component.literal(" ").withStyle(ChatFormatting.WHITE));
+    progressBar.append(
+        Component.literal(String.format("%.2f%%", data.percentage()))
+            .withStyle(ChatFormatting.YELLOW));
+    progressBar.append(Component.literal(" (").withStyle(ChatFormatting.WHITE));
+    progressBar.append(
+        Component.literal(TimeFormatUtil.formatDuration(data.timeRemainingSeconds()))
+            .withStyle(ChatFormatting.WHITE));
+    progressBar.append(Component.literal(")").withStyle(ChatFormatting.WHITE));
+
+    return progressBar;
+  }
+
   private void renderDarkBackground(GuiGraphics graphics) {
     graphics.fill(0, 0, this.width, this.height, 0xCC000000);
   }
 
-  private String calculateProgress(int goal) {
+  private ProgressData calculateProgress(int goal) {
     RideCountManager countManager = RideCountManager.getInstance();
     long totalSecondsNeeded = 0;
     long totalSecondsFromZero = 0;
@@ -272,8 +308,7 @@ public class ProfileManagementScreen extends Screen {
       progressPercentage = ((double) completedSeconds / totalSecondsFromZero) * 100.0;
     }
 
-    return String.format(
-        "%.2f%%, %s", progressPercentage, TimeFormatUtil.formatDuration(totalSecondsNeeded));
+    return new ProgressData(progressPercentage, totalSecondsNeeded);
   }
 
   @Override

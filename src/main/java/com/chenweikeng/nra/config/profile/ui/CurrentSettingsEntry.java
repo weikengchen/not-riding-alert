@@ -11,7 +11,6 @@ public class CurrentSettingsEntry {
   private static final int HEIGHT = 36;
   private static final int BUTTON_SPACING = 4;
   private static final int BG_COLOR = 0xFF222244;
-  private static final int BORDER_COLOR = 0xFF444466;
   private static final int NAME_COLOR = 0xFFFFFFFF;
   private static final int DESCRIPTION_COLOR = 0xFFAAAAAA;
   private static final int ACTIVE_INDICATOR_COLOR = 0xFF5555FF;
@@ -54,7 +53,6 @@ public class CurrentSettingsEntry {
 
   public void render(GuiGraphics graphics, int mouseX, int mouseY) {
     graphics.fill(x, y, x + width, y + HEIGHT, BG_COLOR);
-    graphics.fill(x, y + HEIGHT - 1, x + width, y + HEIGHT, BORDER_COLOR);
 
     int textX = x + 4;
     int textY = y + 2;

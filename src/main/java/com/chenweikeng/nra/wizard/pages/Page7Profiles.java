@@ -35,10 +35,22 @@ public class Page7Profiles extends WizardPage {
 
     // Section 2: How to use the profile management
     blocks.add(text(profileManagementSection()));
+    blocks.add(spacer(5));
 
     Identifier profileMgmtImg =
         Identifier.fromNamespaceAndPath("not-riding-alert", "textures/profile.png");
     blocks.add(image(profileMgmtImg, 1200, 103));
+
+    Component hotkeyContent = literal("");
+    hotkeyContent =
+        append(
+            hotkeyContent,
+            literal(
+                "If you want to configure hotkeys for switching profiles, direct its hotkey to "));
+    hotkeyContent =
+        append(hotkeyContent, colored("/nra profile [profile name]", ChatFormatting.YELLOW));
+    blocks.add(text(hotkeyContent));
+    blocks.add(spacer(5));
 
     blocks.add(separator(10));
 

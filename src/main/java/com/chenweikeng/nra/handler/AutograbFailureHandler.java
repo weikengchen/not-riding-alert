@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.handler;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ServerState;
 import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.RideName;
@@ -22,7 +23,7 @@ public class AutograbFailureHandler {
       return false;
     }
 
-    boolean isPassenger = client.player.isPassenger();
+    boolean isPassenger = NotRidingAlertClient.isValidPassenger(client.player);
     RideName autograbRide = AutograbHolder.getRideAtLocation(client);
 
     if (autograbRide != null && !isPassenger) {

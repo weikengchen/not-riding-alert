@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.tracker;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
 import net.minecraft.client.Minecraft;
@@ -28,7 +29,7 @@ public class RideStateTracker {
   }
 
   public void trackVehicleState(Minecraft client, long currentTick) {
-    if (client.player != null && client.player.isPassenger()) {
+    if (client.player != null && NotRidingAlertClient.isValidPassenger(client.player)) {
       lastVehicleTick = currentTick;
     }
   }

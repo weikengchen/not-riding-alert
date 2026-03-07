@@ -52,6 +52,10 @@ public class ChatListenerMixin {
       ReminderHandler.getInstance().setAudioConnected(true);
       return;
     }
+    if (msg.equals("You are already connected to the web client")) {
+      ReminderHandler.getInstance().setAudioConnected(true);
+      return;
+    }
     if (msg.equals("Your audio session has been ended")) {
       ReminderHandler.getInstance().setAudioConnected(false);
       return;

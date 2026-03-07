@@ -122,7 +122,7 @@ public class StrategyHudRendererV2 {
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName autograbRide = AutograbHolder.getRideAtLocation(client);
     RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
-    boolean isPassenger = client.player.isPassenger();
+    boolean isPassenger = NotRidingAlertClient.isValidPassenger(client.player);
 
     RideStatus effectiveStatus = getEffectiveStatus(currentRide, autograbRide, isPassenger);
     updateState(effectiveStatus, effectiveRide);

@@ -7,7 +7,9 @@ import com.chenweikeng.nra.ride.RideName;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
@@ -22,6 +24,7 @@ public class ScoreboardHandler {
 
   private int tickCounter = 0;
   private static final int TICK_INTERVAL = 10;
+  private boolean hasShownEmptyScoreboardWarning = false;
 
   private static class TeamInfo {
     private final String teamName;
@@ -61,12 +64,13 @@ public class ScoreboardHandler {
       return;
     }
 
-    List<TeamInfo> teamInfos = extractTeamInfos(scoreboard, objective);
+    List<TeamInfo> teamInfos = extractTeamInfos(scoreboard, objective, client);
     processRideInfo(teamInfos);
   }
 
   public void reset() {
     tickCounter = 0;
+    hasShownEmptyScoreboardWarning = false;
   }
 
   private Objective getDisplayObjective(Scoreboard scoreboard, Minecraft client) {
@@ -81,7 +85,8 @@ public class ScoreboardHandler {
     return objective != null ? objective : scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR);
   }
 
-  private List<TeamInfo> extractTeamInfos(Scoreboard scoreboard, Objective objective) {
+  private List<TeamInfo> extractTeamInfos(
+      Scoreboard scoreboard, Objective objective, Minecraft client) {
     List<TeamInfo> teamInfos = new ArrayList<>();
     scoreboard.listPlayerScores(objective).stream()
         .filter(score -> !score.isHidden())
@@ -98,6 +103,22 @@ public class ScoreboardHandler {
             });
 
     teamInfos.sort(Comparator.comparing(TeamInfo::getTeamName));
+
+    if (teamInfos.isEmpty() && !hasShownEmptyScoreboardWarning && client.player != null) {
+      Component message =
+          Component.empty()
+              .withStyle(ChatFormatting.AQUA)
+              .append(
+                  Component.literal("[NRA] ")
+                      .withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
+              .append(
+                  Component.literal(
+                          "Scoreboard has no content. Please ensure you are in the correct area with the scoreboard visible.")
+                      .withStyle(ChatFormatting.WHITE));
+      client.player.displayClientMessage(message, false);
+      hasShownEmptyScoreboardWarning = true;
+    }
+
     return teamInfos;
   }
 
