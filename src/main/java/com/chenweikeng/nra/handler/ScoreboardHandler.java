@@ -56,9 +56,10 @@ public class ScoreboardHandler {
       return;
     }
 
-    if (ticksUntilNextReminder > 0) {
+    if (ticksUntilNextReminder > 200) {
       ticksUntilNextReminder--;
     }
+
     tickCounter++;
     if (tickCounter < TICK_INTERVAL) {
       return;
@@ -69,6 +70,9 @@ public class ScoreboardHandler {
     Objective objective = getDisplayObjective(scoreboard, client);
     if (objective == null) {
       scoreboardEmpty = true;
+      if (ticksUntilNextReminder > 0 && ticksUntilNextReminder <= 200) {
+        ticksUntilNextReminder--;
+      }
       sendScoreboardReminder(client);
       return;
     }
@@ -76,6 +80,9 @@ public class ScoreboardHandler {
     List<TeamInfo> teamInfos = extractTeamInfos(scoreboard, objective, client);
     if (teamInfos.isEmpty()) {
       scoreboardEmpty = true;
+      if (ticksUntilNextReminder > 0 && ticksUntilNextReminder <= 200) {
+        ticksUntilNextReminder--;
+      }
       sendScoreboardReminder(client);
       return;
     }
