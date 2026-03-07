@@ -87,7 +87,7 @@ public class ScoreboardHandler {
   public void reset() {
     tickCounter = 0;
     scoreboardEmpty = false;
-    ticksUntilNextReminder = 0;
+    ticksUntilNextReminder = 600;
   }
 
   private void sendScoreboardReminder(Minecraft client) {
