@@ -42,7 +42,21 @@ public final class WindowMinimizeHandler {
       client.execute(
           () -> {
             GLFW.glfwRestoreWindow(handle);
-            GLFW.glfwFocusWindow(handle);
+            GLFW.glfwSetWindowAttrib(handle, GLFW.GLFW_FLOATING, GLFW.GLFW_TRUE);
+
+            client.execute(
+                () -> {
+                  long window = client.getWindow().handle();
+                  GLFW.glfwShowWindow(window);
+
+                  client.execute(
+                      () -> {
+                        long h = client.getWindow().handle();
+                        GLFW.glfwFocusWindow(h);
+                        GLFW.glfwRequestWindowAttention(h);
+                        GLFW.glfwSetWindowAttrib(h, GLFW.GLFW_FLOATING, GLFW.GLFW_FALSE);
+                      });
+                });
           });
     }
   }

@@ -82,15 +82,18 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private final ReminderHandler reminderHandler = ReminderHandler.getInstance();
 
   private int tickCounter = 0;
-  private long absoluteTickCounter = 0;
+  private static long absoluteTickCounter = 0;
   private long lastCanoeMessageTick = -CANOE_MESSAGE_COOLDOWN_TICKS;
   private long lastDynamicFpsMessageTick = -DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;
   private static boolean isRiding = false;
   private boolean wasRiding = false;
   private boolean wasOnVehicle = false;
+  private boolean wasPassenger = false;
   private boolean minimizedDuringAutograb = false;
   private RideName previousAutograbRide = null;
   private static boolean automaticallyReleasedCursor = false;
+  private static long lastSitCommand = -400;
+  private static boolean isSitting = false;
 
   @Override
   public void onInitializeClient() {
@@ -132,12 +135,23 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
           boolean isPassenger = isValidPassenger(client.player);
           RideName autograbRide = AutograbHolder.getRideAtLocation(client);
+
+          // Check if player recently used sit command and became a passenger
+          if (!wasPassenger && isPassenger && (absoluteTickCounter - lastSitCommand < 400)) {
+            isSitting = true;
+          }
+
+          // Reset isSitting when player is no longer a passenger
+          if (!client.player.isPassenger()) {
+            isSitting = false;
+          }
+
+          isPassenger = isValidPassenger(client.player);
+
           isRiding =
               isPassenger || CurrentRideHolder.getCurrentRide() != null || autograbRide != null;
 
           handleCursorManagement(client, isPassenger, autograbRide);
-
-          wasRiding = isRiding;
           absoluteTickCounter++;
 
           movementTracker.track(client, absoluteTickCounter);
@@ -166,6 +180,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
             tickCounter = 0;
             checkNotRidingAlert(client, autograbFailureActive);
           }
+
+          wasRiding = isRiding;
+          wasPassenger = isPassenger;
         });
 
     ClientCommandRegistrationCallback.EVENT.register(
@@ -390,8 +407,11 @@ public class NotRidingAlertClient implements ClientModInitializer {
     lastDynamicFpsMessageTick = -DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;
     wasRiding = false;
     wasOnVehicle = false;
+    wasPassenger = false;
     previousAutograbRide = null;
     automaticallyReleasedCursor = false;
+    lastSitCommand = -400;
+    isSitting = false;
   }
 
   public static boolean isRiding() {
@@ -414,8 +434,17 @@ public class NotRidingAlertClient implements ClientModInitializer {
     isMonkeyAttached = attached;
   }
 
+  public static void setLastSitCommand() {
+    lastSitCommand = absoluteTickCounter;
+  }
+
   public static boolean isValidPassenger(LocalPlayer player) {
     if (player == null) {
+      return false;
+    }
+
+    // Check if player is sitting (recently used sit command)
+    if (isSitting) {
       return false;
     }
 
