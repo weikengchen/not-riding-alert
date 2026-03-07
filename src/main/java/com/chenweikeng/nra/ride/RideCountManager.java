@@ -59,6 +59,10 @@ public class RideCountManager {
     return rideCounts.getOrDefault(ride, 0);
   }
 
+  public boolean hasRideCount(RideName ride) {
+    return rideCounts.containsKey(ride);
+  }
+
   /** Gets all ride counts. */
   public Map<RideName, Integer> getAllRideCounts() {
     return new HashMap<>(rideCounts);
@@ -140,5 +144,22 @@ public class RideCountManager {
     lastSaveTime = System.currentTimeMillis();
     lastSavedCounts.clear();
     lastSavedCounts.putAll(rideCounts);
+  }
+
+  public boolean hasBasicCounts() {
+    if (!hasRideCount(RideName.ALICE_IN_WONDERLAND)) {
+      return false;
+    }
+    if (!hasRideCount(RideName.MATTERHORN_BOBSLEDS)) {
+      return false;
+    }
+    if (!hasRideCount(RideName.GOLDEN_ZEPHYR)) {
+      return false;
+    }
+    if (!hasRideCount(RideName.FLIKS_FLYERS)) {
+      return false;
+    }
+
+    return true;
   }
 }

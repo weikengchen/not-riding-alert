@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.ride.RideCountManager;
 import java.util.List;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,6 +34,9 @@ public class StrategyHudRendererDispatcher {
 
   public static void render(GuiGraphics context, DeltaTracker tickCounter) {
     if (!ModConfig.currentSetting.enableTracker) {
+      return;
+    }
+    if (!RideCountManager.getInstance().hasBasicCounts()) {
       return;
     }
     switch (ModConfig.currentSetting.strategyHudRendererVersion) {

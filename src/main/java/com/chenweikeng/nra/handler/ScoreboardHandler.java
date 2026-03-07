@@ -4,11 +4,13 @@ import com.chenweikeng.nra.ServerState;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideName;
+import com.chenweikeng.nra.wizard.TutorialManager;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
@@ -24,7 +26,9 @@ public class ScoreboardHandler {
 
   private int tickCounter = 0;
   private static final int TICK_INTERVAL = 10;
-  private boolean hasShownEmptyScoreboardWarning = false;
+  public static boolean scoreboardEmpty = false;
+  private long ticksUntilNextReminder = 600;
+  private static final int SCOREBOARD_REMINDER_INTERVAL = 12000; // 10 minutes
 
   private static class TeamInfo {
     private final String teamName;
@@ -52,6 +56,9 @@ public class ScoreboardHandler {
       return;
     }
 
+    if (ticksUntilNextReminder > 0) {
+      ticksUntilNextReminder--;
+    }
     tickCounter++;
     if (tickCounter < TICK_INTERVAL) {
       return;
@@ -61,16 +68,70 @@ public class ScoreboardHandler {
     Scoreboard scoreboard = client.level.getScoreboard();
     Objective objective = getDisplayObjective(scoreboard, client);
     if (objective == null) {
+      scoreboardEmpty = true;
+      sendScoreboardReminder(client);
       return;
     }
 
     List<TeamInfo> teamInfos = extractTeamInfos(scoreboard, objective, client);
+    if (teamInfos.isEmpty()) {
+      scoreboardEmpty = true;
+      sendScoreboardReminder(client);
+      return;
+    }
+
+    scoreboardEmpty = false;
     processRideInfo(teamInfos);
   }
 
   public void reset() {
     tickCounter = 0;
-    hasShownEmptyScoreboardWarning = false;
+    scoreboardEmpty = false;
+    ticksUntilNextReminder = 0;
+  }
+
+  private void sendScoreboardReminder(Minecraft client) {
+    if (client.player == null) {
+      return;
+    }
+
+    if (ticksUntilNextReminder > 0) {
+      return;
+    }
+
+    if (!TutorialManager.getInstance().isCompletedForCurrentVersion()) {
+      return;
+    }
+
+    ticksUntilNextReminder = SCOREBOARD_REMINDER_INTERVAL;
+
+    Component message =
+        Component.empty()
+            .withStyle(ChatFormatting.AQUA)
+            .append(
+                Component.literal("[NRA] ")
+                    .withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
+            .append(Component.literal("The mod requires ").withStyle(ChatFormatting.WHITE))
+            .append(
+                Component.literal("/sb")
+                    .withStyle(
+                        s ->
+                            s.withColor(ChatFormatting.AQUA)
+                                .withUnderlined(true)
+                                .withClickEvent(new ClickEvent.RunCommand("sb"))))
+            .append(
+                Component.literal(" to receive scoreboard from server. You can hide scoreboard in ")
+                    .withStyle(ChatFormatting.WHITE))
+            .append(
+                Component.literal("/nra")
+                    .withStyle(
+                        s ->
+                            s.withColor(ChatFormatting.AQUA)
+                                .withUnderlined(true)
+                                .withClickEvent(new ClickEvent.RunCommand("nra"))))
+            .append(Component.literal(" later if you want.").withStyle(ChatFormatting.WHITE));
+
+    client.player.displayClientMessage(message, false);
   }
 
   private Objective getDisplayObjective(Scoreboard scoreboard, Minecraft client) {
@@ -103,21 +164,6 @@ public class ScoreboardHandler {
             });
 
     teamInfos.sort(Comparator.comparing(TeamInfo::getTeamName));
-
-    if (teamInfos.isEmpty() && !hasShownEmptyScoreboardWarning && client.player != null) {
-      Component message =
-          Component.empty()
-              .withStyle(ChatFormatting.AQUA)
-              .append(
-                  Component.literal("[NRA] ")
-                      .withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-              .append(
-                  Component.literal(
-                          "Scoreboard has no content. Please ensure you are in the correct area with the scoreboard visible.")
-                      .withStyle(ChatFormatting.WHITE));
-      client.player.displayClientMessage(message, false);
-      hasShownEmptyScoreboardWarning = true;
-    }
 
     return teamInfos;
   }

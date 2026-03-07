@@ -2,6 +2,7 @@ package com.chenweikeng.nra.wizard.pages;
 
 import com.chenweikeng.nra.config.AudioBoostReminderMode;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.handler.ScoreboardHandler;
 import com.chenweikeng.nra.wizard.WizardPage;
 import com.chenweikeng.nra.wizard.layout.RenderBlock;
 import com.chenweikeng.nra.wizard.layout.VerticalAlignment;
@@ -9,10 +10,10 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-// parrot murmur, vindicator mutters
 public class Page1AlertSettings extends WizardPage {
 
   private static final List<SoundOption> SOUND_OPTIONS =
@@ -66,7 +67,34 @@ public class Page1AlertSettings extends WizardPage {
             column(leftColumn.toArray(new RenderBlock[0])),
             column(rightColumn.toArray(new RenderBlock[0]))));
 
+    if (ScoreboardHandler.scoreboardEmpty) {
+      blocks.add(spacer(30));
+
+      Component text =
+          Component.literal("The mod requires ")
+              .withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED)
+              .append(
+                  Component.literal("/sb")
+                      .withStyle(
+                          s ->
+                              s.withColor(ChatFormatting.AQUA)
+                                  .withUnderlined(true)
+                                  .withClickEvent(
+                                      new ClickEvent.RunCommand("wizard_action:command:sb"))))
+              .append(
+                  Component.literal(
+                      " to receive scoreboard from server. You can hide scoreboard in this wizard later if you want."))
+              .withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
+
+      blocks.add(text(text));
+    }
+
     return blocks;
+  }
+
+  @Override
+  protected boolean readyToGoNext() {
+    return !ScoreboardHandler.scoreboardEmpty;
   }
 
   private Component intro() {

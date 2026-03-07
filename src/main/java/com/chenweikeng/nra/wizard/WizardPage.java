@@ -119,6 +119,10 @@ public abstract class WizardPage {
     return Component.literal("\n");
   }
 
+  protected boolean readyToGoNext() {
+    return true;
+  }
+
   private String getActionDescription(String action) {
     if (action.startsWith("page:")) {
       return "Go to page " + action.substring(5);

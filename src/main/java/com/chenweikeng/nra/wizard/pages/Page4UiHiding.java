@@ -251,7 +251,7 @@ public class Page4UiHiding extends WizardPage {
     Component status =
         isHidden
             ? colored("Hidden", ChatFormatting.GREEN)
-            : colored("Visible", ChatFormatting.GRAY);
+            : colored("Visible", ChatFormatting.GREEN);
     return Component.empty().append(description).append(literal(": ")).append(status);
   }
 

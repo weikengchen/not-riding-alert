@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.wizard.pages;
 
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.wizard.WizardPage;
 import com.chenweikeng.nra.wizard.layout.RenderBlock;
@@ -135,6 +136,22 @@ public class Page5RideSelection extends WizardPage {
             column(leftColumn.toArray(new RenderBlock[0])),
             column(rightColumn.toArray(new RenderBlock[0]))));
 
+    if (!readyToGoNext()) {
+      blocks.add(spacer(25));
+      Component text =
+          Component.literal("Some ride counts are not loaded yet (with ")
+              .withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED)
+              .append(Component.literal("[⚠]").withStyle(ChatFormatting.YELLOW))
+              .append(Component.literal(").\nPlease open "))
+              .withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED)
+              .append(link("/ridestats", "command:ridestats", ChatFormatting.YELLOW))
+              .append(
+                  " and go through Page 1/2 of Disneyland, Page 1 of Disney California Adventure, and Page 1 of Retro.")
+              .withStyle(ChatFormatting.BOLD, ChatFormatting.DARK_RED);
+
+      blocks.add(text(text));
+    }
+
     return blocks;
   }
 
@@ -170,18 +187,39 @@ public class Page5RideSelection extends WizardPage {
     boolean isHidden = hiddenRides.contains(ride.toMatchString());
     boolean isVisible = !isHidden;
 
-    ChatFormatting nameColor = isVisible ? ChatFormatting.GREEN : ChatFormatting.RED;
+    RideCountManager rideCountManager = RideCountManager.getInstance();
+    boolean hasRideCount = rideCountManager.hasRideCount(ride);
 
-    Component displayNameLink =
-        link(ride.getDisplayName(), "ride:" + ride.toMatchString(), nameColor, false);
+    ChatFormatting nameColor;
+    if (!hasRideCount && !ride.isSeasonal()) {
+      nameColor = ChatFormatting.YELLOW;
+    } else {
+      nameColor = isVisible ? ChatFormatting.GREEN : ChatFormatting.RED;
+    }
+
+    Component displayNameLink;
+    if (!hasRideCount && !ride.isSeasonal()) {
+      displayNameLink = Component.literal(ride.getDisplayName()).withStyle(nameColor);
+    } else {
+      displayNameLink =
+          link(ride.getDisplayName(), "ride:" + ride.toMatchString(), nameColor, false);
+    }
 
     MutableComponent result = Component.empty();
-    if (isVisible) {
+    if (!hasRideCount && !ride.isSeasonal()) {
+      result.append(Component.literal("[⚠]").withStyle(ChatFormatting.YELLOW));
+    } else if (isVisible) {
       result.append(link("[✓]", "ride:" + ride.toMatchString(), nameColor));
     } else {
       result.append(link("[ ]", "ride:" + ride.toMatchString(), ChatFormatting.DARK_GRAY));
     }
 
     return result.append(literal(" ")).append(displayNameLink);
+  }
+
+  @Override
+  protected boolean readyToGoNext() {
+    RideCountManager rideCountManager = RideCountManager.getInstance();
+    return rideCountManager.hasBasicCounts();
   }
 }

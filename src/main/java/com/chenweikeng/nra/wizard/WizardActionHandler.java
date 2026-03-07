@@ -31,8 +31,6 @@ public class WizardActionHandler {
       handleSoundPreviewAction(action.substring(14), client);
     } else if (action.startsWith("command:")) {
       handleCommandAction(action.substring(8), client);
-    } else if (action.equals("factory_reset")) {
-      handleFactoryReset();
     } else if (action.equals("finish")) {
       handleFinish(client);
     }
@@ -280,7 +278,7 @@ public class WizardActionHandler {
         1.0f);
   }
 
-  private static void refreshCurrentPage(Minecraft client) {
+  public static void refreshCurrentPage(Minecraft client) {
     if (client.screen instanceof WizardScreen ws) {
       ws.goToPage(ws.getCurrentPageIndex());
     }
@@ -290,10 +288,6 @@ public class WizardActionHandler {
     if (client.player != null) {
       client.player.connection.sendCommand(command);
     }
-  }
-
-  private static void handleFactoryReset() {
-    ModConfig.currentSetting.resetToDefaults();
   }
 
   private static void handleFinish(Minecraft client) {

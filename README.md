@@ -187,6 +187,10 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 
 ## Changelog
 
+### v2.4.1
+- **Empty Scoreboard Warning**: Added one-time [NRA] message when scoreboard has no content to alert users
+- **Code Optimization**: Extracted Dynamic FPS compatibility message as static constant for reuse
+
 ### v2.4.0
 - **New Profile System**: Save, load, and manage multiple configuration profiles
 - **Closed Caption Enhancements**: Improved [CC] message display with configurable modes and color-coded text
@@ -199,7 +203,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.4.0
+- **Version**: 2.4.1
 
 ## License
 

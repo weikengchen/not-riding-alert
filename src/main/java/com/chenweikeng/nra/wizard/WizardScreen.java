@@ -5,6 +5,7 @@ import com.chenweikeng.nra.wizard.layout.RenderBlock;
 import com.chenweikeng.nra.wizard.layout.RowBlock;
 import com.chenweikeng.nra.wizard.layout.TextBlock;
 import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -86,7 +87,7 @@ public class WizardScreen extends Screen {
     boolean isLastPage = currentPageIndex >= TutorialPages.getPageCount() - 1;
 
     backButton.visible = !isFirstPage;
-    nextButton.visible = true;
+    nextButton.visible = currentPage.readyToGoNext();
     closeButton.visible = !isLastPage;
 
     if (isLastPage) {
@@ -289,6 +290,14 @@ public class WizardScreen extends Screen {
 
   @Override
   public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+    if (currentPage != null && nextButton.visible == false && currentPage.readyToGoNext()) {
+      Minecraft client = Minecraft.getInstance();
+      client.execute(
+          () -> {
+            client.setScreen(new WizardScreen(currentPageIndex));
+          });
+    }
+
     renderDarkBackground(graphics);
     renderHeader(graphics);
     renderBlocks(graphics);
