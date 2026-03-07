@@ -167,7 +167,7 @@ public class Page6TrackerSettings extends WizardPage {
   }
 
   private String minRideTimeLink(Integer value) {
-    return "minRideTimeMinutes:" + value;
+    return "config:minRideTimeMinutes:" + value;
   }
 
   private Component decrementLink(String linkTarget, String label) {
