@@ -185,21 +185,6 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - The mod requires scoreboard data to function properly
 - Ride counts are stored locally and don't sync across devices
 
-## Changelog
-
-### v2.4.1
-- **Empty Scoreboard Warning**: Added one-time [NRA] message when scoreboard has no content to alert users
-- **Code Optimization**: Extracted Dynamic FPS compatibility message as static constant for reuse
-
-### v2.4.0
-- **New Profile System**: Save, load, and manage multiple configuration profiles
-- **Closed Caption Enhancements**: Improved [CC] message display with configurable modes and color-coded text
-- **Max Goal Selection**: Choose between 1K, 5K, or 10K ride milestones
-- **Sorting Rules**: Configure how rides are sorted in the strategy HUD
-- **Bug Fixes**: Fixed hiddenRides duplication, V0 HUD bossbar issues, and autograbbing detection
-- **UI Improvements**: Enhanced configuration options and better user experience
-- **Documentation Consolidation**: Merged separate documentation files into main README
-
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
