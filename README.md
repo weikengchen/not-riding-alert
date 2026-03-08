@@ -188,7 +188,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.4.1
+- **Version**: 2.4.2
 
 ## License
 
