@@ -4,6 +4,7 @@ import com.chenweikeng.nra.wizard.layout.ColumnBlock;
 import com.chenweikeng.nra.wizard.layout.RenderBlock;
 import com.chenweikeng.nra.wizard.layout.RowBlock;
 import com.chenweikeng.nra.wizard.layout.TextBlock;
+import com.chenweikeng.nra.wizard.layout.VerticalAlignment;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
@@ -248,14 +249,29 @@ public class WizardScreen extends Screen {
   }
 
   private Style getStyleInRowBlock(RowBlock rowBlock, int mouseX, int relativeY, int width) {
-    int columnWidth = width / rowBlock.columns().size();
+    int totalGapWidth = (rowBlock.columns().size() - 1) * RowBlock.COLUMN_GAP;
+    int columnWidth = (width - totalGapWidth) / rowBlock.columns().size();
     int columnX = 0;
+
+    // Calculate maxHeight to match RowBlock.render()
+    int maxHeight = 0;
+    for (RenderBlock column : rowBlock.columns()) {
+      maxHeight = Math.max(maxHeight, column.getHeight(columnWidth, minecraft));
+    }
 
     for (RenderBlock column : rowBlock.columns()) {
       if (mouseX >= columnX && mouseX < columnX + columnWidth) {
-        return getStyleInBlock(column, mouseX - columnX, relativeY, columnWidth);
+        int adjustedRelativeY = relativeY;
+
+        // Apply vertical offset for CENTER alignment, matching RowBlock.render()
+        if (rowBlock.verticalAlignment() == VerticalAlignment.CENTER) {
+          int columnHeight = column.getHeight(columnWidth, minecraft);
+          adjustedRelativeY = relativeY - (maxHeight - columnHeight) / 2;
+        }
+
+        return getStyleInBlock(column, mouseX - columnX, adjustedRelativeY, columnWidth);
       }
-      columnX += columnWidth;
+      columnX += columnWidth + RowBlock.COLUMN_GAP;
     }
     return null;
   }

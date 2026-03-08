@@ -7,7 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 public record RowBlock(List<RenderBlock> columns, VerticalAlignment verticalAlignment)
     implements RenderBlock {
 
-  private static final int COLUMN_GAP = 5;
+  public static final int COLUMN_GAP = 5;
 
   public RowBlock(List<RenderBlock> columns) {
     this(columns, VerticalAlignment.TOP);

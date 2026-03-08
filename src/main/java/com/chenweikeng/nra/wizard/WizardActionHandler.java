@@ -16,6 +16,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 
 public class WizardActionHandler {
+  public static Identifier currentlyPlaying = null;
+
   public static void handle(String action, Minecraft client) {
     if (action == null || action.isEmpty()) {
       return;
@@ -267,6 +269,8 @@ public class WizardActionHandler {
           Identifier.fromNamespaceAndPath("minecraft", "entity.experience_orb.pickup");
     }
 
+    currentlyPlaying = soundIdentifier;
+
     client.level.playSound(
         client.player,
         client.player.getX(),
@@ -276,6 +280,8 @@ public class WizardActionHandler {
         SoundSource.MASTER,
         1.0f,
         1.0f);
+
+    currentlyPlaying = null;
   }
 
   public static void refreshCurrentPage(Minecraft client) {

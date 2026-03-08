@@ -2,6 +2,7 @@ package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.wizard.WizardActionHandler;
 import com.chenweikeng.nra.wizard.WizardScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -46,8 +47,11 @@ public class ClientLevelMixin {
       if (ModConfig.currentSetting.silent) {
         Minecraft client = Minecraft.getInstance();
 
-        if (client.screen instanceof WizardScreen) {
-          return; // Don't suppress sounds when the wizard is open
+        if ((client.screen instanceof WizardScreen)
+            && WizardActionHandler.currentlyPlaying != null
+            && soundId.equals(WizardActionHandler.currentlyPlaying)) {
+          return; // Don't suppress sounds when the wizard is open and indicates this sound should
+          // play
         }
 
         // Check if player is riding (excluding autograb region check via isRiding helper)
