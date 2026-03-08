@@ -60,6 +60,10 @@ public class ChatListenerMixin {
       ReminderHandler.getInstance().setAudioConnected(false);
       return;
     }
+    if (msg.equals("    + Audio Boost (x1.25)")) {
+      ReminderHandler.getInstance().setAudioConnected(true);
+      return;
+    }
 
     if (!msg.contains(RIDE_OVERVIEW_MARKER) && !msg.contains(ATTRACTION_OVERVIEW_MARKER)) return;
 
