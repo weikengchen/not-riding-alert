@@ -8,11 +8,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
 public class ReminderHandler {
-  private static final int REMINDER_INTERVAL_TICKS = 300;
+  static final int REMINDER_INTERVAL_TICKS = 300;
   private static ReminderHandler instance;
 
   private boolean audioConnected = false;
-  private long lastAudioReminderTick = -REMINDER_INTERVAL_TICKS;
+  public long lastAudioReminderTick = -REMINDER_INTERVAL_TICKS;
 
   private ReminderHandler() {}
 
