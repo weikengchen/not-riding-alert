@@ -56,7 +56,8 @@ public final class WindowMinimizeHandler {
                         GLFW.glfwRequestWindowAttention(h);
                         GLFW.glfwSetWindowAttrib(h, GLFW.GLFW_FLOATING, GLFW.GLFW_FALSE);
 
-                        ReminderHandler.getInstance().lastAudioReminderTick = -ReminderHandler.REMINDER_INTERVAL_TICKS;
+                        ReminderHandler.getInstance().lastAudioReminderTick =
+                            -ReminderHandler.REMINDER_INTERVAL_TICKS;
                       });
                 });
           });
