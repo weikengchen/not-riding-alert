@@ -251,6 +251,16 @@ public class ClothConfigScreen {
                             + mode.name().toLowerCase()))
             .build());
 
+    visual.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.showSessionStats"),
+                profile.showSessionStats)
+            .setDefaultValue(ConfigDefaults.SHOW_SESSION_STATS)
+            .setTooltip(Component.translatable("config.not-riding-alert.showSessionStats.tooltip"))
+            .setSaveConsumer(newValue -> profile.showSessionStats = newValue)
+            .build());
+
     ConfigCategory tracker =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rides"));
@@ -412,6 +422,31 @@ public class ClothConfigScreen {
             .setTooltip(Component.translatable("config.not-riding-alert.trackerErrorColor.tooltip"))
             .setSaveConsumer(color -> profile.trackerErrorColor = color | 0xFF000000)
             .build());
+
+    ConfigCategory advanceNotice =
+        builder.getOrCreateCategory(
+            Component.translatable("config.not-riding-alert.category.advanceNotice"));
+
+    for (RideName ride : RideName.values()) {
+      if (ride == RideName.UNKNOWN) {
+        continue;
+      }
+      int currentValue = profile.advanceNoticeSeconds.getOrDefault(ride.toMatchString(), 0);
+      advanceNotice.addEntry(
+          entryBuilder
+              .startIntSlider(formatRideLabel(ride), currentValue, 0, 30)
+              .setDefaultValue(0)
+              .setTooltip(Component.translatable("config.not-riding-alert.advanceNotice.tooltip"))
+              .setSaveConsumer(
+                  newValue -> {
+                    if (newValue > 0) {
+                      profile.advanceNoticeSeconds.put(ride.toMatchString(), newValue);
+                    } else {
+                      profile.advanceNoticeSeconds.remove(ride.toMatchString());
+                    }
+                  })
+              .build());
+    }
 
     ConfigCategory rides =
         builder.getOrCreateCategory(

@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.handler;
 
+import com.chenweikeng.nra.Timing;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
@@ -57,7 +58,7 @@ public final class WindowMinimizeHandler {
                         GLFW.glfwSetWindowAttrib(h, GLFW.GLFW_FLOATING, GLFW.GLFW_FALSE);
 
                         ReminderHandler.getInstance().lastAudioReminderTick =
-                            -ReminderHandler.REMINDER_INTERVAL_TICKS;
+                            -Timing.REMINDER_INTERVAL_TICKS;
                       });
                 });
           });

@@ -1,6 +1,8 @@
 package com.chenweikeng.nra.strategy;
 
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.Timing;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.mixin.BossHealthOverlayAccessor;
@@ -21,7 +23,7 @@ import net.minecraft.client.gui.components.LerpingBossEvent;
 public class StrategyHudRendererV2 {
   private static List<RideGoal> topGoals = new ArrayList<>();
   private static int updateCounter = 0;
-  private static final int UPDATE_INTERVAL_TICKS = 40;
+  private static final int UPDATE_INTERVAL_TICKS = Timing.HUD_UPDATE_INTERVAL_TICKS;
   private static String currentError = null;
 
   private static final int COMPONENT_GAP = 20;
@@ -122,7 +124,7 @@ public class StrategyHudRendererV2 {
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName autograbRide = AutograbHolder.getRideAtLocation(client);
     RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
-    boolean isPassenger = NotRidingAlertClient.isValidPassenger(client.player);
+    boolean isPassenger = GameState.getInstance().isValidPassenger(client.player);
 
     RideStatus effectiveStatus = getEffectiveStatus(currentRide, autograbRide, isPassenger);
     updateState(effectiveStatus, effectiveRide);

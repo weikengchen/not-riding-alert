@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.handler;
 
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.AutograbHolder;
@@ -32,7 +33,7 @@ public class AutograbRegionRenderer {
       return;
     }
 
-    if (NotRidingAlertClient.isRiding()) {
+    if (GameState.getInstance().isRiding()) {
       return;
     }
 
@@ -47,7 +48,7 @@ public class AutograbRegionRenderer {
 
     BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
-    for (AutograbHolder region : AutograbHolder.values()) {
+    for (AutograbHolder.AutograbRegion region : AutograbHolder.regions()) {
       if (!region.filter().test(mc)) {
         continue;
       }
@@ -65,7 +66,7 @@ public class AutograbRegionRenderer {
   }
 
   private static void drawRegion(
-      VertexConsumer buffer, PoseStack poseStack, Vec3 cam, AutograbHolder region) {
+      VertexConsumer buffer, PoseStack poseStack, Vec3 cam, AutograbHolder.AutograbRegion region) {
     Point[] points = region.points();
     double y = region.y();
     PoseStack.Pose pose = poseStack.last();

@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ClosedCaptionMode;
 import com.chenweikeng.nra.config.ModConfig;
@@ -61,7 +62,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.currentSetting.hideHealth) {
+    if (GameState.getInstance().isMonkeyAttached() || ModConfig.currentSetting.hideHealth) {
       ci.cancel();
     }
   }
@@ -71,7 +72,7 @@ public abstract class GuiMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (NotRidingAlertClient.isMonkeyAttached() || ModConfig.currentSetting.hideHealth) {
+    if (GameState.getInstance().isMonkeyAttached() || ModConfig.currentSetting.hideHealth) {
       ci.cancel();
     }
   }

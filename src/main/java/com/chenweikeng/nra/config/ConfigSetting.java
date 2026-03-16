@@ -2,7 +2,9 @@ package com.chenweikeng.nra.config;
 
 import com.chenweikeng.nra.ride.RideName;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -46,6 +48,12 @@ public class ConfigSetting {
   public boolean enableTracker = ConfigDefaults.ENABLE_TRACKER;
   public MaxGoal maxGoal = ConfigDefaults.MAX_GOAL;
   public SortingRules sortingRules = ConfigDefaults.SORTING_RULES;
+  public Map<String, Integer> advanceNoticeSeconds = new HashMap<>();
+  public boolean showSessionStats = ConfigDefaults.SHOW_SESSION_STATS;
+
+  public int getAdvanceNoticeSeconds(RideName ride) {
+    return advanceNoticeSeconds.getOrDefault(ride.toMatchString(), 0);
+  }
 
   public void resetToDefaults() {
     globalEnable = ConfigDefaults.GLOBAL_ENABLE;
@@ -86,6 +94,8 @@ public class ConfigSetting {
     enableTracker = ConfigDefaults.ENABLE_TRACKER;
     maxGoal = ConfigDefaults.MAX_GOAL;
     sortingRules = ConfigDefaults.SORTING_RULES;
+    advanceNoticeSeconds = new HashMap<>();
+    showSessionStats = ConfigDefaults.SHOW_SESSION_STATS;
   }
 
   public ConfigSetting copy() {
@@ -123,6 +133,11 @@ public class ConfigSetting {
     copy.enableTracker = this.enableTracker;
     copy.maxGoal = this.maxGoal;
     copy.sortingRules = this.sortingRules;
+    copy.advanceNoticeSeconds =
+        this.advanceNoticeSeconds != null
+            ? new HashMap<>(this.advanceNoticeSeconds)
+            : new HashMap<>();
+    copy.showSessionStats = this.showSessionStats;
     return copy;
   }
 
@@ -161,9 +176,11 @@ public class ConfigSetting {
         && enableTracker == that.enableTracker
         && maxGoal == that.maxGoal
         && sortingRules == that.sortingRules
+        && showSessionStats == that.showSessionStats
         && Objects.equals(soundId, that.soundId)
         && Objects.equals(minRideTimeMinutes, that.minRideTimeMinutes)
-        && Objects.equals(hiddenRides, that.hiddenRides);
+        && Objects.equals(hiddenRides, that.hiddenRides)
+        && Objects.equals(advanceNoticeSeconds, that.advanceNoticeSeconds);
   }
 
   @Override
@@ -201,6 +218,8 @@ public class ConfigSetting {
         closedCaptionMode,
         enableTracker,
         maxGoal,
-        sortingRules);
+        sortingRules,
+        advanceNoticeSeconds,
+        showSessionStats);
   }
 }

@@ -1,14 +1,12 @@
 package com.chenweikeng.nra.tracker;
 
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.GameState;
+import com.chenweikeng.nra.Timing;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
 import net.minecraft.client.Minecraft;
 
 public class RideStateTracker {
-  private static final int RIDE_COMPLETION_SUPPRESSION_TICKS = 100;
-  private static final int VEHICLE_SUPPRESSION_TICKS = 100;
-
   private long lastRideTick = -1;
   private long lastVehicleTick = -1;
   private RideName previousRide = null;
@@ -29,7 +27,7 @@ public class RideStateTracker {
   }
 
   public void trackVehicleState(Minecraft client, long currentTick) {
-    if (client.player != null && NotRidingAlertClient.isValidPassenger(client.player)) {
+    if (client.player != null && GameState.getInstance().isValidPassenger(client.player)) {
       lastVehicleTick = currentTick;
     }
   }
@@ -40,7 +38,7 @@ public class RideStateTracker {
     }
 
     long ticksSinceLastRide = currentTick - lastRideTick;
-    return ticksSinceLastRide < RIDE_COMPLETION_SUPPRESSION_TICKS;
+    return ticksSinceLastRide < Timing.RIDE_COMPLETION_SUPPRESSION_TICKS;
   }
 
   public boolean hasVehicleRecently(long currentTick) {
@@ -49,7 +47,7 @@ public class RideStateTracker {
     }
 
     long ticksSinceLastVehicle = currentTick - lastVehicleTick;
-    return ticksSinceLastVehicle < VEHICLE_SUPPRESSION_TICKS;
+    return ticksSinceLastVehicle < Timing.VEHICLE_SUPPRESSION_TICKS;
   }
 
   public boolean isLincolnSuppressionActive() {

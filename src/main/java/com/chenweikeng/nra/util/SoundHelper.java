@@ -1,6 +1,6 @@
 package com.chenweikeng.nra.util;
 
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ModConfig;
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,7 @@ public class SoundHelper {
       return;
     }
 
-    if (NotRidingAlertClient.isMonkeyAttached()) {
+    if (GameState.getInstance().isMonkeyAttached()) {
       MonkeycraftCompat.sendImmediateNotification(NOTIFICATION_TITLE, NOTIFICATION_BODY, true);
       return;
     }
