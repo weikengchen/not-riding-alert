@@ -1,6 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.GameState;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,7 +12,7 @@ public class CommandMixin {
   @Inject(method = "sendCommand", at = @At("HEAD"))
   private void onSendCommand(String command, CallbackInfo ci) {
     if (command.equals("sit")) {
-      NotRidingAlertClient.setLastSitCommand();
+      GameState.getInstance().setLastSitCommand();
     }
   }
 }

@@ -1,12 +1,12 @@
 package com.chenweikeng.nra;
 
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
-import com.chenweikeng.nra.config.CursorReleaseTiming;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.WindowMinimizeTiming;
 import com.chenweikeng.nra.config.profile.ProfileCommandHandler;
 import com.chenweikeng.nra.config.profile.ProfileManager;
 import com.chenweikeng.nra.config.profile.ui.ProfileManagementScreen;
+import com.chenweikeng.nra.handler.AdvanceNoticeHandler;
 import com.chenweikeng.nra.handler.AutograbFailureHandler;
 import com.chenweikeng.nra.handler.AutograbRegionRenderer;
 import com.chenweikeng.nra.handler.ClosedCaptionHolder;
@@ -16,16 +16,16 @@ import com.chenweikeng.nra.handler.FireworkViewingHandler;
 import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.handler.ReminderHandler;
 import com.chenweikeng.nra.handler.ScoreboardHandler;
-import com.chenweikeng.nra.handler.WindowMinimizeHandler;
 import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
+import com.chenweikeng.nra.session.SessionStatsHudRenderer;
+import com.chenweikeng.nra.session.SessionTracker;
 import com.chenweikeng.nra.strategy.StrategyHudRendererDispatcher;
 import com.chenweikeng.nra.tracker.PlayerMovementTracker;
 import com.chenweikeng.nra.tracker.RideStateTracker;
 import com.chenweikeng.nra.tracker.SuppressionRegionTracker;
-import com.chenweikeng.nra.util.SoundHelper;
 import com.chenweikeng.nra.wizard.TutorialManager;
 import com.chenweikeng.nra.wizard.WizardScreen;
 import com.mojang.brigadier.CommandDispatcher;
@@ -38,14 +38,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,22 +47,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   public static final String MOD_ID = "not-riding-alert";
   public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-  private static final int CHECK_INTERVAL = 200;
-  private static final int CANOE_MESSAGE_COOLDOWN_TICKS = 200;
-  private static final int DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS = 12000;
-
-  public static final Component DYNAMIC_FPS_COMPATIBILITY_MESSAGE =
-      Component.empty()
-          .withStyle(ChatFormatting.AQUA)
-          .append(
-              Component.literal("[NRA] ").withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-          .append(
-              Component.literal(
-                      "For compatibility with Dynamic FPS, the window will not be minimized when MonkeyCraft client is connected.")
-                  .withStyle(ChatFormatting.WHITE));
-
-  private static volatile boolean isMonkeyAttached = false;
-
+  private final GameState gameState = GameState.getInstance();
   private final PlayerMovementTracker movementTracker = new PlayerMovementTracker();
   private final RideStateTracker rideStateTracker = new RideStateTracker();
   private final SuppressionRegionTracker suppressionRegionTracker = new SuppressionRegionTracker();
@@ -77,23 +56,13 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private final AutograbFailureHandler autograbFailureHandler = new AutograbFailureHandler();
   private final FireworkViewingHandler fireworkViewingHandler =
       FireworkViewingHandler.getInstance();
-  private final WindowMinimizeHandler windowMinimizeHandler = WindowMinimizeHandler.getInstance();
   private final ScoreboardHandler scoreboardHandler = new ScoreboardHandler();
   private final ReminderHandler reminderHandler = ReminderHandler.getInstance();
+  private final AlertChecker alertChecker = new AlertChecker();
+  private final CursorManager cursorManager = new CursorManager();
+  private final AdvanceNoticeHandler advanceNoticeHandler = new AdvanceNoticeHandler();
 
   private int tickCounter = 0;
-  private static long absoluteTickCounter = 0;
-  private long lastCanoeMessageTick = -CANOE_MESSAGE_COOLDOWN_TICKS;
-  private long lastDynamicFpsMessageTick = -DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;
-  private static boolean isRiding = false;
-  private boolean wasRiding = false;
-  private boolean wasOnVehicle = false;
-  private boolean wasPassenger = false;
-  private boolean minimizedDuringAutograb = false;
-  private RideName previousAutograbRide = null;
-  private static boolean automaticallyReleasedCursor = false;
-  private static long lastSitCommand = -400;
-  private static boolean isSitting = false;
 
   @Override
   public void onInitializeClient() {
@@ -106,6 +75,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
     ClientPlayConnectionEvents.JOIN.register(
         (handler, sender, client) -> {
           ServerState.onJoin(client);
+          if (ServerState.isImagineFunServer()) {
+            SessionTracker.getInstance().onSessionStart();
+          }
           if (ServerState.isImagineFunServer()
               && TutorialManager.getInstance().shouldStartTutorial()) {
             client.execute(
@@ -119,71 +91,12 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
     ClientPlayConnectionEvents.DISCONNECT.register(
         (handler, client) -> {
+          SessionTracker.getInstance().onSessionEnd();
           ServerState.onDisconnect();
           resetAllTrackers();
         });
 
-    ClientTickEvents.END_CLIENT_TICK.register(
-        client -> {
-          if (!ServerState.isImagineFunServer()) {
-            return;
-          }
-          if (client.player == null) {
-            isRiding = false;
-            return;
-          }
-
-          boolean isPassenger = isValidPassenger(client.player);
-          RideName autograbRide = AutograbHolder.getRideAtLocation(client);
-
-          // Check if player recently used sit command and became a passenger
-          if (!wasPassenger && isPassenger && (absoluteTickCounter - lastSitCommand < 400)) {
-            isSitting = true;
-          }
-
-          // Reset isSitting when player is no longer a passenger
-          if (!client.player.isPassenger()) {
-            isSitting = false;
-          }
-
-          isPassenger = isValidPassenger(client.player);
-
-          isRiding =
-              isPassenger || CurrentRideHolder.getCurrentRide() != null || autograbRide != null;
-
-          handleCursorManagement(client, isPassenger, autograbRide);
-          absoluteTickCounter++;
-
-          movementTracker.track(client, absoluteTickCounter);
-          rideStateTracker.trackRideCompletion(absoluteTickCounter);
-          rideStateTracker.trackVehicleState(client, absoluteTickCounter);
-          suppressionRegionTracker.trackLincolnRegionEntryExit(client, rideStateTracker);
-          fireworkViewingHandler.track(client);
-          dayTimeHandler.resetDayTimeIfNeeded(client);
-          boolean autograbFailureActive =
-              autograbFailureHandler.track(client, absoluteTickCounter, movementTracker);
-          if (autograbFailureActive
-              && ModConfig.currentSetting.minimizeWindow != WindowMinimizeTiming.NONE) {
-            windowMinimizeHandler.restoreWindow();
-            minimizedDuringAutograb = false;
-          }
-          HibernationHandler.getInstance().track(client, absoluteTickCounter);
-          configReminderHandler.track(client, absoluteTickCounter);
-          scoreboardHandler.track(client);
-          reminderHandler.track(client, absoluteTickCounter);
-          ClosedCaptionHolder.getInstance().tick();
-
-          RideCountManager.getInstance().checkAndSaveIfNeeded();
-
-          tickCounter++;
-          if (tickCounter >= CHECK_INTERVAL) {
-            tickCounter = 0;
-            checkNotRidingAlert(client, autograbFailureActive);
-          }
-
-          wasRiding = isRiding;
-          wasPassenger = isPassenger;
-        });
+    ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
 
     ClientCommandRegistrationCallback.EVENT.register(
         (dispatcher, registryAccess) -> {
@@ -204,191 +117,72 @@ public class NotRidingAlertClient implements ClientModInitializer {
       HudElementRegistry.attachElementBefore(
           VanillaHudElements.CHAT, beforeChatId, StrategyHudRendererDispatcher::render);
     }
+
+    Identifier sessionStatsId =
+        Identifier.fromNamespaceAndPath(NotRidingAlertClient.MOD_ID, "session_stats");
+    if (sessionStatsId != null) {
+      HudElementRegistry.attachElementBefore(
+          VanillaHudElements.CHAT, sessionStatsId, SessionStatsHudRenderer::render);
+    }
   }
 
-  private void handleCursorManagement(
-      Minecraft client, boolean isPassenger, RideName autograbRide) {
-    CursorReleaseTiming timing = ModConfig.currentSetting.cursorReleaseTiming;
-
-    if (timing == CursorReleaseTiming.ON_ZONE_ENTRY && autograbRide != null && !isPassenger) {
-      if (autograbRide != previousAutograbRide) {
-        client.setScreen(null);
-        if (client.mouseHandler.isMouseGrabbed()) {
-          client.mouseHandler.releaseMouse();
-          automaticallyReleasedCursor = true;
-          sendCanoeMessageIfNeeded(client, autograbRide);
-        }
-        previousAutograbRide = autograbRide;
-      }
-    } else {
-      previousAutograbRide = null;
-    }
-
-    boolean isOnVehicle = isPassenger || CurrentRideHolder.getCurrentRide() != null;
-    if (timing != CursorReleaseTiming.NONE) {
-      boolean shouldReleaseOnThisTick =
-          switch (timing) {
-            case NONE -> false;
-            case ON_ZONE_ENTRY -> !wasRiding && isRiding;
-            case ON_VEHICLE_MOUNT -> !wasOnVehicle && isOnVehicle;
-          };
-
-      if (shouldReleaseOnThisTick) {
-        client.mouseHandler.releaseMouse();
-        automaticallyReleasedCursor = true;
-        RideName currentRide = CurrentRideHolder.getCurrentRide();
-        if (currentRide == null) {
-          currentRide = AutograbHolder.getRideAtLocation(client);
-        }
-        sendCanoeMessageIfNeeded(client, currentRide);
-      }
-
-      boolean shouldGrabOnThisTick =
-          switch (timing) {
-            case NONE -> false;
-            case ON_ZONE_ENTRY -> wasRiding && !isRiding;
-            case ON_VEHICLE_MOUNT -> wasOnVehicle && !isOnVehicle;
-          };
-
-      if (shouldGrabOnThisTick) {
-        automaticallyReleasedCursor = false;
-        if (client.screen == null) {
-          client.mouseHandler.grabMouse();
-        }
-      }
-
-      boolean isCurrentlyRiding =
-          switch (timing) {
-            case NONE -> false;
-            case ON_ZONE_ENTRY -> isRiding;
-            case ON_VEHICLE_MOUNT -> isOnVehicle;
-          };
-
-      if ((isCurrentlyRiding || client.player.isPassenger())
-          && client.mouseHandler.isRightPressed()
-          && client.screen == null) {
-        client.mouseHandler.releaseMouse();
-      }
-    }
-
-    if (ModConfig.currentSetting.minimizeWindow != WindowMinimizeTiming.NONE) {
-      WindowMinimizeTiming minimizeTiming = ModConfig.currentSetting.minimizeWindow;
-      boolean shouldMinimizeOnZoneEntry = !wasRiding && isRiding;
-      boolean shouldMinimizeOnVehicleMount =
-          !wasOnVehicle && isOnVehicle && !minimizedDuringAutograb;
-
-      boolean shouldMinimizeOnThisTick =
-          switch (minimizeTiming) {
-            case NONE -> false;
-            case ON_ZONE_ENTRY -> shouldMinimizeOnZoneEntry || shouldMinimizeOnVehicleMount;
-            case ON_VEHICLE_MOUNT -> shouldMinimizeOnVehicleMount;
-          };
-
-      if (shouldMinimizeOnThisTick) {
-        if (MonkeycraftCompat.isClientConnected()
-            && FabricLoader.getInstance().isModLoaded("dynamic_fps")) {
-          sendDynamicFpsMessageIfNeeded(client);
-        } else {
-          if (shouldMinimizeOnZoneEntry && minimizeTiming == WindowMinimizeTiming.ON_ZONE_ENTRY) {
-            minimizedDuringAutograb = true;
-          }
-          windowMinimizeHandler.minimizeWindow();
-        }
-      }
-
-      if (!isRiding) {
-        minimizedDuringAutograb = false;
-      }
-
-      boolean shouldRestoreOnThisTick =
-          switch (minimizeTiming) {
-            case NONE -> false;
-            case ON_ZONE_ENTRY -> wasRiding && !isRiding;
-            case ON_VEHICLE_MOUNT -> wasOnVehicle && !isOnVehicle;
-          };
-
-      if (shouldRestoreOnThisTick) {
-        windowMinimizeHandler.restoreWindow();
-      }
-
-      if (MonkeycraftCompat.isClientConnected()
-          && FabricLoader.getInstance().isModLoaded("dynamic_fps")) {
-        if (client.getWindow() != null) {
-          long handle = client.getWindow().handle();
-          boolean isMinimized =
-              GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_ICONIFIED) == GLFW.GLFW_TRUE;
-          if (isMinimized) {
-            windowMinimizeHandler.restoreWindow();
-            sendDynamicFpsMessageIfNeeded(client);
-          }
-        }
-      }
-    }
-
-    wasOnVehicle = isOnVehicle;
-  }
-
-  private void sendCanoeMessageIfNeeded(Minecraft client, RideName ride) {
-    if (client.player == null || ride != RideName.DAVY_CROCKETTS_EXPLORER_CANOES) {
+  private void onClientTick(Minecraft client) {
+    if (!ServerState.isImagineFunServer()) {
       return;
     }
-
-    if (absoluteTickCounter - lastCanoeMessageTick < CANOE_MESSAGE_COOLDOWN_TICKS) {
-      return;
-    }
-
-    lastCanoeMessageTick = absoluteTickCounter;
-
-    Component message =
-        Component.empty()
-            .withStyle(ChatFormatting.AQUA)
-            .append(
-                Component.literal("[NRA] ")
-                    .withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD))
-            .append(Component.literal("Please use ").withStyle(ChatFormatting.WHITE))
-            .append(
-                Component.literal("LEFT click")
-                    .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
-            .append(Component.literal(" to ride canoes.").withStyle(ChatFormatting.WHITE));
-
-    client.player.displayClientMessage(message, false);
-  }
-
-  private void sendDynamicFpsMessageIfNeeded(Minecraft client) {
     if (client.player == null) {
+      gameState.setRiding(false);
       return;
     }
 
-    if (absoluteTickCounter - lastDynamicFpsMessageTick < DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS) {
-      return;
+    boolean wasPassenger = cursorManager.wasPassenger();
+    boolean isPassenger = gameState.isValidPassenger(client.player);
+    RideName autograbRide = AutograbHolder.getRideAtLocation(client);
+
+    gameState.updateSittingState(wasPassenger, isPassenger);
+    gameState.clearSittingIfNotPassenger(client.player.isPassenger());
+
+    isPassenger = gameState.isValidPassenger(client.player);
+
+    boolean isRiding =
+        isPassenger || CurrentRideHolder.getCurrentRide() != null || autograbRide != null;
+    gameState.setRiding(isRiding);
+
+    cursorManager.tick(client, isPassenger, isRiding, autograbRide);
+    gameState.incrementTickCounter();
+
+    long currentTick = gameState.getAbsoluteTickCounter();
+    movementTracker.track(client, currentTick);
+    rideStateTracker.trackRideCompletion(currentTick);
+    rideStateTracker.trackVehicleState(client, currentTick);
+    suppressionRegionTracker.trackLincolnRegionEntryExit(client, rideStateTracker);
+    fireworkViewingHandler.track(client);
+    dayTimeHandler.resetDayTimeIfNeeded(client);
+    boolean autograbFailureActive =
+        autograbFailureHandler.track(client, currentTick, movementTracker);
+    if (autograbFailureActive
+        && ModConfig.currentSetting.minimizeWindow != WindowMinimizeTiming.NONE) {
+      cursorManager.handleAutograbFailureRestore();
     }
+    HibernationHandler.getInstance().track(client, currentTick);
+    configReminderHandler.track(client, currentTick);
+    scoreboardHandler.track(client);
+    advanceNoticeHandler.tick(client);
+    reminderHandler.track(client, currentTick);
+    ClosedCaptionHolder.getInstance().tick();
 
-    lastDynamicFpsMessageTick = absoluteTickCounter;
+    RideCountManager.getInstance().checkAndSaveIfNeeded();
+    SessionTracker.getInstance().checkAndSaveIfNeeded();
 
-    client.player.displayClientMessage(DYNAMIC_FPS_COMPATIBILITY_MESSAGE, false);
-  }
-
-  private void checkNotRidingAlert(Minecraft client, boolean autograbFailureActive) {
-    if (client.player == null) {
-      return;
-    }
-
-    if (autograbFailureActive) {
-      SoundHelper.playConfiguredSound(client);
-      return;
-    }
-
-    if (!ModConfig.currentSetting.enabled) {
-      return;
-    }
-
-    if (!isRiding
-        && !movementTracker.hasPlayerMovedRecently(absoluteTickCounter)
-        && !rideStateTracker.hasRidenRecently(absoluteTickCounter)
-        && !rideStateTracker.hasVehicleRecently(absoluteTickCounter)
-        && !suppressionRegionTracker.isInROTRExceptionArea(client)
-        && !rideStateTracker.isLincolnSuppressionActive()) {
-      SoundHelper.playConfiguredSound(client);
+    tickCounter++;
+    if (tickCounter >= Timing.ALERT_CHECK_INTERVAL) {
+      tickCounter = 0;
+      alertChecker.check(
+          client,
+          autograbFailureActive,
+          movementTracker,
+          rideStateTracker,
+          suppressionRegionTracker);
     }
   }
 
@@ -403,63 +197,14 @@ public class NotRidingAlertClient implements ClientModInitializer {
     scoreboardHandler.reset();
     reminderHandler.reset();
     ClosedCaptionHolder.getInstance().clear();
+    cursorManager.reset();
+    advanceNoticeHandler.reset();
+    gameState.reset();
     tickCounter = 0;
-    absoluteTickCounter = 0;
-    lastCanoeMessageTick = -CANOE_MESSAGE_COOLDOWN_TICKS;
-    lastDynamicFpsMessageTick = -DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;
-    wasRiding = false;
-    wasOnVehicle = false;
-    wasPassenger = false;
-    previousAutograbRide = null;
-    automaticallyReleasedCursor = false;
-    lastSitCommand = -400;
-    isSitting = false;
-  }
-
-  public static boolean isRiding() {
-    return isRiding;
   }
 
   public static boolean isImagineFunServer() {
     return ServerState.isImagineFunServer();
-  }
-
-  public static boolean isAutomaticallyReleasedCursor() {
-    return automaticallyReleasedCursor;
-  }
-
-  public static boolean isMonkeyAttached() {
-    return isMonkeyAttached;
-  }
-
-  public static void setMonkeyAttached(boolean attached) {
-    isMonkeyAttached = attached;
-  }
-
-  public static void setLastSitCommand() {
-    lastSitCommand = absoluteTickCounter;
-  }
-
-  public static boolean isValidPassenger(LocalPlayer player) {
-    if (player == null) {
-      return false;
-    }
-
-    // Check if player is sitting (recently used sit command)
-    if (isSitting) {
-      return false;
-    }
-
-    // Check if player is a passenger
-    if (!player.isPassenger()) {
-      return false;
-    }
-
-    if (!(player.getVehicle() instanceof ArmorStand)) {
-      return false;
-    }
-
-    return true;
   }
 
   private static void registerNraCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {

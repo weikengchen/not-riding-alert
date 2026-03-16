@@ -1,9 +1,9 @@
 package com.chenweikeng.nra.tracker;
 
+import com.chenweikeng.nra.Timing;
 import net.minecraft.client.Minecraft;
 
 public class PlayerMovementTracker {
-  private static final int MOVEMENT_SUPPRESSION_TICKS = 600;
 
   private long lastPlayerMovementTick = -1;
 
@@ -34,7 +34,7 @@ public class PlayerMovementTracker {
     }
 
     long ticksSinceLastMovement = currentTick - lastPlayerMovementTick;
-    return ticksSinceLastMovement < MOVEMENT_SUPPRESSION_TICKS;
+    return ticksSinceLastMovement < Timing.MOVEMENT_SUPPRESSION_TICKS;
   }
 
   public void reset() {

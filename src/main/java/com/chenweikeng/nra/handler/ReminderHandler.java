@@ -1,6 +1,8 @@
 package com.chenweikeng.nra.handler;
 
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.Timing;
 import com.chenweikeng.nra.config.AudioBoostReminderMode;
 import com.chenweikeng.nra.config.ModConfig;
 import net.minecraft.ChatFormatting;
@@ -8,11 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
 public class ReminderHandler {
-  static final int REMINDER_INTERVAL_TICKS = 300;
   private static ReminderHandler instance;
 
   private boolean audioConnected = false;
-  public long lastAudioReminderTick = -REMINDER_INTERVAL_TICKS;
+  public long lastAudioReminderTick = -Timing.REMINDER_INTERVAL_TICKS;
 
   private ReminderHandler() {}
 
@@ -50,7 +51,7 @@ public class ReminderHandler {
       return;
     }
 
-    if (mode == AudioBoostReminderMode.ONLY_WHEN_RIDING && !NotRidingAlertClient.isRiding()) {
+    if (mode == AudioBoostReminderMode.ONLY_WHEN_RIDING && !GameState.getInstance().isRiding()) {
       return;
     }
 
@@ -58,7 +59,7 @@ public class ReminderHandler {
       return;
     }
 
-    if (currentTick - lastAudioReminderTick < REMINDER_INTERVAL_TICKS) {
+    if (currentTick - lastAudioReminderTick < Timing.REMINDER_INTERVAL_TICKS) {
       return;
     }
 
@@ -72,6 +73,6 @@ public class ReminderHandler {
 
   public void reset() {
     audioConnected = false;
-    lastAudioReminderTick = -REMINDER_INTERVAL_TICKS;
+    lastAudioReminderTick = -Timing.REMINDER_INTERVAL_TICKS;
   }
 }

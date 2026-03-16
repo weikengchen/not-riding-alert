@@ -2,12 +2,13 @@ package com.chenweikeng.nra.compat;
 
 import com.chenweikeng.monkeycraft_api.v1.CommandExecutionResult;
 import com.chenweikeng.monkeycraft_api.v1.MonkeycraftApi;
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.GameState;
 
 final class MonkeycraftCompatImpl {
   static void init() {
-    MonkeycraftApi.CONNECTION.register(remoteAddr -> NotRidingAlertClient.setMonkeyAttached(true));
-    MonkeycraftApi.DISCONNECTION.register(() -> NotRidingAlertClient.setMonkeyAttached(false));
+    MonkeycraftApi.CONNECTION.register(
+        remoteAddr -> GameState.getInstance().setMonkeyAttached(true));
+    MonkeycraftApi.DISCONNECTION.register(() -> GameState.getInstance().setMonkeyAttached(false));
     MonkeycraftApi.COMMAND_EXECUTION.register(
         command -> {
           if (command == null) {

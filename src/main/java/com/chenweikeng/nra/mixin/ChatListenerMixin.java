@@ -9,6 +9,7 @@ import com.chenweikeng.nra.handler.ReminderHandler;
 import com.chenweikeng.nra.ride.LastRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
+import com.chenweikeng.nra.session.SessionTracker;
 import java.awt.Color;
 import java.util.List;
 import net.minecraft.client.multiplayer.chat.ChatListener;
@@ -78,6 +79,8 @@ public class ChatListenerMixin {
     RideCountManager countManager = RideCountManager.getInstance();
     int current = countManager.getRideCount(lastRide);
     countManager.updateRideCount(lastRide, current + 1);
+
+    SessionTracker.getInstance().onRideCompleted(lastRide);
 
     HibernationHandler.getInstance().cancelPendingCancellation();
   }

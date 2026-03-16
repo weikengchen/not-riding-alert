@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.FullbrightMode;
 import com.chenweikeng.nra.config.ModConfig;
@@ -33,7 +34,7 @@ public abstract class LivingEntityMixin {
         }
         return;
       }
-      boolean isRiding = NotRidingAlertClient.isRiding();
+      boolean isRiding = GameState.getInstance().isRiding();
       if (ModConfig.currentSetting.blindWhenRiding && effect == MobEffects.BLINDNESS && isRiding) {
         cir.setReturnValue(true);
       } else if (effect == MobEffects.NIGHT_VISION) {
@@ -70,7 +71,7 @@ public abstract class LivingEntityMixin {
         }
         return;
       }
-      boolean isRiding = NotRidingAlertClient.isRiding();
+      boolean isRiding = GameState.getInstance().isRiding();
       if (ModConfig.currentSetting.blindWhenRiding && effect == MobEffects.BLINDNESS && isRiding) {
         if (cir.getReturnValue() == null) {
           cir.setReturnValue(new MobEffectInstance(MobEffects.BLINDNESS, -1));

@@ -1,6 +1,8 @@
 package com.chenweikeng.nra.strategy;
 
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.Timing;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.ride.AutograbHolder;
@@ -17,7 +19,7 @@ import net.minecraft.client.gui.GuiGraphics;
 public class StrategyHudRendererV0 {
   private static List<RideGoal> topGoals = new ArrayList<>();
   private static int updateCounter = 0;
-  private static final int UPDATE_INTERVAL_TICKS = 40; // Update every 2 seconds (40 ticks)
+  private static final int UPDATE_INTERVAL_TICKS = Timing.HUD_UPDATE_INTERVAL_TICKS;
   private static String currentError = null; // Stores the latest error message
 
   private record LayoutInput(
@@ -116,7 +118,7 @@ public class StrategyHudRendererV0 {
     RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
-    boolean isPassengerForLayout = NotRidingAlertClient.isValidPassenger(client.player);
+    boolean isPassengerForLayout = GameState.getInstance().isValidPassenger(client.player);
 
     int topGoalsSize = topGoals.size();
     boolean wantsTwoColumns = topGoalsSize >= 8;
@@ -143,7 +145,7 @@ public class StrategyHudRendererV0 {
     }
     boolean useShortNames = decision.useShortNames;
     boolean twoColumns = decision.twoColumns;
-    boolean isPassenger = NotRidingAlertClient.isValidPassenger(client.player);
+    boolean isPassenger = GameState.getInstance().isValidPassenger(client.player);
 
     List<RideGoal> leftGoals;
     List<RideGoal> rightGoals;

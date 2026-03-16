@@ -92,5 +92,9 @@
   "config.not-riding-alert.sortingRules.ride_time_asc": "Ride time ASC",
   "config.not-riding-alert.sortingRules.ride_time_desc": "Ride time DESC",
   "config.not-riding-alert.sortingRules.next_goal_asc": "Next goal ASC",
-  "config.not-riding-alert.sortingRules.next_goal_desc": "Next goal DESC"
+  "config.not-riding-alert.sortingRules.next_goal_desc": "Next goal DESC",
+  "config.not-riding-alert.category.advanceNotice": "Advance Notice",
+  "config.not-riding-alert.advanceNotice.tooltip": "Play a sound this many seconds before the ride ends (0 = disabled)",
+  "config.not-riding-alert.showSessionStats": "Show daily session stats",
+  "config.not-riding-alert.showSessionStats.tooltip": "Display daily ride count, ride time, rides per hour, and streak in the bottom-right corner"
 }

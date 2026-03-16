@@ -1,6 +1,6 @@
 package com.chenweikeng.nra.handler;
 
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.GameState;
 import java.awt.Color;
 import java.util.Random;
 import net.minecraft.network.chat.Component;
@@ -25,7 +25,7 @@ public class ClosedCaptionHolder {
   }
 
   public void tick() {
-    boolean isRiding = NotRidingAlertClient.isRiding();
+    boolean isRiding = GameState.getInstance().isRiding();
 
     if (displayTicks > 0 && !isRiding) {
       displayTicks--;

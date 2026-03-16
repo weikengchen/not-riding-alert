@@ -3,7 +3,7 @@ package com.chenweikeng.nra.compat;
 import com.chenweikeng.monkeycraft_api.v1.ChatMessageResult;
 import com.chenweikeng.monkeycraft_api.v1.IncomingChatContext;
 import com.chenweikeng.monkeycraft_api.v1.OutgoingChatContext;
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.CursorManager;
 import com.vdurmont.emoji.EmojiManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ final class ChatFormatter {
     String senderUuid = context.getSenderUuid();
     String senderName = context.getSenderName();
 
-    if (message == NotRidingAlertClient.DYNAMIC_FPS_COMPATIBILITY_MESSAGE) {
+    if (message == CursorManager.DYNAMIC_FPS_COMPATIBILITY_MESSAGE) {
       return ChatMessageResult.DENY;
     }
 

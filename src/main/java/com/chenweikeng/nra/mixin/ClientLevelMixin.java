@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.mixin;
 
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.wizard.WizardActionHandler;
@@ -55,7 +56,7 @@ public class ClientLevelMixin {
         }
 
         // Check if player is riding (excluding autograb region check via isRiding helper)
-        if (NotRidingAlertClient.isRiding()) {
+        if (GameState.getInstance().isRiding()) {
           // Cancel sound when riding (except ride.complete)
           ci.cancel();
         }

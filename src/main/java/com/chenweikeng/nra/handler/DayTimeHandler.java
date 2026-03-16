@@ -1,6 +1,6 @@
 package com.chenweikeng.nra.handler;
 
-import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.ServerState;
 import com.chenweikeng.nra.config.FullbrightMode;
 import com.chenweikeng.nra.config.ModConfig;
@@ -20,7 +20,7 @@ public class DayTimeHandler {
       return;
     }
 
-    boolean isRiding = NotRidingAlertClient.isRiding();
+    boolean isRiding = GameState.getInstance().isRiding();
     FullbrightMode mode = ModConfig.currentSetting.fullbrightMode;
     boolean shouldApplyFullbright =
         switch (mode) {
