@@ -66,12 +66,29 @@ You need to open /ridestats and go through all the pages in all the tabs (includ
 - **Autograbbing Detection**: When enabled, entering predefined ride regions automatically releases the cursor and marks you as ready to ride. This allows you to multitask without needing to manually interact with the ride vehicle while waiting for rides to start.
 - **Defocus Cursor**: Automatically releases the mouse cursor when you start riding, and grabs it back when you stop riding.
 - **Window Minimization**: Optionally minimize the game window when riding and automatically restore it when the ride ends.
+- **Advance Ride Completion Notice**: Plays an alert sound a configurable number of seconds before a ride finishes, for rides with continuous departures. Per-ride configurable (0-30 seconds) via the Advance Notice config tab.
 - **Blindness Effect**: Optional blindness effect when riding (to reduce distractions)
 - **Fullbright**: Force full brightness when not riding (client-side only)
 - **Sound Suppression**: Automatically suppresses game sounds when riding
 - **Seasonal Ride Support**: Toggle whether seasonal rides appear in recommendations
 - **Configurable Sound**: Customize the alert sound to your preference
 - **Audio Boost Reminder**: Displays "MISSING AUDIO BOOST" in the action bar when you're not connected to the ImagineFun audio client. Configurable to show always, only when riding, or disabled.
+
+### 📊 Daily Session Stats (New in v2.4.5)
+A bottom-right HUD overlay that tracks your daily riding session:
+
+- **Ride Count**: Number of rides completed today
+- **Ride Time**: Total time spent on rides today (updates live while on a ride)
+- **Ride Time per Hour**: Minutes of ride time per hour of online time — a measure of how efficiently you're riding (e.g., `42m/hr` means 42 out of every 60 online minutes were spent on rides)
+- **Daily Streak**: Tracks consecutive days of riding activity, displayed below the stats line
+- **Persistent Data**: Stats are saved to disk and persist across reconnects; resets daily at midnight
+- **Online Time Only**: The "per hour" metric uses cumulative online time, not wall-clock time — offline gaps don't count against you
+
+### 🏆 Session Milestones (New in v2.4.5)
+Celebrates your riding achievements during each session:
+
+- Triggers at ride count thresholds: 10, 25, 50, 100, 150, 200, 250, 500, 1000
+- Plays a celebration sound and displays a gold-colored chat message with your total ride time
 
 ### 🐵 Monkeycraft Integration
 Optional integration with the Monkeycraft mod for enhanced mobile/remote play experience. When Monkeycraft is installed and connected:
@@ -89,45 +106,6 @@ Autograbbing detection is a smart feature that automatically detects when you en
 1. **Release the mouse cursor** - allowing you to use other applications without Minecraft stealing focus
 2. **Mark you as "ready to ride"** - the strategy HUD will display the ride name with "(Autograbbing...)" status
 3. **Suppress the alert system** - since the mod knows you're waiting for a ride to start
-
-**Supported Rides with Autograbbing Detection:**
-
-**Disneyland Park:**
-- **Alice in Wonderland**
-- **Big Thunder Mountain Railroad**
-- **Casey Jr. Circus Train**
-- **Chip 'n' Dale's GADGETcoaster**
-- **Disneyland Monorail**
-- **Disneyland Railroad**
-- **Finding Nemo Submarine Voyage**
-- **Haunted Mansion**
-- **Indiana Jones™ Adventure**
-- **Jungle Cruise**
-- **Matterhorn Bobsleds**
-- **Mickey & Friends Parking Tram**
-- **Mr Toad's Wild Ride**
-- **Peter Pan's Flight**
-- **Pinocchio's Daring Journey**
-- **Pirates of the Caribbean**
-- **Roger Rabbit's Car Toon Spin**
-- **Snow White's Enchanted Wish**
-- **Space Mountain**
-- **Splash Mountain**
-- **Star Wars: Rise of the Resistance**
-- **Storybook Land Canal Boats**
-- **The Many Adventures of Winnie the Pooh**
-
-**Disney California Adventure:**
-- **Goofy's Sky School**
-- **Grizzly River Run**
-- **Guardians of the Galaxy - Mission: BREAKOUT!**
-- **Incredicoaster**
-- **Monsters, Inc. Mike & Sulley to the Rescue!**
-- **Radiator Springs Racers**
-- **The Little Mermaid - Ariel's Undersea Adventure**
-
-**Retro:**
-- **The Twilight Zone Tower of Terror**
 
 **Note:** Autograbbing detection can be toggled on/off in the configuration menu (`/nra`). When disabled, region-based ride detection will not occur.
 
@@ -164,6 +142,10 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Delete Profile**: Remove unwanted profiles
 - **Built-in Profiles**: Pre-configured profiles for common use cases
 
+### ⏱️ Advance Notice Settings (Advance Notice Tab, New in v2.4.5)
+- **Per-Ride Advance Notice**: Configure advance notice seconds (0-30) for each ride individually
+- Set to 0 to disable advance notice for a specific ride
+
 ### 🎢 Ride Management (Rides Tab)
 - **Toggle Rides**: Individual toggles for every ride to hide/show them in the strategy HUD
 
@@ -178,6 +160,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Hide Experience Level**: Toggle experience level number visibility
 - **Hide Love Potion Messages**: Filter out system messages containing love potion effects
 - **Relocate Closed Caption**: Move [CC] messages from chat to a centered overlay with styled text
+- **Show Daily Session Stats**: Toggle the daily session stats HUD overlay (default: enabled)
 
 ## Known Limitations
 
@@ -188,7 +171,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.4.2
+- **Version**: 2.4.5
 
 ## License
 
