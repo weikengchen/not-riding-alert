@@ -264,7 +264,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
             case ON_VEHICLE_MOUNT -> isOnVehicle;
           };
 
-      if (isCurrentlyRiding && client.mouseHandler.isRightPressed() && client.screen == null) {
+      if ((isCurrentlyRiding || client.player.isPassenger())
+          && client.mouseHandler.isRightPressed()
+          && client.screen == null) {
         client.mouseHandler.releaseMouse();
       }
     }

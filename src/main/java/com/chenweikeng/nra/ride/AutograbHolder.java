@@ -212,7 +212,7 @@ public enum AutograbHolder {
       RideName.THE_MANY_ADVENTURES_OF_WINNIE_THE_POOH,
       isDlnew(),
       new Point(721.02, 483.22),
-      64,
+      65,
       new Point(723, 482),
       new Point(722, 485),
       new Point(721, 485),

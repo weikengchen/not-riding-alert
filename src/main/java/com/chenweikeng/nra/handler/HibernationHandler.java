@@ -181,19 +181,19 @@ public class HibernationHandler {
 
     if (ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_ASC
         || ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_DESC) {
-      if (goal == null || goal.getMaxRidesNeeded() <= 0) {
+      if (goal == null || goal.getMaxRidesNeeded() <= 1) {
         return rideName + " has finished";
       }
 
       int ridesNeeded = goal.getMaxRidesNeeded();
-      return rideName + " has finished (needs " + ridesNeeded + " more rides)";
+      return rideName + " has finished (needs " + (ridesNeeded - 1) + " more rides)";
     } else {
-      if (goal == null || goal.getNextGoalRidesNeeded() <= 0) {
+      if (goal == null || goal.getNextGoalRidesNeeded() <= 1) {
         return rideName + " has finished";
       }
 
       int ridesNeeded = goal.getNextGoalRidesNeeded();
-      return rideName + " has finished (needs " + ridesNeeded + " more rides)";
+      return rideName + " has finished (needs " + (ridesNeeded - 1) + " more rides)";
     }
   }
 
