@@ -162,6 +162,56 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Relocate Closed Caption**: Move [CC] messages from chat to a centered overlay with styled text
 - **Show Daily Session Stats**: Toggle the daily session stats HUD overlay (default: enabled)
 
+### 🔊 OpenAudioMC Integration (New in v2.4.5)
+Automatically connects to the ImagineFun audio system without needing a separate browser tab:
+
+- **Auto-Detection**: Detects OpenAudioMC session URLs in chat messages
+- **Headless WebView**: Launches a hidden native WebView process to manage the audio session
+- **Auto-Connect**: Clicks "Start Audio Session" automatically
+- **Reconnection**: Retries up to 3 times if the audio session drops mid-connection
+- **Cross-Platform**: Native helpers for macOS (WKWebView) and Windows (WebView2)
+
+## Reproducible Build
+
+The mod JAR includes native helper binaries for macOS and Windows. These binaries are **not stored in git** — they are compiled from source during CI using GitHub Actions, so every build is reproducible and auditable.
+
+### How it works
+
+1. **Source files** are in `native/macos/WebViewHelper.swift` and `native/windows/WebViewHelper.cs` — fully readable and reviewable
+2. **CI builds** compile them on platform-native runners (macOS for Swift, Windows for .NET)
+3. **The JAR** bundles both the compiled binaries and the source files, so anyone can verify what the binaries do by reading the source inside the JAR
+
+### CI workflow (`build.yml`)
+
+| Job | Runner | Compiles |
+|-----|--------|----------|
+| `build-macos-native` | `macos-latest` | `swiftc` → `webview-helper` (universal arm64+x86_64) |
+| `build-windows-native` | `windows-latest` | `dotnet publish` → `webview-helper.exe` (framework-dependent, requires .NET 8 Desktop Runtime) |
+| `build` | `ubuntu-latest` | Assembles native artifacts + source into JAR via Gradle |
+
+### Local development
+
+To build the native binaries locally (e.g., before `./gradlew build`):
+
+```bash
+# Builds both platforms and copies to src/main/resources/native/
+./native/build-all.sh
+
+# macOS only (requires Xcode CLI tools)
+cd native/macos && bash build.sh
+
+# Windows cross-compile from macOS (requires .NET SDK: brew install dotnet)
+cd native/windows && dotnet publish -c Release -r win-x64 --no-self-contained -p:PublishSingleFile=true -o publish
+```
+
+### Runtime behavior
+
+When the mod starts, `WebViewBridge` resolves the helper binary in this order:
+1. **Existing binary** at `config/not-riding-alert/native/` (user override)
+2. **Compile from source** if `swiftc` (macOS) or `dotnet` (Windows) is available — extracts the `.swift`/`.cs` source from the JAR and compiles it
+3. **Pre-compiled binary** from JAR resources (extracted to config directory)
+4. **Windows .NET check**: skips if .NET 8 Desktop Runtime is not installed, with a log message pointing to the download page
+
 ## Known Limitations
 
 - Progress tracking is not available for "Davy Crockett's Explorer Canoes" (ride time is player-dependent)
