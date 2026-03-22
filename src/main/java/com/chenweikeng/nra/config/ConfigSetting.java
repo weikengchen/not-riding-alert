@@ -45,7 +45,7 @@ public class ConfigSetting {
   public int trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
   public AudioBoostReminderMode audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
   public ClosedCaptionMode closedCaptionMode = ConfigDefaults.CLOSED_CAPTION_MODE;
-  public boolean enableTracker = ConfigDefaults.ENABLE_TRACKER;
+  public TrackerDisplayMode trackerDisplayMode = ConfigDefaults.TRACKER_DISPLAY_MODE;
   public MaxGoal maxGoal = ConfigDefaults.MAX_GOAL;
   public SortingRules sortingRules = ConfigDefaults.SORTING_RULES;
   public Map<String, Integer> advanceNoticeSeconds = new HashMap<>();
@@ -92,7 +92,7 @@ public class ConfigSetting {
     trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
     audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
     closedCaptionMode = ConfigDefaults.CLOSED_CAPTION_MODE;
-    enableTracker = ConfigDefaults.ENABLE_TRACKER;
+    trackerDisplayMode = ConfigDefaults.TRACKER_DISPLAY_MODE;
     maxGoal = ConfigDefaults.MAX_GOAL;
     sortingRules = ConfigDefaults.SORTING_RULES;
     advanceNoticeSeconds = new HashMap<>();
@@ -132,7 +132,7 @@ public class ConfigSetting {
     copy.trackerErrorColor = this.trackerErrorColor;
     copy.audioBoostReminderMode = this.audioBoostReminderMode;
     copy.closedCaptionMode = this.closedCaptionMode;
-    copy.enableTracker = this.enableTracker;
+    copy.trackerDisplayMode = this.trackerDisplayMode;
     copy.maxGoal = this.maxGoal;
     copy.sortingRules = this.sortingRules;
     copy.advanceNoticeSeconds =
@@ -176,7 +176,7 @@ public class ConfigSetting {
         && trackerErrorColor == that.trackerErrorColor
         && audioBoostReminderMode == that.audioBoostReminderMode
         && closedCaptionMode == that.closedCaptionMode
-        && enableTracker == that.enableTracker
+        && trackerDisplayMode == that.trackerDisplayMode
         && maxGoal == that.maxGoal
         && sortingRules == that.sortingRules
         && showSessionStats == that.showSessionStats
@@ -220,7 +220,7 @@ public class ConfigSetting {
         trackerErrorColor,
         audioBoostReminderMode,
         closedCaptionMode,
-        enableTracker,
+        trackerDisplayMode,
         maxGoal,
         sortingRules,
         advanceNoticeSeconds,

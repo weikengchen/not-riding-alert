@@ -348,6 +348,7 @@ public class OpenAudioMcService {
         isConnected = true;
         reconnectAttempts = 0;
         ReminderHandler.getInstance().setAudioConnected(true);
+        notifyUser("Audio connected! Use /volume to adjust the volume.");
       }
       // Update saved URL if it changed
       if (hasSession && !currentUrl.equals(savedSessionUrl)) {

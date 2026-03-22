@@ -26,6 +26,7 @@ public class ProfileManagementScreen extends Screen {
   private final Screen parent;
   private CurrentSettingsEntry currentSettingsEntry;
   private ProfileListWidget profileList;
+  private Button historyButton;
   private Button resetButton;
   private Button closeButton;
 
@@ -54,18 +55,24 @@ public class ProfileManagementScreen extends Screen {
     int buttonWidth = 100;
     int buttonGap = 10;
 
-    int totalButtonWidth = buttonWidth * 2 + buttonGap;
+    int totalButtonWidth = buttonWidth * 3 + buttonGap * 2;
     int startX = (width - totalButtonWidth) / 2;
+
+    historyButton =
+        Button.builder(Component.literal("History"), this::onHistoryClicked)
+            .bounds(startX, footerY, buttonWidth, BUTTON_HEIGHT)
+            .build();
+    addRenderableWidget(historyButton);
 
     resetButton =
         Button.builder(Component.literal("Reset Builtins"), this::onResetClicked)
-            .bounds(startX, footerY, buttonWidth, BUTTON_HEIGHT)
+            .bounds(startX + buttonWidth + buttonGap, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(resetButton);
 
     closeButton =
         Button.builder(Component.literal("Close"), this::onCloseClicked)
-            .bounds(startX + buttonWidth + buttonGap, footerY, buttonWidth, BUTTON_HEIGHT)
+            .bounds(startX + (buttonWidth + buttonGap) * 2, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(closeButton);
 
@@ -196,6 +203,10 @@ public class ProfileManagementScreen extends Screen {
     // Save changes and refresh the list
     ProfileManager.save();
     profileList.refreshProfiles();
+  }
+
+  private void onHistoryClicked(Button button) {
+    minecraft.setScreen(new HistoryScreen(this));
   }
 
   private void onCloseClicked(Button button) {

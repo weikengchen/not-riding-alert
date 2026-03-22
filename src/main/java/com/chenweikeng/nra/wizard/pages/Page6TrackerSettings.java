@@ -4,6 +4,7 @@ import com.chenweikeng.nra.config.MaxGoal;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.config.StrategyHudRendererVersion;
+import com.chenweikeng.nra.config.TrackerDisplayMode;
 import com.chenweikeng.nra.strategy.RideGoal;
 import com.chenweikeng.nra.strategy.StrategyCalculator;
 import com.chenweikeng.nra.util.TimeFormatUtil;
@@ -32,10 +33,11 @@ public class Page6TrackerSettings extends WizardPage {
   public List<RenderBlock> getBlocks(Minecraft client) {
     List<RenderBlock> blocks = new ArrayList<>();
 
-    blocks.add(text(enableTrackerSection()));
+    blocks.add(text(trackerDisplayModeSection()));
 
-    boolean isTrackerEnabled = ModConfig.currentSetting.enableTracker;
-    if (isTrackerEnabled) {
+    boolean isTrackerVisible =
+        ModConfig.currentSetting.trackerDisplayMode != TrackerDisplayMode.NEVER;
+    if (isTrackerVisible) {
       blocks.add(separator(20));
       blocks.addAll(strategyRendererSectionBlocks());
       blocks.add(separator(20));
@@ -58,19 +60,34 @@ public class Page6TrackerSettings extends WizardPage {
     return blocks;
   }
 
-  private Component enableTrackerSection() {
-    boolean isEnabled = ModConfig.currentSetting.enableTracker;
-    Component statusText =
-        isEnabled
-            ? colored("Enabled", ChatFormatting.GREEN)
-            : colored("Disabled", ChatFormatting.RED);
+  private Component trackerDisplayModeSection() {
+    TrackerDisplayMode current = ModConfig.currentSetting.trackerDisplayMode;
 
     Component content = literal("");
-    content = append(content, bold("Enable Tracker: "));
-    content = append(content, statusText);
-    content = append(content, literal("  "));
-    content = append(content, isEnabledLink(isEnabled, "enableTracker"));
+    content = append(content, bold("Tracker Display: "));
+    content = append(content, trackerModeLink("Always", TrackerDisplayMode.ALWAYS, current));
+    content = append(content, literal(" | "));
+    content =
+        append(
+            content,
+            trackerModeLink("Only when riding", TrackerDisplayMode.ONLY_WHEN_RIDING, current));
+    content = append(content, literal(" | "));
+    content =
+        append(
+            content,
+            trackerModeLink(
+                "Only when not riding", TrackerDisplayMode.ONLY_WHEN_NOT_RIDING, current));
+    content = append(content, literal(" | "));
+    content = append(content, trackerModeLink("Never", TrackerDisplayMode.NEVER, current));
     return content;
+  }
+
+  private Component trackerModeLink(
+      String label, TrackerDisplayMode mode, TrackerDisplayMode current) {
+    if (mode == current) {
+      return colored(label, ChatFormatting.GREEN);
+    }
+    return link(label, "config:trackerDisplayMode:" + mode.name());
   }
 
   private Component onlyAutograbbingSection() {

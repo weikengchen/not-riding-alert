@@ -121,9 +121,10 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Silent Mode**: Suppress game sounds when riding
 - **Alert on Autograb Failure**: Play alert sound if autograbbing fails to detect a vehicle
 - **Minimize Window When Riding**: Configure when to automatically minimize the game window
+- **Enable OpenAudioMC**: Toggle automatic OpenAudioMC audio session connection (default: off)
 
 ### 📊 Tracker Settings (Tracker Tab)
-- **Display Tracker**: Toggle the strategy HUD visibility
+- **Tracker Display Mode**: Control when the strategy HUD is visible — Always, Only When Riding (includes autograb zones), Only When Not Riding, or Never
 - **Strategy HUD Version**: Choose between V0, V1, and V2 renderer styles
 - **Auto-grabbing Detection**: Toggle region-based autograbbing feature
 - **Ride Display Count**: Set how many rides to show in the HUD (1-60)
@@ -141,6 +142,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Edit Profile**: Rename or modify existing profiles
 - **Delete Profile**: Remove unwanted profiles
 - **Built-in Profiles**: Pre-configured profiles for common use cases
+- **Profile History**: When you apply a profile, the previous settings are automatically backed up. Browse and restore past configurations from the History screen (entries expire after 1 month)
 
 ### ⏱️ Advance Notice Settings (Advance Notice Tab, New in v2.4.5)
 - **Per-Ride Advance Notice**: Configure advance notice seconds (0-30) for each ride individually
@@ -167,9 +169,10 @@ Automatically connects to the ImagineFun audio system without needing a separate
 
 - **Auto-Detection**: Detects OpenAudioMC session URLs in chat messages
 - **Headless WebView**: Launches a hidden native WebView process to manage the audio session
-- **Auto-Connect**: Clicks "Start Audio Session" automatically
+- **Auto-Connect**: Clicks "Start Audio Session" automatically and notifies you to adjust volume via `/volume`
 - **Reconnection**: Retries up to 3 times if the audio session drops mid-connection
 - **Cross-Platform**: Native helpers for macOS (WKWebView) and Windows (WebView2)
+- **Configurable**: Can be enabled/disabled in the General settings tab (disabled by default, enabled in Grinding and Sightseeing built-in profiles)
 
 ## Reproducible Build
 

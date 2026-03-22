@@ -66,6 +66,7 @@ public final class ProfileManager {
   public static void activateProfile(String id) {
     StoredProfile profile = getProfile(id);
     if (profile == null) return;
+    HistoryManager.backupIfNeeded();
     ModConfig.currentSetting = profile.data.copy();
     ModConfig.save();
   }

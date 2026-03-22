@@ -31,7 +31,7 @@ public final class BuiltInProfiles {
     profile.closedCaptionMode = ClosedCaptionMode.PLAIN;
     profile.audioBoostReminderMode = AudioBoostReminderMode.ALWAYS;
 
-    profile.enableTracker = true;
+    profile.trackerDisplayMode = TrackerDisplayMode.ALWAYS;
     profile.strategyHudRendererVersion = StrategyHudRendererVersion.V1;
     profile.rideDisplayCount = 10;
     profile.minRideTimeMinutes = 0;
@@ -80,7 +80,7 @@ public final class BuiltInProfiles {
     profile.closedCaptionMode = ClosedCaptionMode.PLAIN;
     profile.audioBoostReminderMode = AudioBoostReminderMode.DISABLED;
 
-    profile.enableTracker = false;
+    profile.trackerDisplayMode = TrackerDisplayMode.NEVER;
     profile.strategyHudRendererVersion = StrategyHudRendererVersion.V2;
     profile.rideDisplayCount = 10;
     profile.minRideTimeMinutes = 0;
@@ -118,7 +118,7 @@ public final class BuiltInProfiles {
     profile.closedCaptionMode = ClosedCaptionMode.NONE;
     profile.audioBoostReminderMode = AudioBoostReminderMode.DISABLED;
 
-    profile.enableTracker = false;
+    profile.trackerDisplayMode = TrackerDisplayMode.NEVER;
     profile.strategyHudRendererVersion = StrategyHudRendererVersion.V2;
     profile.rideDisplayCount = 10;
     profile.minRideTimeMinutes = 0;

@@ -41,7 +41,6 @@ public class StrategyHudRendererV2 {
     FULL,
     COLLAPSING,
     COLLAPSED,
-    WAITING,
     EXPANDING
   }
 
@@ -149,7 +148,7 @@ public class StrategyHudRendererV2 {
 
     boolean hasError = currentError != null && !currentError.isEmpty();
 
-    if (currentState == HudState.FULL && entries.isEmpty() && !hasError) {
+    if (entries.isEmpty() && !hasError) {
       return;
     }
 
@@ -173,7 +172,6 @@ public class StrategyHudRendererV2 {
         textAlpha = (int) (255 * (1 - animProgress));
         break;
       case COLLAPSED:
-      case WAITING:
         bgHeight = lineHeight;
         break;
       case EXPANDING:
@@ -238,9 +236,6 @@ public class StrategyHudRendererV2 {
             colorRiding,
             colorAutograbbing);
         break;
-      case WAITING:
-        renderWaitingMode(context, client, screenWidth, y, colorNormal);
-        break;
       case EXPANDING:
         renderFullMode(
             new FullModeRenderContext(
@@ -277,26 +272,12 @@ public class StrategyHudRendererV2 {
         break;
       case COLLAPSED:
         if (status == RideStatus.NORMAL) {
-          if (normalStartTime == 0) {
-            normalStartTime = currentTime;
-          } else if (currentTime - normalStartTime >= WAIT_DURATION_MS) {
-            currentState = HudState.WAITING;
-            stateStartTime = currentTime;
-            normalStartTime = 0;
-          }
+          currentState = HudState.EXPANDING;
+          stateStartTime = currentTime;
+          normalStartTime = 0;
         } else {
           trackedRide = ride;
           normalStartTime = 0;
-        }
-        break;
-      case WAITING:
-        if (status == RideStatus.RIDING || status == RideStatus.AUTOGRABBING) {
-          currentState = HudState.COLLAPSED;
-          trackedRide = ride;
-          normalStartTime = 0;
-        } else if (currentTime - stateStartTime >= WAIT_DURATION_MS) {
-          currentState = HudState.EXPANDING;
-          stateStartTime = currentTime;
         }
         break;
       case EXPANDING:
@@ -539,14 +520,6 @@ public class StrategyHudRendererV2 {
     int textWidth = client.font.width(text);
     int x = (screenWidth - textWidth) / 2;
     context.drawString(client.font, text, x, y, color, false);
-  }
-
-  private static void renderWaitingMode(
-      GuiGraphics context, Minecraft client, int screenWidth, int y, int colorWhite) {
-    String text = "Moving on the platform...";
-    int textWidth = client.font.width(text);
-    int x = (screenWidth - textWidth) / 2;
-    context.drawString(client.font, text, x, y, colorWhite, false);
   }
 
   private static int applyAlpha(int color, int alpha) {

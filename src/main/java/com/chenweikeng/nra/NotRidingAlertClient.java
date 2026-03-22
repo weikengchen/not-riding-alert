@@ -4,6 +4,7 @@ import com.chenweikeng.nra.audio.OpenAudioMcService;
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.WindowMinimizeTiming;
+import com.chenweikeng.nra.config.profile.HistoryManager;
 import com.chenweikeng.nra.config.profile.ProfileCommandHandler;
 import com.chenweikeng.nra.config.profile.ProfileManager;
 import com.chenweikeng.nra.config.profile.ui.ProfileManagementScreen;
@@ -69,6 +70,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   public void onInitializeClient() {
     ModConfig.load();
     ProfileManager.load();
+    HistoryManager.load();
     LOGGER.info("Not Riding Alert client initialized");
     MonkeycraftCompat.init();
     AutograbRegionRenderer.register();

@@ -277,12 +277,18 @@ public class ClothConfigScreen {
 
     tracker.addEntry(
         entryBuilder
-            .startBooleanToggle(
-                Component.translatable("config.not-riding-alert.enableTracker"),
-                profile.enableTracker)
-            .setDefaultValue(ConfigDefaults.ENABLE_TRACKER)
-            .setTooltip(Component.translatable("config.not-riding-alert.enableTracker.tooltip"))
-            .setSaveConsumer(newValue -> profile.enableTracker = newValue)
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.trackerDisplayMode"),
+                TrackerDisplayMode.class,
+                profile.trackerDisplayMode)
+            .setDefaultValue(ConfigDefaults.TRACKER_DISPLAY_MODE)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.trackerDisplayMode.tooltip"))
+            .setSaveConsumer(newValue -> profile.trackerDisplayMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.trackerDisplayMode." + mode.name().toLowerCase()))
             .build());
 
     tracker.addEntry(

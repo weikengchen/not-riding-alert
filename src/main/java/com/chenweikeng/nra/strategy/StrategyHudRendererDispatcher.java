@@ -2,11 +2,15 @@ package com.chenweikeng.nra.strategy;
 
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.StrategyHudRendererVersion;
+import com.chenweikeng.nra.config.TrackerDisplayMode;
+import com.chenweikeng.nra.ride.AutograbHolder;
+import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class StrategyHudRendererDispatcher {
@@ -119,7 +123,17 @@ public class StrategyHudRendererDispatcher {
   }
 
   public static void render(GuiGraphics context, DeltaTracker tickCounter) {
-    if (!ModConfig.currentSetting.enableTracker) {
+    TrackerDisplayMode mode = ModConfig.currentSetting.trackerDisplayMode;
+    if (mode == TrackerDisplayMode.NEVER) {
+      return;
+    }
+    boolean isRiding =
+        CurrentRideHolder.getCurrentRide() != null
+            || AutograbHolder.getRideAtLocation(Minecraft.getInstance()) != null;
+    if (mode == TrackerDisplayMode.ONLY_WHEN_RIDING && !isRiding) {
+      return;
+    }
+    if (mode == TrackerDisplayMode.ONLY_WHEN_NOT_RIDING && isRiding) {
       return;
     }
     if (!RideCountManager.getInstance().hasBasicCounts()) {

@@ -32,6 +32,8 @@ public final class ButtonRenderer {
 
   public static final ButtonStyle STYLE_SAVE = ButtonStyle.apply(0xFFAB47BC, 0xFFBA68C8);
 
+  public static final ButtonStyle STYLE_VIEW = ButtonStyle.apply(0xFF78909C, 0xFF90A4AE);
+
   private ButtonRenderer() {}
 
   public static void renderButton(

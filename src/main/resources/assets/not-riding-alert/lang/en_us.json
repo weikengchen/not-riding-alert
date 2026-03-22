@@ -97,6 +97,12 @@
   "config.not-riding-alert.advanceNotice.tooltip": "Play a sound this many seconds before the ride ends (0 = disabled)",
   "config.not-riding-alert.showSessionStats": "Show daily session stats",
   "config.not-riding-alert.showSessionStats.tooltip": "Display daily ride count, ride time, rides per hour, and streak in the bottom-right corner",
+  "config.not-riding-alert.trackerDisplayMode": "Tracker display",
+  "config.not-riding-alert.trackerDisplayMode.tooltip": "When to show the ride tracker HUD on screen",
+  "config.not-riding-alert.trackerDisplayMode.always": "Always",
+  "config.not-riding-alert.trackerDisplayMode.only_when_riding": "Only when riding",
+  "config.not-riding-alert.trackerDisplayMode.only_when_not_riding": "Only when not riding",
+  "config.not-riding-alert.trackerDisplayMode.never": "Never",
   "config.not-riding-alert.enableOpenAudioMc": "Auto-connect OpenAudioMC",
   "config.not-riding-alert.enableOpenAudioMc.tooltip": "Automatically connect to OpenAudioMC audio sessions using a headless browser"
 }

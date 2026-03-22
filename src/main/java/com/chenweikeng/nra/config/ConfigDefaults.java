@@ -35,7 +35,7 @@ public final class ConfigDefaults {
   public static final AudioBoostReminderMode AUDIO_BOOST_REMINDER_MODE =
       AudioBoostReminderMode.ONLY_WHEN_RIDING;
   public static final ClosedCaptionMode CLOSED_CAPTION_MODE = ClosedCaptionMode.RECOLORED;
-  public static final boolean ENABLE_TRACKER = true;
+  public static final TrackerDisplayMode TRACKER_DISPLAY_MODE = TrackerDisplayMode.ALWAYS;
   public static final MaxGoal MAX_GOAL = MaxGoal.K1;
   public static final SortingRules SORTING_RULES = SortingRules.NEXT_GOAL_ASC;
   public static final boolean SHOW_SESSION_STATS = true;

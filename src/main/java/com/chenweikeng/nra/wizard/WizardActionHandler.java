@@ -8,6 +8,7 @@ import com.chenweikeng.nra.config.MaxGoal;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.config.StrategyHudRendererVersion;
+import com.chenweikeng.nra.config.TrackerDisplayMode;
 import com.chenweikeng.nra.config.WindowMinimizeTiming;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
@@ -71,11 +72,6 @@ public class WizardActionHandler {
     switch (key) {
       case "enabled" -> {
         ModConfig.currentSetting.enabled = boolValue;
-        ModConfig.save();
-        needsRefresh = true;
-      }
-      case "enableTracker" -> {
-        ModConfig.currentSetting.enableTracker = boolValue;
         ModConfig.save();
         needsRefresh = true;
       }
@@ -172,6 +168,15 @@ public class WizardActionHandler {
         ModConfig.currentSetting.enableOpenAudioMc = boolValue;
         ModConfig.save();
         needsRefresh = true;
+      }
+      case "trackerDisplayMode" -> {
+        try {
+          ModConfig.currentSetting.trackerDisplayMode = TrackerDisplayMode.valueOf(value);
+          ModConfig.save();
+          needsRefresh = true;
+        } catch (IllegalArgumentException e) {
+          // Invalid mode
+        }
       }
       case "minimizeWindow" -> {
         try {
