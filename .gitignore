@@ -44,3 +44,10 @@ agents.md
 
 build_and_deploy.sh
 .trae
+
+# native helper build artifacts
+native/macos/webview-helper
+native/windows/obj/
+native/windows/bin/
+native/windows/publish/
+config/not-riding-alert/

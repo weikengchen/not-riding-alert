@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.session;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ride.RideName;
 
 public class SessionTracker {
@@ -27,7 +28,18 @@ public class SessionTracker {
     if (data == null) {
       return;
     }
-    data.onRideCompleted(ride.getRideTime());
+    data.checkDateRollover();
+    int rideTime = ride.getRideTime();
+    long onlineBefore = data.getOnlineSeconds();
+    long rideTimeBefore = data.totalRideTimeSeconds;
+    data.onRideCompleted(rideTime);
+    NotRidingAlertClient.LOGGER.info(
+        "[SessionDebug] rideCompleted: ride={} rideTime={}s onlineSeconds={} rideTimeBefore={}s rideTimeAfter={}s",
+        ride.name(),
+        rideTime,
+        onlineBefore,
+        rideTimeBefore,
+        data.totalRideTimeSeconds);
     MilestoneHandler.checkMilestone(data.ridesCompleted, data.totalRideTimeSeconds);
   }
 
@@ -49,6 +61,7 @@ public class SessionTracker {
 
   public void checkAndSaveIfNeeded() {
     if (data != null) {
+      data.checkDateRollover();
       data.saveIfDirty();
     }
   }

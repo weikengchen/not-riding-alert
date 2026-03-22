@@ -1,5 +1,6 @@
 package com.chenweikeng.nra;
 
+import com.chenweikeng.nra.audio.OpenAudioMcService;
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.WindowMinimizeTiming;
@@ -92,6 +93,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     ClientPlayConnectionEvents.DISCONNECT.register(
         (handler, client) -> {
           SessionTracker.getInstance().onSessionEnd();
+          OpenAudioMcService.getInstance().disconnect();
           ServerState.onDisconnect();
           resetAllTrackers();
         });
