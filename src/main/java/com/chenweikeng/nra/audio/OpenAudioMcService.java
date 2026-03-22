@@ -62,74 +62,38 @@ public class OpenAudioMcService {
       })();
       """;
 
-  /** One-time JS to dump full page structure for debugging. */
-  private static final String PAGE_DUMP_JS =
-      """
-      (function() {
-        var rootEl = document.getElementById('root') || document.getElementById('app');
-        var rootHTML = rootEl ? rootEl.innerHTML : (document.body ? document.body.innerHTML : '');
-        // Log full HTML to console so it flows through the console channel
-        console.log('PAGE_DUMP_HTML_LENGTH:' + rootHTML.length);
-        // Split into chunks to avoid truncation
-        var chunk = 800;
-        for (var i = 0; i < rootHTML.length; i += chunk) {
-          console.log('PAGE_DUMP[' + i + ']:' + rootHTML.substring(i, i + chunk));
-        }
-        return { dumped: true, length: rootHTML.length };
-      })();
-      """;
-
   /** JavaScript to auto-click the "Start Audio Session" button using synthetic events. */
   private static final String CLICK_START_JS =
       """
       (function() {
+        var buttons = Array.prototype.slice.call(document.querySelectorAll('button, [role="button"]'));
+        var btn = buttons.find(
+          function(b) { return (b.outerText || b.textContent || '').trim().toLowerCase() === 'start audio session'; }
+        );
+        if (!btn) return { clicked: false };
+
+        var rect = btn.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var common = { bubbles: true, cancelable: true, view: window,
+                       clientX: cx, clientY: cy, screenX: cx, screenY: cy,
+                       button: 0, buttons: 1 };
+
         try {
-          var buttons = Array.prototype.slice.call(document.querySelectorAll('button, [role="button"]'));
-          var btn = buttons.find(
-            function(b) { return (b.outerText || b.textContent || '').trim().toLowerCase() === 'start audio session'; }
-          );
-          if (!btn) return { clicked: false, error: 'button not found' };
+          btn.dispatchEvent(new PointerEvent('pointerdown', common));
+          btn.dispatchEvent(new PointerEvent('pointerup', common));
+        } catch(pe) {}
 
-          var rect = btn.getBoundingClientRect();
-          var cx = rect.left + rect.width / 2;
-          var cy = rect.top + rect.height / 2;
-          var common = { bubbles: true, cancelable: true, view: window,
-                         clientX: cx, clientY: cy, screenX: cx, screenY: cy,
-                         button: 0, buttons: 1 };
+        btn.dispatchEvent(new MouseEvent('mousedown', common));
+        btn.dispatchEvent(new MouseEvent('mouseup', common));
+        btn.dispatchEvent(new MouseEvent('click', common));
 
-          // Dispatch synthetic mouse events (PointerEvent may not exist in WKWebView)
-          try {
-            btn.dispatchEvent(new PointerEvent('pointerdown', common));
-            btn.dispatchEvent(new PointerEvent('pointerup', common));
-          } catch(pe) {
-            console.warn('[NRA] PointerEvent not available: ' + pe);
-          }
+        // Force-resume all AudioContexts after a short delay
+        setTimeout(function() {
+          if (window.__nra_resumeAllAudio) window.__nra_resumeAllAudio();
+        }, 500);
 
-          btn.dispatchEvent(new MouseEvent('mousedown', common));
-          btn.dispatchEvent(new MouseEvent('mouseup', common));
-          btn.dispatchEvent(new MouseEvent('click', common));
-
-          console.log('[NRA] Button clicked, rect=' + JSON.stringify({x:rect.x,y:rect.y,w:rect.width,h:rect.height}));
-
-          // Force-resume all AudioContexts after a short delay
-          setTimeout(function() {
-            try {
-              if (window.__nra_resumeAllAudio) {
-                var r = window.__nra_resumeAllAudio();
-                console.log('[NRA] Post-click audio resume: ' + JSON.stringify(r));
-              } else {
-                console.log('[NRA] __nra_resumeAllAudio not available (polyfill not loaded?)');
-              }
-            } catch(e) {
-              console.error('[NRA] Post-click resume error: ' + e);
-            }
-          }, 500);
-
-          return { clicked: true };
-        } catch(e) {
-          console.error('[NRA] CLICK_START_JS error: ' + e);
-          return { clicked: false, error: String(e) };
-        }
+        return { clicked: true };
       })();
       """;
 
@@ -140,7 +104,6 @@ public class OpenAudioMcService {
   private boolean isConnected;
   private boolean isActive;
   private boolean hasReportedFailure;
-  private boolean hasDumpedPage;
   private int reconnectAttempts;
   private int midSessionDropAttempts;
   private volatile boolean serverEndedSession;
@@ -223,7 +186,6 @@ public class OpenAudioMcService {
     isActive = true;
     isConnected = false;
     hasReportedFailure = false;
-    hasDumpedPage = false;
     reconnectAttempts = 0;
     midSessionDropAttempts = 0;
     serverEndedSession = false;
@@ -370,21 +332,7 @@ public class OpenAudioMcService {
 
   private void handleMonitorResult(JSONObject result) {
     if (result == null || !isActive) {
-      LOGGER.debug("Monitor result null or inactive: result={}, isActive={}", result, isActive);
       return;
-    }
-
-    LOGGER.info(
-        "DOM poll: rangeInput={}, startBtn={}, bodyLen={}",
-        result.optBoolean("hasRangeInput", false),
-        result.optBoolean("hasStartButton", false),
-        result.optInt("bodyLength", -1));
-
-    // One-time full HTML dump for debugging
-    if (!hasDumpedPage && result.optInt("bodyLength", 0) > 0 && bridge != null) {
-      hasDumpedPage = true;
-      LOGGER.info("Triggering one-time page HTML dump...");
-      bridge.evaluateJs(PAGE_DUMP_JS);
     }
 
     boolean hasRangeInput = result.optBoolean("hasRangeInput", false);
@@ -408,14 +356,7 @@ public class OpenAudioMcService {
     } else if (hasStartButton) {
       // Page loaded but session not started — auto-click the button
       LOGGER.info("Auto-clicking 'Start Audio Session' button");
-      bridge
-          .evaluateJs(CLICK_START_JS)
-          .thenAccept(r -> LOGGER.info("Click result: {}", r))
-          .exceptionally(
-              ex -> {
-                LOGGER.error("Click eval failed", ex);
-                return null;
-              });
+      bridge.evaluateJs(CLICK_START_JS);
     } else if (!hasSession
         && !currentUrl.startsWith(URL_PREFIX)
         && savedSessionUrl != null

@@ -86,7 +86,7 @@ public class WebViewBridge {
                         new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
                   String line;
                   while ((line = errReader.readLine()) != null) {
-                    LOGGER.info("[webview-helper] {}", line);
+                    LOGGER.debug("[webview-helper] {}", line);
                   }
                 } catch (IOException e) {
                   // Process ended

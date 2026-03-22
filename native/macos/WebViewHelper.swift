@@ -153,78 +153,42 @@ class WebViewManager: NSObject, WKNavigationDelegate, WKUIDelegate {
         config.userContentController.addUserScript(consoleOverride)
 
         // Inject AudioContext polyfill to auto-resume (bypass autoplay policy)
-        // and WebSocket logging to diagnose connection issues
-        let audioAndNetworkPolyfill = WKUserScript(source: """
+        let audioPolyfill = WKUserScript(source: """
             (function() {
-                // --- AudioContext: track all instances and force auto-resume ---
                 var _OrigAC = window.AudioContext || window.webkitAudioContext;
-                if (_OrigAC) {
-                    var _allContexts = [];
-                    var _origResume = _OrigAC.prototype.resume;
+                if (!_OrigAC) return;
 
-                    _OrigAC.prototype.resume = function() {
-                        var ctx = this;
-                        return _origResume.call(this).then(function() {
-                            console.log('[NRA] AudioContext resumed, state=' + ctx.state);
-                        }).catch(function(e) {
-                            console.warn('[NRA] AudioContext resume rejected: ' + e);
-                        });
-                    };
+                var _allContexts = [];
+                var _origResume = _OrigAC.prototype.resume;
 
-                    try {
-                        var _PatchedAC = new Proxy(_OrigAC, {
-                            construct: function(target, args) {
-                                var ctx = Reflect.construct(target, args);
-                                _allContexts.push(ctx);
-                                console.log('[NRA] AudioContext created, state=' + ctx.state + ', sampleRate=' + ctx.sampleRate);
-                                setTimeout(function() {
-                                    if (ctx.state !== 'running') {
-                                        console.log('[NRA] Auto-resuming AudioContext...');
-                                        ctx.resume();
-                                    }
-                                }, 50);
-                                return ctx;
-                            }
-                        });
-                        _PatchedAC.prototype = _OrigAC.prototype;
-                        window.AudioContext = _PatchedAC;
-                        if (window.webkitAudioContext) window.webkitAudioContext = _PatchedAC;
-                    } catch(e) {
-                        console.warn('[NRA] Proxy AudioContext failed: ' + e);
-                    }
-
-                    window.__nra_resumeAllAudio = function() {
-                        var resumed = 0;
-                        _allContexts.forEach(function(ctx) {
-                            if (ctx.state !== 'running') { ctx.resume(); resumed++; }
-                        });
-                        return { resumed: resumed, total: _allContexts.length,
-                                 states: _allContexts.map(function(c) { return c.state; }) };
-                    };
-                }
-
-                // --- WebSocket: log all connections for debugging ---
-                var _OrigWS = window.WebSocket;
-                var _WSProxy = function(url, protocols) {
-                    console.log('[NRA] WebSocket connecting: ' + url);
-                    var ws = protocols ? new _OrigWS(url, protocols) : new _OrigWS(url);
-                    ws.addEventListener('open', function() {
-                        console.log('[NRA] WebSocket OPEN: ' + url);
-                    });
-                    ws.addEventListener('error', function() {
-                        console.error('[NRA] WebSocket ERROR: ' + url);
-                    });
-                    ws.addEventListener('close', function(e) {
-                        console.log('[NRA] WebSocket CLOSED: ' + url + ' code=' + e.code + ' reason=' + e.reason);
-                    });
-                    return ws;
+                _OrigAC.prototype.resume = function() {
+                    return _origResume.call(this).catch(function() {});
                 };
-                Object.defineProperty(_WSProxy, 'prototype', { value: _OrigWS.prototype, writable: false });
-                _WSProxy.CONNECTING = 0; _WSProxy.OPEN = 1; _WSProxy.CLOSING = 2; _WSProxy.CLOSED = 3;
-                window.WebSocket = _WSProxy;
+
+                try {
+                    var _PatchedAC = new Proxy(_OrigAC, {
+                        construct: function(target, args) {
+                            var ctx = Reflect.construct(target, args);
+                            _allContexts.push(ctx);
+                            setTimeout(function() {
+                                if (ctx.state !== 'running') ctx.resume();
+                            }, 50);
+                            return ctx;
+                        }
+                    });
+                    _PatchedAC.prototype = _OrigAC.prototype;
+                    window.AudioContext = _PatchedAC;
+                    if (window.webkitAudioContext) window.webkitAudioContext = _PatchedAC;
+                } catch(e) {}
+
+                window.__nra_resumeAllAudio = function() {
+                    _allContexts.forEach(function(ctx) {
+                        if (ctx.state !== 'running') ctx.resume();
+                    });
+                };
             })();
             """, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        config.userContentController.addUserScript(audioAndNetworkPolyfill)
+        config.userContentController.addUserScript(audioPolyfill)
 
         // Create an offscreen window (1x1 pixel, hidden)
         window = NSWindow(
