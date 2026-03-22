@@ -52,29 +52,39 @@ public class ChatListenerMixin {
 
     if (msg.equals("You are now connected with the audio client!")) {
       ReminderHandler.getInstance().setAudioConnected(true);
-      OpenAudioMcService.getInstance().onServerConfirmedConnection();
+      if (ModConfig.currentSetting.enableOpenAudioMc) {
+        OpenAudioMcService.getInstance().onServerConfirmedConnection();
+      }
       return;
     }
     if (msg.equals("You are already connected to the web client")) {
       ReminderHandler.getInstance().setAudioConnected(true);
-      OpenAudioMcService.getInstance().onServerConfirmedConnection();
+      if (ModConfig.currentSetting.enableOpenAudioMc) {
+        OpenAudioMcService.getInstance().onServerConfirmedConnection();
+      }
       return;
     }
     if (msg.equals("Your audio session has been ended")) {
       ReminderHandler.getInstance().setAudioConnected(false);
-      OpenAudioMcService.getInstance().onServerEndedSession();
+      if (ModConfig.currentSetting.enableOpenAudioMc) {
+        OpenAudioMcService.getInstance().onServerEndedSession();
+      }
       return;
     }
     if (msg.equals("    + Audio Boost (x1.25)")) {
       ReminderHandler.getInstance().setAudioConnected(true);
-      OpenAudioMcService.getInstance().onServerConfirmedConnection();
+      if (ModConfig.currentSetting.enableOpenAudioMc) {
+        OpenAudioMcService.getInstance().onServerConfirmedConnection();
+      }
       return;
     }
 
     // Check for OpenAudioMC session URLs in ClickEvents
-    String sessionUrl = OpenAudioMcService.extractSessionUrl(message);
-    if (sessionUrl != null) {
-      OpenAudioMcService.getInstance().connect(sessionUrl);
+    if (ModConfig.currentSetting.enableOpenAudioMc) {
+      String sessionUrl = OpenAudioMcService.extractSessionUrl(message);
+      if (sessionUrl != null) {
+        OpenAudioMcService.getInstance().connect(sessionUrl);
+      }
     }
 
     if (!msg.contains(RIDE_OVERVIEW_MARKER) && !msg.contains(ATTRACTION_OVERVIEW_MARKER)) return;

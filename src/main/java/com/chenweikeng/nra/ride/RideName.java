@@ -1,6 +1,9 @@
 package com.chenweikeng.nra.ride;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public enum RideName {
@@ -135,6 +138,14 @@ public enum RideName {
    */
   public static RideName fromMatchString(String matchName) {
     return BY_MATCH_NAME.getOrDefault(matchName, UNKNOWN);
+  }
+
+  /** Returns all rides (excluding UNKNOWN) sorted alphabetically by display name. */
+  public static List<RideName> sortedByDisplayName() {
+    return Arrays.stream(values())
+        .filter(r -> r != UNKNOWN)
+        .sorted(Comparator.comparing(RideName::getDisplayName, String.CASE_INSENSITIVE_ORDER))
+        .toList();
   }
 
   /** Maps a RideName enum back to its string representation. */

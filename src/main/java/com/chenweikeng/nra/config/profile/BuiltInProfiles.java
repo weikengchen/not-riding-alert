@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.config.profile;
 
 import com.chenweikeng.nra.config.*;
+import com.chenweikeng.nra.ride.RideName;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,14 +32,27 @@ public final class BuiltInProfiles {
     profile.audioBoostReminderMode = AudioBoostReminderMode.ALWAYS;
 
     profile.enableTracker = true;
-    profile.strategyHudRendererVersion = StrategyHudRendererVersion.V2;
+    profile.strategyHudRendererVersion = StrategyHudRendererVersion.V1;
     profile.rideDisplayCount = 10;
     profile.minRideTimeMinutes = 0;
     profile.maxGoal = MaxGoal.K1;
     profile.hudBackgroundOpacity = 80;
     profile.onlyAutograbbing = false;
+    profile.showAutograbRegions = true;
 
     profile.hibernationWhenRiding = true;
+
+    profile.advanceNoticeSeconds.put(RideName.BIG_THUNDER_MOUNTAIN_RAILROAD.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.CHIP_N_DALES_GADGET_COASTER.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.DISNEYLAND_MONORAIL.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.HEIMLICHS_CHEW_CHEW_TRAIN.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.INCREDICOASTER.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.INDIANA_JONES_ADVENTURE.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.MAIN_STREET_CARRIAGES.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.RADIATOR_SPRINGS_RACERS.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.RED_CAR_TROLLEY.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.SPLASH_MOUNTAIN.toMatchString(), 5);
+    profile.advanceNoticeSeconds.put(RideName.TOM_SAWYER_ISLAND_RAFTS.toMatchString(), 5);
 
     return StoredProfile.create(
         "grinding-mode", "Grinding Mode", "Optimized for efficiency grinding", profile);
@@ -75,6 +89,8 @@ public final class BuiltInProfiles {
     profile.onlyAutograbbing = false;
 
     profile.hibernationWhenRiding = true;
+    profile.showSessionStats = false;
+    profile.enableOpenAudioMc = true;
 
     return StoredProfile.create(
         "sightseeing-mode", "Sightseeing Mode", "Clean visuals for enjoying rides", profile);
@@ -111,6 +127,8 @@ public final class BuiltInProfiles {
     profile.onlyAutograbbing = false;
 
     profile.hibernationWhenRiding = true;
+    profile.showSessionStats = false;
+    profile.enableOpenAudioMc = false;
 
     return StoredProfile.create(
         "minimal-mode", "Minimal Mode", "Only essential alerts, no visual changes", profile);

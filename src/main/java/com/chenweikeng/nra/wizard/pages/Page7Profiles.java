@@ -12,7 +12,7 @@ import net.minecraft.resources.Identifier;
 public class Page7Profiles extends WizardPage {
 
   public Page7Profiles() {
-    super(6);
+    super(7);
   }
 
   @Override

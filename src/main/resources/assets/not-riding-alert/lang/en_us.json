@@ -96,5 +96,7 @@
   "config.not-riding-alert.category.advanceNotice": "Advance Notice",
   "config.not-riding-alert.advanceNotice.tooltip": "Play a sound this many seconds before the ride ends (0 = disabled)",
   "config.not-riding-alert.showSessionStats": "Show daily session stats",
-  "config.not-riding-alert.showSessionStats.tooltip": "Display daily ride count, ride time, rides per hour, and streak in the bottom-right corner"
+  "config.not-riding-alert.showSessionStats.tooltip": "Display daily ride count, ride time, rides per hour, and streak in the bottom-right corner",
+  "config.not-riding-alert.enableOpenAudioMc": "Auto-connect OpenAudioMC",
+  "config.not-riding-alert.enableOpenAudioMc.tooltip": "Automatically connect to OpenAudioMC audio sessions using a headless browser"
 }

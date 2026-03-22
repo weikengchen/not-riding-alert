@@ -276,10 +276,7 @@ public class ProfileManagementScreen extends Screen {
     long totalSecondsFromZero = 0;
     long completedSeconds = 0;
 
-    for (RideName ride : RideName.values()) {
-      if (ride == RideName.UNKNOWN) {
-        continue;
-      }
+    for (RideName ride : RideName.sortedByDisplayName()) {
 
       if (ModConfig.currentSetting.hiddenRides.contains(ride.toMatchString())) {
         continue;

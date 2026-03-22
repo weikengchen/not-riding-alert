@@ -26,11 +26,7 @@ public class StrategyCalculator {
     boolean onlyAutograbbing = ModConfig.currentSetting.onlyAutograbbing;
 
     // Calculate goals for each ride
-    for (RideName ride : RideName.values()) {
-      // Skip UNKNOWN ride
-      if (ride == RideName.UNKNOWN) {
-        continue;
-      }
+    for (RideName ride : RideName.sortedByDisplayName()) {
 
       // Skip non-autograbbing rides if onlyAutograbbing is enabled
       if (onlyAutograbbing && !AutograbHolder.hasAutograb(ride)) {

@@ -12,6 +12,7 @@ public final class TutorialPages {
           new Page4UiHiding(),
           new Page5RideSelection(),
           new Page6TrackerSettings(),
+          new Page7SessionExtras(),
           new Page7Profiles());
 
   private TutorialPages() {}

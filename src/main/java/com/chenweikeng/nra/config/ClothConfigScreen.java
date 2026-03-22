@@ -111,6 +111,16 @@ public class ClothConfigScreen {
                         "config.not-riding-alert.minimizeWindow." + timing.name().toLowerCase()))
             .build());
 
+    general.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Component.translatable("config.not-riding-alert.enableOpenAudioMc"),
+                profile.enableOpenAudioMc)
+            .setDefaultValue(ConfigDefaults.ENABLE_OPEN_AUDIO_MC)
+            .setTooltip(Component.translatable("config.not-riding-alert.enableOpenAudioMc.tooltip"))
+            .setSaveConsumer(newValue -> profile.enableOpenAudioMc = newValue)
+            .build());
+
     ConfigCategory visual =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.visual"));
@@ -427,10 +437,7 @@ public class ClothConfigScreen {
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.advanceNotice"));
 
-    for (RideName ride : RideName.values()) {
-      if (ride == RideName.UNKNOWN) {
-        continue;
-      }
+    for (RideName ride : RideName.sortedByDisplayName()) {
       int currentValue = profile.advanceNoticeSeconds.getOrDefault(ride.toMatchString(), 0);
       advanceNotice.addEntry(
           entryBuilder
@@ -452,10 +459,7 @@ public class ClothConfigScreen {
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.rideDisplay"));
 
-    for (RideName ride : RideName.values()) {
-      if (ride == RideName.UNKNOWN) {
-        continue;
-      }
+    for (RideName ride : RideName.sortedByDisplayName()) {
       boolean currentValue = !profile.hiddenRides.contains(ride.toMatchString());
       rides.addEntry(
           entryBuilder

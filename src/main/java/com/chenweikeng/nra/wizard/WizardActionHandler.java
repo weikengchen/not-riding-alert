@@ -51,6 +51,12 @@ public class WizardActionHandler {
   }
 
   private static void handleConfigAction(String configAction, Minecraft client) {
+    // Handle advanceNotice specially: advanceNotice:rideName:value
+    if (configAction.startsWith("advanceNotice:")) {
+      handleAdvanceNoticeAction(configAction.substring("advanceNotice:".length()), client);
+      return;
+    }
+
     String[] parts = configAction.split(":", 2);
     if (parts.length != 2) {
       return;
@@ -157,6 +163,16 @@ public class WizardActionHandler {
         ModConfig.save();
         needsRefresh = true;
       }
+      case "showSessionStats" -> {
+        ModConfig.currentSetting.showSessionStats = boolValue;
+        ModConfig.save();
+        needsRefresh = true;
+      }
+      case "enableOpenAudioMc" -> {
+        ModConfig.currentSetting.enableOpenAudioMc = boolValue;
+        ModConfig.save();
+        needsRefresh = true;
+      }
       case "minimizeWindow" -> {
         try {
           ModConfig.currentSetting.minimizeWindow = WindowMinimizeTiming.valueOf(value);
@@ -243,6 +259,27 @@ public class WizardActionHandler {
 
     if (needsRefresh) {
       refreshCurrentPage(client);
+    }
+  }
+
+  private static void handleAdvanceNoticeAction(String action, Minecraft client) {
+    String[] parts = action.split(":", 2);
+    if (parts.length != 2) {
+      return;
+    }
+    String rideName = parts[0];
+    try {
+      int seconds = Integer.parseInt(parts[1]);
+      int clamped = Math.max(0, Math.min(30, seconds));
+      if (clamped > 0) {
+        ModConfig.currentSetting.advanceNoticeSeconds.put(rideName, clamped);
+      } else {
+        ModConfig.currentSetting.advanceNoticeSeconds.remove(rideName);
+      }
+      ModConfig.save();
+      refreshCurrentPage(client);
+    } catch (NumberFormatException e) {
+      // Invalid number
     }
   }
 

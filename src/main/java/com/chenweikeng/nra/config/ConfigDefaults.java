@@ -39,4 +39,5 @@ public final class ConfigDefaults {
   public static final MaxGoal MAX_GOAL = MaxGoal.K1;
   public static final SortingRules SORTING_RULES = SortingRules.NEXT_GOAL_ASC;
   public static final boolean SHOW_SESSION_STATS = true;
+  public static final boolean ENABLE_OPEN_AUDIO_MC = true;
 }

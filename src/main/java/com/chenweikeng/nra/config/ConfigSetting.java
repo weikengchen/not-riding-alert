@@ -50,6 +50,7 @@ public class ConfigSetting {
   public SortingRules sortingRules = ConfigDefaults.SORTING_RULES;
   public Map<String, Integer> advanceNoticeSeconds = new HashMap<>();
   public boolean showSessionStats = ConfigDefaults.SHOW_SESSION_STATS;
+  public boolean enableOpenAudioMc = ConfigDefaults.ENABLE_OPEN_AUDIO_MC;
 
   public int getAdvanceNoticeSeconds(RideName ride) {
     return advanceNoticeSeconds.getOrDefault(ride.toMatchString(), 0);
@@ -96,6 +97,7 @@ public class ConfigSetting {
     sortingRules = ConfigDefaults.SORTING_RULES;
     advanceNoticeSeconds = new HashMap<>();
     showSessionStats = ConfigDefaults.SHOW_SESSION_STATS;
+    enableOpenAudioMc = ConfigDefaults.ENABLE_OPEN_AUDIO_MC;
   }
 
   public ConfigSetting copy() {
@@ -138,6 +140,7 @@ public class ConfigSetting {
             ? new HashMap<>(this.advanceNoticeSeconds)
             : new HashMap<>();
     copy.showSessionStats = this.showSessionStats;
+    copy.enableOpenAudioMc = this.enableOpenAudioMc;
     return copy;
   }
 
@@ -177,6 +180,7 @@ public class ConfigSetting {
         && maxGoal == that.maxGoal
         && sortingRules == that.sortingRules
         && showSessionStats == that.showSessionStats
+        && enableOpenAudioMc == that.enableOpenAudioMc
         && Objects.equals(soundId, that.soundId)
         && Objects.equals(minRideTimeMinutes, that.minRideTimeMinutes)
         && Objects.equals(hiddenRides, that.hiddenRides)
@@ -220,6 +224,7 @@ public class ConfigSetting {
         maxGoal,
         sortingRules,
         advanceNoticeSeconds,
-        showSessionStats);
+        showSessionStats,
+        enableOpenAudioMc);
   }
 }
