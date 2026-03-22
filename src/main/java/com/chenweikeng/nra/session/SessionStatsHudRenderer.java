@@ -1,5 +1,6 @@
 package com.chenweikeng.nra.session;
 
+import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.ServerState;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
@@ -10,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class SessionStatsHudRenderer {
+  private static int debugThrottle = 0;
   private static final int PADDING = 4;
   private static final int LINE_HEIGHT = 10;
   private static final int TEXT_COLOR = 0xFFFFFFFF;
@@ -54,6 +56,19 @@ public class SessionStatsHudRenderer {
     if (onlineHours > 0) {
       long rideTimePerHourSec = Math.round(rideTime / onlineHours);
       rideTimePerHourMin = (int) (rideTimePerHourSec / 60);
+    }
+
+    if (rideTimePerHourMin > 60 && debugThrottle++ % 200 == 0) {
+      NotRidingAlertClient.LOGGER.warn(
+          "[SessionDebug] m/hr EXCEEDED 60: {}m/hr | rideTime={}s (completed={}s + currentElapsed={}s) | onlineSeconds={}s | onlineHours={} | currentRide={} | rides={}",
+          rideTimePerHourMin,
+          rideTime,
+          tracker.getRideTimeToday(),
+          (elapsed != null ? elapsed : 0),
+          onlineSeconds,
+          String.format("%.4f", onlineHours),
+          (currentRide != null ? currentRide.name() : "none"),
+          rides);
     }
 
     String timeStr = TimeFormatUtil.formatDuration(rideTime);

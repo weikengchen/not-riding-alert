@@ -44,8 +44,7 @@ public class DailySessionData {
 
   public void endSession() {
     if (currentSessionStartMs > 0) {
-      long sessionSeconds = (System.currentTimeMillis() - currentSessionStartMs) / 1000;
-      totalOnlineSeconds += sessionSeconds;
+      flushSessionTime();
       currentSessionStartMs = 0;
       dirty = true;
     }
@@ -65,12 +64,21 @@ public class DailySessionData {
       return;
     }
 
+    boolean wasInSession = currentSessionStartMs > 0;
+    if (wasInSession) {
+      endSession();
+    }
+
     updateStreak(todayStr);
     date = todayStr;
     ridesCompleted = 0;
     totalRideTimeSeconds = 0;
     totalOnlineSeconds = 0;
     dirty = true;
+
+    if (wasInSession) {
+      startSession();
+    }
   }
 
   private void updateStreak(String todayStr) {
@@ -110,11 +118,12 @@ public class DailySessionData {
   }
 
   public void saveIfDirty() {
-    if (!dirty) {
-      return;
-    }
     long now = System.currentTimeMillis();
     if (now - lastSaveTime < SAVE_INTERVAL_MS) {
+      return;
+    }
+    // Always save periodically while in a session to keep online time accurate on disk
+    if (!dirty && currentSessionStartMs <= 0) {
       return;
     }
     save();
@@ -125,12 +134,22 @@ public class DailySessionData {
   }
 
   private void save() {
+    flushSessionTime();
     try (FileWriter writer = new FileWriter(DATA_FILE)) {
       GSON.toJson(this, writer);
       dirty = false;
       lastSaveTime = System.currentTimeMillis();
     } catch (IOException e) {
       NotRidingAlertClient.LOGGER.error("Failed to save session data", e);
+    }
+  }
+
+  /** Moves the current session's live time into totalOnlineSeconds so it gets persisted. */
+  private void flushSessionTime() {
+    if (currentSessionStartMs > 0) {
+      long now = System.currentTimeMillis();
+      totalOnlineSeconds += (now - currentSessionStartMs) / 1000;
+      currentSessionStartMs = now;
     }
   }
 
