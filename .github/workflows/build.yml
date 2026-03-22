@@ -95,6 +95,9 @@ jobs:
 
           echo "=== Native resources ==="
           ls -lhR src/main/resources/native/
+          echo "=== Verifying key files exist ==="
+          test -f src/main/resources/native/macos/webview-helper
+          test -f src/main/resources/native/windows/webview-helper.exe
 
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v4
@@ -113,7 +116,9 @@ jobs:
 
       - name: Verify native binaries in JAR
         run: |
-          jar tf build/libs/*.jar | grep native
+          JAR=$(ls build/libs/*.jar | grep -v sources | head -1)
+          echo "Checking $JAR"
+          jar tf "$JAR" | grep native
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
