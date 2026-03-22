@@ -43,13 +43,17 @@ jobs:
           cd native/windows
           dotnet publish -c Release -r win-x64 --no-self-contained -p:PublishSingleFile=true -o publish
 
+      - name: Collect Windows binaries
+        run: |
+          mkdir -p native-out
+          cp native/windows/publish/webview-helper.exe native-out/
+          cp native/windows/publish/runtimes/win-x64/native/WebView2Loader.dll native-out/
+
       - name: Upload Windows binaries
         uses: actions/upload-artifact@v4
         with:
           name: native-windows
-          path: |
-            native/windows/publish/webview-helper.exe
-            native/windows/publish/runtimes/win-x64/native/WebView2Loader.dll
+          path: native-out/
           retention-days: 1
 
   build:
@@ -86,8 +90,8 @@ jobs:
           # Compiled binaries
           cp native-macos/webview-helper src/main/resources/native/macos/
           chmod +x src/main/resources/native/macos/webview-helper
-          cp native-windows/native/windows/publish/webview-helper.exe src/main/resources/native/windows/
-          cp native-windows/native/windows/publish/runtimes/win-x64/native/WebView2Loader.dll src/main/resources/native/windows/
+          cp native-windows/webview-helper.exe src/main/resources/native/windows/
+          cp native-windows/WebView2Loader.dll src/main/resources/native/windows/
 
           echo "=== Native resources ==="
           ls -lhR src/main/resources/native/
