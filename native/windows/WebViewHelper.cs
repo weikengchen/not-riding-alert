@@ -63,6 +63,7 @@ class WebViewHelper : Form
             // Allow mixed content
             webView.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) NotRidingAlert/1.0 WebView2";
 
             webView.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 

@@ -71,7 +71,7 @@ class WebViewManager: NSObject, WKNavigationDelegate, WKUIDelegate {
         // Register message handler for console forwarding
         config.userContentController.add(consoleHandler, name: "nativeLog")
 
-        // Inject WebRTC polyfill and Chrome user-agent BEFORE page scripts run.
+        // Inject WebRTC polyfill BEFORE page scripts run.
         // OpenAudioMC checks for RTCPeerConnection; WKWebView may not expose it.
         // The actual audio uses Web Audio API / HTTP streaming, not WebRTC, so a
         // stub is sufficient to get past the browser-support check.
@@ -207,7 +207,7 @@ class WebViewManager: NSObject, WKNavigationDelegate, WKUIDelegate {
         super.init()
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+        webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) NotRidingAlert/1.0 WKWebView"
     }
 
     func loadURL(_ urlString: String) {
