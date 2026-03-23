@@ -69,14 +69,12 @@ class WebViewHelper : Form
 
             isReady = true;
             WriteLine(JsonLine("ready", null));
-            LogDebug("Helper ready");
 
             // Start reading stdin on a background thread
             _ = Task.Run(() => ReadLoop());
         }
         catch (Exception ex)
         {
-            LogDebug($"Init failed: {ex.Message}");
             WriteLine(JsonLine("error", new { message = ex.Message }));
             Application.Exit();
         }
@@ -85,7 +83,6 @@ class WebViewHelper : Form
     private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
     {
         var url = webView.CoreWebView2.Source;
-        LogDebug($"Page loaded: {url}");
         WriteLine(JsonLine("loaded", new { url = url, success = e.IsSuccess }));
     }
 
@@ -116,30 +113,24 @@ class WebViewHelper : Form
                         break;
 
                     case "quit":
-                        LogDebug("Quit command received");
                         this.Invoke(() => Application.Exit());
                         return;
 
                     default:
-                        LogDebug($"Unknown command: {cmd}");
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogDebug($"Command parse error: {ex.Message}");
             }
         }
 
-        // stdin closed (parent process died)
-        LogDebug("Stdin closed, exiting");
         this.Invoke(() => Application.Exit());
     }
 
     private void LoadUrl(string url)
     {
         if (!isReady) return;
-        LogDebug($"Loading URL: {url}");
         webView.CoreWebView2.Navigate(url);
     }
 
@@ -181,7 +172,6 @@ class WebViewHelper : Form
         }
         catch (Exception ex)
         {
-            LogDebug($"JS eval error (id={id}): {ex.Message}");
             var errorResult = new { type = "eval_result", id = id, result = new { error = ex.Message } };
             Console.Out.WriteLine(JsonSerializer.Serialize(errorResult));
             Console.Out.Flush();
@@ -206,12 +196,6 @@ class WebViewHelper : Form
     {
         Console.Out.WriteLine(line);
         Console.Out.Flush();
-    }
-
-    private static void LogDebug(string msg)
-    {
-        Console.Error.WriteLine($"[webview-helper] {msg}");
-        Console.Error.Flush();
     }
 
     [STAThread]

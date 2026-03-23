@@ -131,7 +131,8 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Minimum Ride Time Filter**: Filter out rides shorter than X minutes
 - **Strategy HUD Background Opacity**: Adjust the background opacity (0-100%, default: 80%)
 - **Only Show Autograbbing Rides**: Filter to only show rides that support autograbbing
-- **Tracker Colors**: Customize colors for Normal, Autograbbing, Riding, and Error states
+- **Closest Ride Mode**: Control closest ride highlighting — Always, Only In-Progress Rides (default), or Never
+- **Tracker Colors**: Customize colors for Normal, Autograbbing, Riding, Error, and Closest Ride states
 - **Audio Boost Reminder**: Configure when to show audio boost reminders
 - **Max Goal**: Select your target milestone (1K, 5K, or 10K rides) for progress tracking
 - **Sorting Rules**: Configure how rides are sorted in the strategy HUD
@@ -164,6 +165,16 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Relocate Closed Caption**: Move [CC] messages from chat to a centered overlay with styled text
 - **Show Daily Session Stats**: Toggle the daily session stats HUD overlay (default: enabled)
 
+### 📍 Closest Ride Detection (New in v2.4.5)
+Highlights the ride nearest to the player's current position:
+
+- **Coordinate-Based**: Uses a bundled `ride-coordinates.json` with multiple coordinate points per ride (ride start locations and IFone teleport points)
+- **Multi-Point Matching**: Each ride can have multiple coordinate entries; the closest point across all entries is used
+- **V0 & V1**: If the closest ride is already in the tracker list, appends "(Closest)" with the closest ride color. If not in the list, shows it on a separate line (like autograbbing)
+- **V2**: Highlights matching rides in the list. If the closest ride is not in the list, replaces the last entry with it
+- **Filtering**: Configurable to show always, only for in-progress rides (default), or never
+- **Smart Suppression**: Closest ride is hidden while riding or autograbbing
+
 ### 🔊 OpenAudioMC Integration (New in v2.4.5)
 Automatically connects to the ImagineFun audio system without needing a separate browser tab:
 
@@ -173,6 +184,7 @@ Automatically connects to the ImagineFun audio system without needing a separate
 - **Reconnection**: Retries up to 3 times if the audio session drops mid-connection
 - **Cross-Platform**: Native helpers for macOS (WKWebView) and Windows (WebView2)
 - **Configurable**: Can be enabled/disabled in the General settings tab (disabled by default, enabled in Grinding and Sightseeing built-in profiles)
+- **Chat Commands**: `/oa connect` (sends `/audio` and auto-connects), `/oa disconnect` (terminates connection), `/oa reconnect` (refreshes session or reconnects from scratch)
 
 ## Reproducible Build
 

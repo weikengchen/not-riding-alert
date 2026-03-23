@@ -80,7 +80,8 @@ public class ChatListenerMixin {
     }
 
     // Check for OpenAudioMC session URLs in ClickEvents
-    if (ModConfig.currentSetting.enableOpenAudioMc) {
+    if (ModConfig.currentSetting.enableOpenAudioMc
+        || OpenAudioMcService.getInstance().isPendingCommandConnect()) {
       String sessionUrl = OpenAudioMcService.extractSessionUrl(message);
       if (sessionUrl != null) {
         OpenAudioMcService.getInstance().connect(sessionUrl);

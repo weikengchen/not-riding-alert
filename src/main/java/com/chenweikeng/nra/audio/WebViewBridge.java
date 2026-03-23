@@ -77,25 +77,6 @@ public class WebViewBridge {
       readerThread.setDaemon(true);
       readerThread.start();
 
-      // Also read stderr for debug logging
-      Thread stderrThread =
-          new Thread(
-              () -> {
-                try (BufferedReader errReader =
-                    new BufferedReader(
-                        new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8))) {
-                  String line;
-                  while ((line = errReader.readLine()) != null) {
-                    LOGGER.debug("[webview-helper] {}", line);
-                  }
-                } catch (IOException e) {
-                  // Process ended
-                }
-              },
-              "WebViewBridge-Stderr");
-      stderrThread.setDaemon(true);
-      stderrThread.start();
-
       // Wait for the helper to signal ready
       try {
         readyFuture.get(15, TimeUnit.SECONDS);
@@ -254,7 +235,7 @@ public class WebViewBridge {
 
     String binaryName = isMac ? "webview-helper" : "webview-helper.exe";
 
-    // 1. Check user-provided location first (allows manual override)
+    // 1. Check cached location first (previously extracted binary)
     Path userPath = Path.of(HELPER_DIR, binaryName);
     if (Files.isExecutable(userPath)) {
       LOGGER.info("Using existing WebView helper at: {}", userPath);
@@ -268,13 +249,7 @@ public class WebViewBridge {
       return gameDirPath;
     }
 
-    // 3. Try compiling from source (JAR ships source for reviewability)
-    Path compiled = tryCompileFromSource(isMac);
-    if (compiled != null) {
-      return compiled;
-    }
-
-    // 4. Fall back to pre-compiled binary from JAR resources
+    // 3. Extract pre-compiled binary from JAR resources
     if (isWin && !isWindowsDesktopRuntimeAvailable()) {
       LOGGER.error(
           "WebView helper requires .NET 8 Desktop Runtime on Windows."
@@ -291,128 +266,6 @@ public class WebViewBridge {
           "/native/windows/WebView2Loader.dll", Path.of(HELPER_DIR, "WebView2Loader.dll"));
     }
     return extracted;
-  }
-
-  /**
-   * Attempts to compile the helper from source shipped in the JAR. This allows reviewers to inspect
-   * the exact source code that will run, rather than trusting opaque binaries.
-   */
-  private Path tryCompileFromSource(boolean isMac) {
-    if (isMac) {
-      return tryCompileMacOS();
-    } else {
-      return tryCompileWindows();
-    }
-  }
-
-  private Path tryCompileMacOS() {
-    // Check if swiftc is available (comes with Xcode command line tools)
-    try {
-      Process which = new ProcessBuilder("which", "swiftc").redirectErrorStream(true).start();
-      if (which.waitFor(5, TimeUnit.SECONDS) && which.exitValue() != 0) {
-        LOGGER.debug("swiftc not found, skipping compile-from-source");
-        return null;
-      }
-    } catch (Exception e) {
-      return null;
-    }
-
-    // Extract .swift source from JAR
-    Path sourceFile =
-        extractResource(
-            "/native/macos/WebViewHelper.swift", Path.of(HELPER_DIR, "WebViewHelper.swift"));
-    if (sourceFile == null) {
-      return null;
-    }
-
-    Path outputBinary = Path.of(HELPER_DIR, "webview-helper");
-    LOGGER.info("Compiling WebView helper from source (swiftc)...");
-
-    try {
-      Process compile =
-          new ProcessBuilder(
-                  "swiftc",
-                  "-O",
-                  "-o",
-                  outputBinary.toAbsolutePath().toString(),
-                  sourceFile.toAbsolutePath().toString(),
-                  "-framework",
-                  "WebKit",
-                  "-framework",
-                  "AppKit")
-              .redirectErrorStream(true)
-              .start();
-
-      String output = new String(compile.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-      if (compile.waitFor(120, TimeUnit.SECONDS) && compile.exitValue() == 0) {
-        outputBinary.toFile().setExecutable(true);
-        LOGGER.info("Compiled WebView helper from source successfully");
-        return outputBinary;
-      } else {
-        LOGGER.warn("swiftc compilation failed: {}", output);
-        return null;
-      }
-    } catch (Exception e) {
-      LOGGER.warn("Failed to compile WebView helper from source", e);
-      return null;
-    }
-  }
-
-  private Path tryCompileWindows() {
-    // Check if dotnet SDK is available (heavier than just runtime)
-    try {
-      Process dotnet = new ProcessBuilder("dotnet", "--version").redirectErrorStream(true).start();
-      if (!dotnet.waitFor(5, TimeUnit.SECONDS) || dotnet.exitValue() != 0) {
-        LOGGER.debug("dotnet SDK not found, skipping compile-from-source");
-        return null;
-      }
-    } catch (Exception e) {
-      return null;
-    }
-
-    // Extract .cs and .csproj from JAR
-    Path sourceFile =
-        extractResource(
-            "/native/windows/WebViewHelper.cs", Path.of(HELPER_DIR, "WebViewHelper.cs"));
-    Path projFile =
-        extractResource(
-            "/native/windows/WebViewHelper.csproj", Path.of(HELPER_DIR, "WebViewHelper.csproj"));
-    if (sourceFile == null || projFile == null) {
-      return null;
-    }
-
-    LOGGER.info("Compiling WebView helper from source (dotnet publish)...");
-
-    try {
-      Process compile =
-          new ProcessBuilder(
-                  "dotnet",
-                  "publish",
-                  projFile.toAbsolutePath().toString(),
-                  "-c",
-                  "Release",
-                  "-r",
-                  "win-x64",
-                  "--no-self-contained",
-                  "-p:PublishSingleFile=true",
-                  "-o",
-                  Path.of(HELPER_DIR).toAbsolutePath().toString())
-              .redirectErrorStream(true)
-              .start();
-
-      String output = new String(compile.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-      if (compile.waitFor(120, TimeUnit.SECONDS) && compile.exitValue() == 0) {
-        Path outputBinary = Path.of(HELPER_DIR, "webview-helper.exe");
-        LOGGER.info("Compiled WebView helper from source successfully");
-        return outputBinary;
-      } else {
-        LOGGER.warn("dotnet compilation failed: {}", output);
-        return null;
-      }
-    } catch (Exception e) {
-      LOGGER.warn("Failed to compile WebView helper from source", e);
-      return null;
-    }
   }
 
   /**

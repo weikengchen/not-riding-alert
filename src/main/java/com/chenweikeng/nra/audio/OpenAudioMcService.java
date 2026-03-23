@@ -1,6 +1,7 @@
 package com.chenweikeng.nra.audio;
 
 import com.chenweikeng.nra.handler.ReminderHandler;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -110,6 +111,8 @@ public class OpenAudioMcService {
   private ScheduledExecutorService scheduler;
   private ScheduledFuture<?> monitorTask;
   private long monitorStartTimeMs;
+  private int pageLoadCount;
+  private volatile boolean pendingCommandConnect;
 
   private OpenAudioMcService() {}
 
@@ -162,6 +165,7 @@ public class OpenAudioMcService {
    * begins DOM monitoring.
    */
   public void connect(String sessionUrl) {
+    pendingCommandConnect = false;
     // Deduplicate: if already active with the same URL, ignore
     if (isActive && sessionUrl.equals(savedSessionUrl)) {
       LOGGER.debug("Ignoring duplicate connect for same URL");
@@ -193,6 +197,7 @@ public class OpenAudioMcService {
 
     ReminderHandler.getInstance().setAudioConnected(false);
 
+    pageLoadCount++;
     bridge.loadUrl(sessionUrl);
     startMonitoring();
   }
@@ -221,6 +226,7 @@ public class OpenAudioMcService {
     monitorStartTimeMs = System.currentTimeMillis();
 
     if (bridge != null) {
+      pageLoadCount++;
       bridge.loadUrl(savedSessionUrl);
     }
     startMonitoring();
@@ -284,12 +290,117 @@ public class OpenAudioMcService {
     }
   }
 
+  /**
+   * Called from /oa connect. Sends /audio to the server to request a fresh session URL. The
+   * ChatListenerMixin will detect the URL and call connect() automatically.
+   */
+  public void connectViaCommand() {
+    if (isActive && isConnected) {
+      notifyUser("Already connected to audio.");
+      return;
+    }
+    if (isActive) {
+      notifyUser("Already connecting to audio...");
+      return;
+    }
+
+    pendingCommandConnect = true;
+    Minecraft client = Minecraft.getInstance();
+    if (client != null) {
+      client.execute(
+          () -> {
+            if (client.player != null) {
+              client.player.connection.sendCommand("audio");
+            }
+          });
+    }
+
+    // Clear the flag after 10 seconds if no URL was received
+    if (scheduler == null || scheduler.isShutdown()) {
+      scheduler =
+          Executors.newSingleThreadScheduledExecutor(
+              r -> {
+                Thread t = new Thread(r, "OpenAudioMC-Monitor");
+                t.setDaemon(true);
+                return t;
+              });
+    }
+    scheduler.schedule(() -> pendingCommandConnect = false, 10, TimeUnit.SECONDS);
+  }
+
+  /** Called from /oa disconnect. Stops the current audio session and notifies the user. */
+  public void disconnectViaCommand() {
+    if (!isActive) {
+      notifyUser("Not connected to audio.");
+      return;
+    }
+    disconnect();
+    notifyUser("Audio disconnected.");
+  }
+
+  /**
+   * Called from /oa reconnect. Tries to reload the saved session URL first. If not connected after
+   * 30 seconds, falls back to disconnect + fresh /audio.
+   */
+  public void reconnectWithFallback() {
+    if (savedSessionUrl != null && bridge != null && bridge.isRunning()) {
+      notifyUser("Refreshing audio session...");
+      reconnect();
+
+      // Schedule fallback: if not connected after 30s, disconnect and request fresh URL
+      if (scheduler == null || scheduler.isShutdown()) {
+        scheduler =
+            Executors.newSingleThreadScheduledExecutor(
+                r -> {
+                  Thread t = new Thread(r, "OpenAudioMC-Monitor");
+                  t.setDaemon(true);
+                  return t;
+                });
+      }
+      scheduler.schedule(
+          () -> {
+            if (!isConnected && isActive) {
+              LOGGER.info("Reconnect refresh failed after 30s, falling back to fresh /audio");
+              disconnect();
+              notifyUser("Refresh failed, requesting new session...");
+              connectViaCommand();
+            }
+          },
+          30,
+          TimeUnit.SECONDS);
+    } else {
+      notifyUser("No saved session, requesting new one...");
+      connectViaCommand();
+    }
+  }
+
+  /** Returns true if a /oa connect command is waiting for a session URL from the server. */
+  public boolean isPendingCommandConnect() {
+    return pendingCommandConnect;
+  }
+
   public boolean isConnected() {
     return isConnected;
   }
 
   public boolean isActive() {
     return isActive;
+  }
+
+  /** Returns a counter that increments each time a page is loaded in the webview. */
+  public int getPageLoadCount() {
+    return pageLoadCount;
+  }
+
+  /**
+   * Evaluates JavaScript in the webview. Returns a future that completes with the result, or null
+   * if the bridge is not available.
+   */
+  public CompletableFuture<JSONObject> evaluateJs(String js) {
+    if (bridge == null || !bridge.isRunning()) {
+      return CompletableFuture.completedFuture(null);
+    }
+    return bridge.evaluateJs(js);
   }
 
   private void startMonitoring() {

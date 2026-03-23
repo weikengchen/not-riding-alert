@@ -19,6 +19,7 @@ import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.handler.ReminderHandler;
 import com.chenweikeng.nra.handler.ScoreboardHandler;
 import com.chenweikeng.nra.ride.AutograbHolder;
+import com.chenweikeng.nra.ride.ClosestRideHolder;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
@@ -105,6 +106,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     ClientCommandRegistrationCallback.EVENT.register(
         (dispatcher, registryAccess) -> {
           registerNraCommand(dispatcher);
+          registerOaCommand(dispatcher);
         });
 
     WorldRenderEvents.AFTER_ENTITIES.register(
@@ -171,6 +173,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     HibernationHandler.getInstance().track(client, currentTick);
     configReminderHandler.track(client, currentTick);
     scoreboardHandler.track(client);
+    ClosestRideHolder.update(client);
     advanceNoticeHandler.tick(client);
     reminderHandler.track(client, currentTick);
     ClosedCaptionHolder.getInstance().tick();
@@ -199,6 +202,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     fireworkViewingHandler.reset();
     HibernationHandler.getInstance().reset();
     scoreboardHandler.reset();
+    ClosestRideHolder.reset();
     reminderHandler.reset();
     ClosedCaptionHolder.getInstance().clear();
     cursorManager.reset();
@@ -258,5 +262,31 @@ public class NotRidingAlertClient implements ClientModInitializer {
                                           context, "profileName");
                                   return ProfileCommandHandler.executeProfileSwitch(profileName);
                                 }))));
+  }
+
+  private static void registerOaCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+    dispatcher.register(
+        ClientCommandManager.literal("oa")
+            .then(
+                ClientCommandManager.literal("connect")
+                    .executes(
+                        context -> {
+                          OpenAudioMcService.getInstance().connectViaCommand();
+                          return 1;
+                        }))
+            .then(
+                ClientCommandManager.literal("disconnect")
+                    .executes(
+                        context -> {
+                          OpenAudioMcService.getInstance().disconnectViaCommand();
+                          return 1;
+                        }))
+            .then(
+                ClientCommandManager.literal("reconnect")
+                    .executes(
+                        context -> {
+                          OpenAudioMcService.getInstance().reconnectWithFallback();
+                          return 1;
+                        })));
   }
 }

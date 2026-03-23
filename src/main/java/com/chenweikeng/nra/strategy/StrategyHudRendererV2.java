@@ -3,10 +3,12 @@ package com.chenweikeng.nra.strategy;
 import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.Timing;
+import com.chenweikeng.nra.config.ClosestRideMode;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.mixin.BossHealthOverlayAccessor;
 import com.chenweikeng.nra.ride.AutograbHolder;
+import com.chenweikeng.nra.ride.ClosestRideHolder;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
@@ -34,7 +36,8 @@ public class StrategyHudRendererV2 {
   private enum RideStatus {
     NORMAL,
     RIDING,
-    AUTOGRABBING
+    AUTOGRABBING,
+    CLOSEST
   }
 
   private enum HudState {
@@ -64,6 +67,7 @@ public class StrategyHudRendererV2 {
       GuiGraphics context,
       Minecraft client,
       List<EntryComponents> entries,
+      List<Integer> entryColors,
       boolean hasError,
       int numColumns,
       List<int[]> entryXPositions,
@@ -117,11 +121,13 @@ public class StrategyHudRendererV2 {
     int colorRiding = ModConfig.currentSetting.trackerRidingColor;
     int colorAutograbbing = ModConfig.currentSetting.trackerAutograbbingColor;
     int errorColor = ModConfig.currentSetting.trackerErrorColor;
+    int colorClosest = ModConfig.currentSetting.trackerClosestRideColor;
 
     int displayCount = ModConfig.currentSetting.rideDisplayCount;
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName autograbRide = AutograbHolder.getRideAtLocation(client);
+    RideName closestRide = filterClosestRide(ClosestRideHolder.getClosestRide());
     RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
     boolean isPassenger = GameState.getInstance().isValidPassenger(client.player);
 
@@ -129,6 +135,8 @@ public class StrategyHudRendererV2 {
     updateState(effectiveStatus, effectiveRide);
 
     List<EntryComponents> entries = new ArrayList<>();
+    List<Integer> entryColors = new ArrayList<>();
+    boolean closestRideInList = false;
 
     if (displayCount > 0) {
       for (RideGoal goal : topGoals) {
@@ -143,6 +151,44 @@ public class StrategyHudRendererV2 {
           String time = TimeFormatUtil.formatDuration(goal.getNextGoalTimeNeeded());
           entries.add(new EntryComponents(name, rides, time));
         }
+
+        boolean isClosest =
+            currentRide == null
+                && autograbRide == null
+                && closestRide != null
+                && goal.getRide() == closestRide;
+        if (isClosest) {
+          closestRideInList = true;
+          entryColors.add(colorClosest);
+        } else {
+          entryColors.add(colorNormal);
+        }
+      }
+
+      if (!closestRideInList
+          && closestRide != null
+          && currentRide == null
+          && autograbRide == null
+          && !entries.isEmpty()) {
+        RideGoal closestGoal = StrategyCalculator.getGoalForRide(closestRide);
+        String name = closestRide.getShortName().toUpperCase();
+        String rides;
+        String time;
+        if (closestGoal != null) {
+          if (ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_ASC
+              || ModConfig.currentSetting.sortingRules == SortingRules.TOTAL_TIME_DESC) {
+            rides = closestGoal.getMaxRidesNeeded() + "+";
+            time = TimeFormatUtil.formatDuration(closestGoal.getMaxTimeNeeded());
+          } else {
+            rides = closestGoal.getNextGoalRidesNeeded() + "+";
+            time = TimeFormatUtil.formatDuration(closestGoal.getNextGoalTimeNeeded());
+          }
+        } else {
+          rides = "?";
+          time = "?";
+        }
+        entries.set(entries.size() - 1, new EntryComponents(name, rides, time));
+        entryColors.set(entryColors.size() - 1, colorClosest);
       }
     }
 
@@ -201,6 +247,7 @@ public class StrategyHudRendererV2 {
                 context,
                 client,
                 entries,
+                entryColors,
                 hasError,
                 numColumns,
                 entryXPositions,
@@ -210,18 +257,25 @@ public class StrategyHudRendererV2 {
                 errorColor));
         break;
       case COLLAPSING:
-        renderFullMode(
-            new FullModeRenderContext(
-                context,
-                client,
-                entries,
-                hasError,
-                numColumns,
-                entryXPositions,
-                y,
-                lineHeight,
-                applyAlpha(colorNormal, textAlpha),
-                applyAlpha(errorColor, textAlpha)));
+        {
+          List<Integer> fadedColors = new ArrayList<>();
+          for (int c : entryColors) {
+            fadedColors.add(applyAlpha(c, textAlpha));
+          }
+          renderFullMode(
+              new FullModeRenderContext(
+                  context,
+                  client,
+                  entries,
+                  fadedColors,
+                  hasError,
+                  numColumns,
+                  entryXPositions,
+                  y,
+                  lineHeight,
+                  applyAlpha(colorNormal, textAlpha),
+                  applyAlpha(errorColor, textAlpha)));
+        }
         break;
       case COLLAPSED:
         renderCollapsedMode(
@@ -237,18 +291,25 @@ public class StrategyHudRendererV2 {
             colorAutograbbing);
         break;
       case EXPANDING:
-        renderFullMode(
-            new FullModeRenderContext(
-                context,
-                client,
-                entries,
-                hasError,
-                numColumns,
-                entryXPositions,
-                y,
-                lineHeight,
-                applyAlpha(colorNormal, textAlpha),
-                applyAlpha(errorColor, textAlpha)));
+        {
+          List<Integer> fadedColors = new ArrayList<>();
+          for (int c : entryColors) {
+            fadedColors.add(applyAlpha(c, textAlpha));
+          }
+          renderFullMode(
+              new FullModeRenderContext(
+                  context,
+                  client,
+                  entries,
+                  fadedColors,
+                  hasError,
+                  numColumns,
+                  entryXPositions,
+                  y,
+                  lineHeight,
+                  applyAlpha(colorNormal, textAlpha),
+                  applyAlpha(errorColor, textAlpha)));
+        }
         break;
     }
   }
@@ -405,6 +466,23 @@ public class StrategyHudRendererV2 {
         best.numColumns(), optimalEntryXPositions, best.columnMaxWidths(), startOffset);
   }
 
+  private static RideName filterClosestRide(RideName ride) {
+    if (ride == null) {
+      return null;
+    }
+    ClosestRideMode mode = ModConfig.currentSetting.closestRideMode;
+    if (mode == ClosestRideMode.NEVER) {
+      return null;
+    }
+    if (mode == ClosestRideMode.ONLY_IN_PROGRESS) {
+      RideGoal goal = StrategyCalculator.getGoalForRide(ride);
+      if (goal == null || goal.getMaxRidesNeeded() <= 0) {
+        return null;
+      }
+    }
+    return ride;
+  }
+
   private static RideStatus getEffectiveStatus(
       RideName currentRide, RideName autograbRide, boolean isPassenger) {
     if (currentRide != null) {
@@ -438,13 +516,17 @@ public class StrategyHudRendererV2 {
       for (int col = 0; col < ctx.numColumns() && entryIdx < ctx.entries().size(); col++) {
         int[] positions = ctx.entryXPositions().get(entryIdx);
         EntryComponents entry = ctx.entries().get(entryIdx);
+        int entryColor =
+            ctx.entryColors() != null && entryIdx < ctx.entryColors().size()
+                ? ctx.entryColors().get(entryIdx)
+                : ctx.textColor();
 
         context.drawString(
-            ctx.client().font, entry.name(), positions[0], currentY, ctx.textColor(), false);
+            ctx.client().font, entry.name(), positions[0], currentY, entryColor, false);
         context.drawString(
-            ctx.client().font, entry.rides(), positions[1], currentY, ctx.textColor(), false);
+            ctx.client().font, entry.rides(), positions[1], currentY, entryColor, false);
         context.drawString(
-            ctx.client().font, entry.time(), positions[2], currentY, ctx.textColor(), false);
+            ctx.client().font, entry.time(), positions[2], currentY, entryColor, false);
 
         entryIdx++;
       }

@@ -9,6 +9,14 @@ TARGET_DIR="/Users/cusgadmin/Library/Application Support/ModrinthApp/profiles/Im
 JAR_NAME="not-riding-alert-2.4.5.jar"
 SOURCE_JAR="${PROJECT_DIR}/build/libs/${JAR_NAME}"
 TARGET_JAR="${TARGET_DIR}/${JAR_NAME}"
+NATIVE_CACHE_DIR="/Users/cusgadmin/Library/Application Support/ModrinthApp/profiles/ImagineFun/config/not-riding-alert/native"
+
+# Rebuild native WebView helper binary (must happen before gradlew build so the JAR includes it)
+echo "Rebuilding macOS native WebView helper..."
+swiftc -O \
+    -o "${PROJECT_DIR}/src/main/resources/native/macos/webview-helper" \
+    "${PROJECT_DIR}/native/macos/WebViewHelper.swift" \
+    -framework WebKit -framework AppKit
 
 echo "Building Non-Riding Alert mod..."
 cd "${PROJECT_DIR}"
@@ -18,6 +26,12 @@ cd "${PROJECT_DIR}"
 if [ ! -f "${SOURCE_JAR}" ]; then
     echo "Error: Build artifact not found at ${SOURCE_JAR}"
     exit 1
+fi
+
+# Clear cached native binaries so the updated ones from the JAR get extracted
+if [ -d "${NATIVE_CACHE_DIR}" ]; then
+    echo "Clearing cached native binaries..."
+    rm -rf "${NATIVE_CACHE_DIR}"
 fi
 
 echo "Creating target directory if it doesn't exist..."

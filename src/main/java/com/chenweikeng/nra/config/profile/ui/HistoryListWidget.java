@@ -1,6 +1,6 @@
 package com.chenweikeng.nra.config.profile.ui;
 
-import com.chenweikeng.nra.config.ModConfig;
+import com.chenweikeng.nra.config.profile.ConfigDiffSummary;
 import com.chenweikeng.nra.config.profile.HistoryEntry;
 import com.chenweikeng.nra.config.profile.HistoryManager;
 import java.time.Instant;
@@ -15,11 +15,11 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public class HistoryListWidget extends ObjectSelectionList<HistoryListWidget.Entry> {
-  private static final int ENTRY_HEIGHT = 28;
+  private static final int ENTRY_HEIGHT = 38;
   private static final int DATE_COLOR = 0xFFFFFFFF;
   private static final int SELECTED_BG_COLOR = 0x55FFFFFF;
   private static final int HOVER_BG_COLOR = 0x33FFFFFF;
-  private static final int CURRENT_BADGE_COLOR = 0xFF55FF55;
+  private static final int DESCRIPTION_COLOR = 0xFFAAAAAA;
   private static final DateTimeFormatter DATE_FORMAT =
       DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
 
@@ -94,18 +94,14 @@ public class HistoryListWidget extends ObjectSelectionList<HistoryListWidget.Ent
       }
 
       int textX = x + 4;
-      int textY = y + (ENTRY_HEIGHT - 9) / 2;
+      int textY = y + 4;
 
       String dateStr = formatDate(historyEntry.replacedAt);
       graphics.drawString(minecraft.font, dateStr, textX, textY, DATE_COLOR, false);
 
-      boolean isCurrent =
-          historyEntry.data != null && historyEntry.data.equals(ModConfig.currentSetting);
-      if (isCurrent) {
-        int badgeX = textX + minecraft.font.width(dateStr) + 8;
-        graphics.drawString(
-            minecraft.font, "(Current Profile)", badgeX, textY, CURRENT_BADGE_COLOR, false);
-      }
+      // Second line: brief diff description
+      String desc = ConfigDiffSummary.describe(historyEntry.data);
+      graphics.drawString(minecraft.font, desc, textX, textY + 12, DESCRIPTION_COLOR, false);
 
       int totalButtonsWidth = BUTTON_WIDTH * 2 + BUTTON_SPACING;
       int buttonStartX = x + contentWidth - totalButtonsWidth - 4;

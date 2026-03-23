@@ -38,10 +38,6 @@ func writeLine(_ line: String) {
     FileHandle.standardOutput.write(Data((line + "\n").utf8))
 }
 
-func logDebug(_ msg: String) {
-    FileHandle.standardError.write(Data(("[webview-helper] \(msg)\n").utf8))
-}
-
 // MARK: - Console message handler
 
 class ConsoleMessageHandler: NSObject, WKScriptMessageHandler {
@@ -49,9 +45,7 @@ class ConsoleMessageHandler: NSObject, WKScriptMessageHandler {
         guard let body = message.body as? [String: String],
               let level = body["level"],
               let msg = body["message"] else { return }
-        // Forward to stdout as a console event, and also to stderr for local debug
         writeLine(jsonLine(["type": "console", "level": level, "message": String(msg.prefix(1000))]))
-        logDebug("[\(level)] \(String(msg.prefix(500)))")
     }
 }
 
@@ -190,6 +184,77 @@ class WebViewManager: NSObject, WKNavigationDelegate, WKUIDelegate {
             """, injectionTime: .atDocumentStart, forMainFrameOnly: false)
         config.userContentController.addUserScript(audioPolyfill)
 
+        // Inject volume fix for WKWebView: audio.volume is ignored for audio
+        // elements routed through createMediaElementSource(). This intercepts
+        // createMediaElementSource() to insert a GainNode that mirrors
+        // audio.volume inside the Web Audio graph.
+        let volumeFix = WKUserScript(source: """
+            (function () {
+              var elementGains = new WeakMap();
+
+              if (typeof AudioContext === 'undefined' && typeof webkitAudioContext === 'undefined') {
+                return;
+              }
+
+              var AC = window.AudioContext || window.webkitAudioContext;
+              var _createMES = AC.prototype.createMediaElementSource;
+
+              AC.prototype.createMediaElementSource = function (mediaEl) {
+                var sourceNode = _createMES.call(this, mediaEl);
+                var volGain = this.createGain();
+                volGain.gain.value = mediaEl.volume;
+                elementGains.set(mediaEl, volGain);
+                sourceNode.connect(volGain);
+
+                sourceNode.connect = function () {
+                  return volGain.connect.apply(volGain, arguments);
+                };
+                sourceNode.disconnect = function () {
+                  return volGain.disconnect.apply(volGain, arguments);
+                };
+                return sourceNode;
+              };
+
+              if (typeof webkitAudioContext !== 'undefined' &&
+                  webkitAudioContext !== AudioContext &&
+                  webkitAudioContext.prototype.createMediaElementSource) {
+                var _createMESWebkit = webkitAudioContext.prototype.createMediaElementSource;
+                webkitAudioContext.prototype.createMediaElementSource = function (mediaEl) {
+                  var sourceNode = _createMESWebkit.call(this, mediaEl);
+                  var volGain = this.createGain();
+                  volGain.gain.value = mediaEl.volume;
+                  elementGains.set(mediaEl, volGain);
+                  sourceNode.connect(volGain);
+                  sourceNode.connect = function () {
+                    return volGain.connect.apply(volGain, arguments);
+                  };
+                  sourceNode.disconnect = function () {
+                    return volGain.disconnect.apply(volGain, arguments);
+                  };
+                  return sourceNode;
+                };
+              }
+
+              var desc = Object.getOwnPropertyDescriptor(
+                HTMLMediaElement.prototype, 'volume'
+              );
+
+              if (desc && desc.set) {
+                Object.defineProperty(HTMLMediaElement.prototype, 'volume', {
+                  get: desc.get,
+                  set: function (v) {
+                    desc.set.call(this, v);
+                    var g = elementGains.get(this);
+                    if (g) { g.gain.value = v; }
+                  },
+                  configurable: true,
+                  enumerable: true
+                });
+              }
+            })();
+            """, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        config.userContentController.addUserScript(volumeFix)
+
         // Create an offscreen window (1x1 pixel, hidden)
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1, height: 1),
@@ -215,14 +280,12 @@ class WebViewManager: NSObject, WKNavigationDelegate, WKUIDelegate {
             writeLine(jsonLine(["type": "error", "message": "Invalid URL: \(urlString)"]))
             return
         }
-        logDebug("Loading URL: \(urlString)")
         webView.load(URLRequest(url: url))
     }
 
     func evaluateJS(_ js: String, id: String) {
         webView.evaluateJavaScript(js) { result, error in
             if let error = error {
-                logDebug("JS eval error (id=\(id)): \(error.localizedDescription)")
                 writeLine(jsonLine([
                     "type": "eval_result",
                     "id": id,
@@ -258,17 +321,14 @@ class WebViewManager: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         let url = webView.url?.absoluteString ?? ""
-        logDebug("Page loaded: \(url)")
         writeLine(jsonLine(["type": "loaded", "url": url, "success": true]))
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        logDebug("Navigation failed: \(error.localizedDescription)")
         writeLine(jsonLine(["type": "error", "message": "Navigation failed: \(error.localizedDescription)"]))
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        logDebug("Provisional navigation failed: \(error.localizedDescription)")
         writeLine(jsonLine(["type": "error", "message": "Load failed: \(error.localizedDescription)"]))
     }
 
@@ -276,13 +336,11 @@ class WebViewManager: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
                  initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        logDebug("JS alert: \(message)")
         completionHandler()
     }
 
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
                  initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
-        logDebug("JS confirm: \(message)")
         completionHandler(true)
     }
 }
@@ -311,7 +369,6 @@ class StdinReader {
             guard let data = line.data(using: .utf8),
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let cmd = json["cmd"] as? String else {
-                logDebug("Invalid command: \(line)")
                 continue
             }
 
@@ -329,18 +386,15 @@ class StdinReader {
                     }
                 }
             case "quit":
-                logDebug("Quit command received")
                 DispatchQueue.main.async {
                     NSApplication.shared.terminate(nil)
                 }
                 return
             default:
-                logDebug("Unknown command: \(cmd)")
+                break
             }
         }
 
-        // stdin closed (parent process died)
-        logDebug("Stdin closed, exiting")
         DispatchQueue.main.async {
             NSApplication.shared.terminate(nil)
         }
@@ -358,9 +412,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         reader = StdinReader(manager: manager)
         reader.startReading()
 
-        // Signal ready
         writeLine(jsonLine(["type": "ready"]))
-        logDebug("Helper ready")
     }
 }
 

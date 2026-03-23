@@ -43,6 +43,8 @@ public class ConfigSetting {
   public int trackerAutograbbingColor = ConfigDefaults.TRACKER_AUTOGRABBING_COLOR;
   public int trackerRidingColor = ConfigDefaults.TRACKER_RIDING_COLOR;
   public int trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
+  public int trackerClosestRideColor = ConfigDefaults.TRACKER_CLOSEST_RIDE_COLOR;
+  public ClosestRideMode closestRideMode = ConfigDefaults.CLOSEST_RIDE_MODE;
   public AudioBoostReminderMode audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
   public ClosedCaptionMode closedCaptionMode = ConfigDefaults.CLOSED_CAPTION_MODE;
   public TrackerDisplayMode trackerDisplayMode = ConfigDefaults.TRACKER_DISPLAY_MODE;
@@ -90,6 +92,8 @@ public class ConfigSetting {
     trackerAutograbbingColor = ConfigDefaults.TRACKER_AUTOGRABBING_COLOR;
     trackerRidingColor = ConfigDefaults.TRACKER_RIDING_COLOR;
     trackerErrorColor = ConfigDefaults.TRACKER_ERROR_COLOR;
+    trackerClosestRideColor = ConfigDefaults.TRACKER_CLOSEST_RIDE_COLOR;
+    closestRideMode = ConfigDefaults.CLOSEST_RIDE_MODE;
     audioBoostReminderMode = ConfigDefaults.AUDIO_BOOST_REMINDER_MODE;
     closedCaptionMode = ConfigDefaults.CLOSED_CAPTION_MODE;
     trackerDisplayMode = ConfigDefaults.TRACKER_DISPLAY_MODE;
@@ -130,6 +134,8 @@ public class ConfigSetting {
     copy.trackerAutograbbingColor = this.trackerAutograbbingColor;
     copy.trackerRidingColor = this.trackerRidingColor;
     copy.trackerErrorColor = this.trackerErrorColor;
+    copy.trackerClosestRideColor = this.trackerClosestRideColor;
+    copy.closestRideMode = this.closestRideMode;
     copy.audioBoostReminderMode = this.audioBoostReminderMode;
     copy.closedCaptionMode = this.closedCaptionMode;
     copy.trackerDisplayMode = this.trackerDisplayMode;
@@ -174,6 +180,8 @@ public class ConfigSetting {
         && trackerAutograbbingColor == that.trackerAutograbbingColor
         && trackerRidingColor == that.trackerRidingColor
         && trackerErrorColor == that.trackerErrorColor
+        && trackerClosestRideColor == that.trackerClosestRideColor
+        && closestRideMode == that.closestRideMode
         && audioBoostReminderMode == that.audioBoostReminderMode
         && closedCaptionMode == that.closedCaptionMode
         && trackerDisplayMode == that.trackerDisplayMode
@@ -218,6 +226,8 @@ public class ConfigSetting {
         trackerAutograbbingColor,
         trackerRidingColor,
         trackerErrorColor,
+        trackerClosestRideColor,
+        closestRideMode,
         audioBoostReminderMode,
         closedCaptionMode,
         trackerDisplayMode,

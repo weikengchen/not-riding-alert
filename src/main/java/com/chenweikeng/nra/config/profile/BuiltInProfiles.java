@@ -41,6 +41,7 @@ public final class BuiltInProfiles {
     profile.showAutograbRegions = true;
 
     profile.hibernationWhenRiding = true;
+    profile.enableOpenAudioMc = true;
 
     profile.advanceNoticeSeconds.put(RideName.BIG_THUNDER_MOUNTAIN_RAILROAD.toMatchString(), 5);
     profile.advanceNoticeSeconds.put(RideName.CHIP_N_DALES_GADGET_COASTER.toMatchString(), 5);

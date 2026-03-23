@@ -439,6 +439,34 @@ public class ClothConfigScreen {
             .setSaveConsumer(color -> profile.trackerErrorColor = color | 0xFF000000)
             .build());
 
+    tracker.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.closestRideMode"),
+                ClosestRideMode.class,
+                profile.closestRideMode)
+            .setDefaultValue(ConfigDefaults.CLOSEST_RIDE_MODE)
+            .setTooltip(Component.translatable("config.not-riding-alert.closestRideMode.tooltip"))
+            .setSaveConsumer(newValue -> profile.closestRideMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.closestRideMode." + mode.name().toLowerCase()))
+            .build());
+
+    tracker.addEntry(
+        entryBuilder
+            .startColorField(
+                Component.translatable("config.not-riding-alert.trackerClosestRideColor"),
+                TextColor.fromRgb(profile.trackerClosestRideColor & 0x00FFFFFF))
+            .setDefaultValue(
+                TextColor.fromRgb(ConfigDefaults.TRACKER_CLOSEST_RIDE_COLOR & 0x00FFFFFF))
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.trackerClosestRideColor.tooltip"))
+            .setSaveConsumer2(
+                color -> profile.trackerClosestRideColor = color.getColor() | 0xFF000000)
+            .build());
+
     ConfigCategory advanceNotice =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.advanceNotice"));

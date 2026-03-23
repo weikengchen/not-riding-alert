@@ -3,9 +3,11 @@ package com.chenweikeng.nra.strategy;
 import com.chenweikeng.nra.GameState;
 import com.chenweikeng.nra.NotRidingAlertClient;
 import com.chenweikeng.nra.Timing;
+import com.chenweikeng.nra.config.ClosestRideMode;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.SortingRules;
 import com.chenweikeng.nra.ride.AutograbHolder;
+import com.chenweikeng.nra.ride.ClosestRideHolder;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
@@ -27,6 +29,7 @@ public class StrategyHudRendererV0 {
       List<RideGoal> goals,
       RideName currentRide,
       RideName autograbRide,
+      RideName closestRide,
       RideName effectiveRide,
       boolean currentRideInTop,
       boolean isPassenger,
@@ -39,7 +42,8 @@ public class StrategyHudRendererV0 {
   private enum RideStatus {
     NORMAL,
     RIDING,
-    AUTOGRABBING
+    AUTOGRABBING,
+    CLOSEST
   }
 
   private static class FormattedRide {
@@ -110,12 +114,15 @@ public class StrategyHudRendererV0 {
     int colorRiding = ModConfig.currentSetting.trackerRidingColor;
     int colorAutograbbing = ModConfig.currentSetting.trackerAutograbbingColor;
     int errorColor = ModConfig.currentSetting.trackerErrorColor;
+    int colorClosest = ModConfig.currentSetting.trackerClosestRideColor;
 
     int displayCount = ModConfig.currentSetting.rideDisplayCount;
 
     RideName currentRide = CurrentRideHolder.getCurrentRide();
     RideName autograbRide = AutograbHolder.getRideAtLocation(client);
-    RideName effectiveRide = currentRide != null ? currentRide : autograbRide;
+    RideName closestRide = filterClosestRide(ClosestRideHolder.getClosestRide());
+    RideName effectiveRide =
+        currentRide != null ? currentRide : (autograbRide != null ? autograbRide : closestRide);
     boolean currentRideInTop =
         effectiveRide != null && topGoals.stream().anyMatch(g -> g.getRide() == effectiveRide);
     boolean isPassengerForLayout = GameState.getInstance().isValidPassenger(client.player);
@@ -132,6 +139,7 @@ public class StrategyHudRendererV0 {
             goalsForFit,
             currentRide,
             autograbRide,
+            closestRide,
             effectiveRide,
             currentRideInTop,
             isPassengerForLayout,
@@ -176,14 +184,16 @@ public class StrategyHudRendererV0 {
     }
     for (RideGoal goal : leftGoals) {
       FormattedRide formattedRide =
-          formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+          formatRideName(
+              goal.getRide(), currentRide, autograbRide, closestRide, useShortNames, isPassenger);
       String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
       maxWidth = Math.max(maxWidth, client.font.width(text));
     }
     if (twoColumns) {
       for (RideGoal goal : rightGoals) {
         FormattedRide formattedRide =
-            formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+            formatRideName(
+                goal.getRide(), currentRide, autograbRide, closestRide, useShortNames, isPassenger);
         String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
         maxWidth = Math.max(maxWidth, client.font.width(text));
       }
@@ -191,11 +201,16 @@ public class StrategyHudRendererV0 {
     if (hasExtraRide) {
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
       FormattedRide formattedRide =
-          formatRideName(effectiveRide, currentRide, autograbRide, useShortNames, isPassenger);
-      String text =
-          currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules)
-              : "Riding: " + formattedRide.getName();
+          formatRideName(
+              effectiveRide, currentRide, autograbRide, closestRide, useShortNames, isPassenger);
+      String text;
+      if (currentGoal != null) {
+        text = formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules);
+      } else if (formattedRide.getStatus() == RideStatus.RIDING) {
+        text = "Riding: " + formattedRide.getName();
+      } else {
+        text = formattedRide.getName();
+      }
       maxWidth = Math.max(maxWidth, client.font.width(text));
     }
 
@@ -210,11 +225,16 @@ public class StrategyHudRendererV0 {
       for (int i = 0; i < leftGoals.size(); i++) {
         RideGoal goal = leftGoals.get(i);
         FormattedRide formattedRide =
-            formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+            formatRideName(
+                goal.getRide(), currentRide, autograbRide, closestRide, useShortNames, isPassenger);
         String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
         int color =
             getColorForStatus(
-                formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
+                formattedRide.getStatus(),
+                colorNormal,
+                colorRiding,
+                colorAutograbbing,
+                colorClosest);
         context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
       }
 
@@ -222,11 +242,21 @@ public class StrategyHudRendererV0 {
         for (int i = 0; i < rightGoals.size(); i++) {
           RideGoal goal = rightGoals.get(i);
           FormattedRide formattedRide =
-              formatRideName(goal.getRide(), currentRide, autograbRide, useShortNames, isPassenger);
+              formatRideName(
+                  goal.getRide(),
+                  currentRide,
+                  autograbRide,
+                  closestRide,
+                  useShortNames,
+                  isPassenger);
           String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
           int color =
               getColorForStatus(
-                  formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
+                  formattedRide.getStatus(),
+                  colorNormal,
+                  colorRiding,
+                  colorAutograbbing,
+                  colorClosest);
           int textWidth = client.font.width(text);
           context.drawString(
               client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
@@ -238,19 +268,42 @@ public class StrategyHudRendererV0 {
       int extraY = yStart + ((hasError ? 1 : 0) + maxColumnHeight + 1) * lineHeight;
       RideGoal currentGoal = StrategyCalculator.getGoalForRide(effectiveRide);
       FormattedRide formattedRide =
-          formatRideName(effectiveRide, currentRide, autograbRide, useShortNames, isPassenger);
-      String text =
-          currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules)
-              : "Riding: " + formattedRide.getName();
+          formatRideName(
+              effectiveRide, currentRide, autograbRide, closestRide, useShortNames, isPassenger);
+      String text;
+      if (currentGoal != null) {
+        text = formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules);
+      } else if (formattedRide.getStatus() == RideStatus.RIDING) {
+        text = "Riding: " + formattedRide.getName();
+      } else {
+        text = formattedRide.getName();
+      }
       int color =
-          getColorForStatus(formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing);
+          getColorForStatus(
+              formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing, colorClosest);
       context.drawString(client.font, text, xLeft, extraY, color, false);
     }
   }
 
   public static List<RideGoal> getTopGoals() {
     return new ArrayList<>(topGoals);
+  }
+
+  private static RideName filterClosestRide(RideName ride) {
+    if (ride == null) {
+      return null;
+    }
+    ClosestRideMode mode = ModConfig.currentSetting.closestRideMode;
+    if (mode == ClosestRideMode.NEVER) {
+      return null;
+    }
+    if (mode == ClosestRideMode.ONLY_IN_PROGRESS) {
+      RideGoal goal = StrategyCalculator.getGoalForRide(ride);
+      if (goal == null || goal.getMaxRidesNeeded() <= 0) {
+        return null;
+      }
+    }
+    return ride;
   }
 
   private static String getAnimatedDots() {
@@ -269,6 +322,7 @@ public class StrategyHudRendererV0 {
       RideName ride,
       RideName currentRide,
       RideName autograbRide,
+      RideName closestRide,
       boolean useShortNames,
       boolean isPassenger) {
     String rideName = useShortNames ? ride.getShortName() : ride.getDisplayName();
@@ -293,6 +347,12 @@ public class StrategyHudRendererV0 {
         && !isPassenger) {
       rideName += " (Autograbbing" + getAnimatedDots() + ")";
       status = RideStatus.AUTOGRABBING;
+    } else if (currentRide == null
+        && autograbRide == null
+        && closestRide != null
+        && ride == closestRide) {
+      rideName += " (Closest)";
+      status = RideStatus.CLOSEST;
     }
 
     return new FormattedRide(rideName, status);
@@ -371,12 +431,17 @@ public class StrategyHudRendererV0 {
               layoutInput.effectiveRide,
               layoutInput.currentRide,
               layoutInput.autograbRide,
+              layoutInput.closestRide,
               useShortNames,
               layoutInput.isPassenger);
-      String text =
-          currentGoal != null
-              ? formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules)
-              : "Riding: " + formattedRide.getName();
+      String text;
+      if (currentGoal != null) {
+        text = formatGoalText(formattedRide, currentGoal, ModConfig.currentSetting.sortingRules);
+      } else if (formattedRide.getStatus() == RideStatus.RIDING) {
+        text = "Riding: " + formattedRide.getName();
+      } else {
+        text = formattedRide.getName();
+      }
       maxWidth = Math.max(maxWidth, layoutInput.client.font.width(text) / 2);
     }
 
@@ -392,6 +457,7 @@ public class StrategyHudRendererV0 {
               goal.getRide(),
               layoutInput.currentRide,
               layoutInput.autograbRide,
+              layoutInput.closestRide,
               useShortNames,
               layoutInput.isPassenger);
       String text = formatGoalText(formattedRide, goal, ModConfig.currentSetting.sortingRules);
@@ -401,11 +467,16 @@ public class StrategyHudRendererV0 {
   }
 
   private static int getColorForStatus(
-      RideStatus status, int colorRed, int colorGreen, int colorLightBlue) {
+      RideStatus status,
+      int colorNormal,
+      int colorRiding,
+      int colorAutograbbing,
+      int colorClosest) {
     return switch (status) {
-      case RIDING -> colorGreen;
-      case AUTOGRABBING -> colorLightBlue;
-      case NORMAL -> colorRed;
+      case RIDING -> colorRiding;
+      case AUTOGRABBING -> colorAutograbbing;
+      case CLOSEST -> colorClosest;
+      case NORMAL -> colorNormal;
     };
   }
 }

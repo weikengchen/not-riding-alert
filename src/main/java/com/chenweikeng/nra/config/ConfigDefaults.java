@@ -32,6 +32,8 @@ public final class ConfigDefaults {
   public static final int TRACKER_AUTOGRABBING_COLOR = 0xFFEE00FF;
   public static final int TRACKER_RIDING_COLOR = 0xFF00FF00;
   public static final int TRACKER_ERROR_COLOR = 0xFFFF6600;
+  public static final int TRACKER_CLOSEST_RIDE_COLOR = 0xFFFFFF00;
+  public static final ClosestRideMode CLOSEST_RIDE_MODE = ClosestRideMode.ONLY_IN_PROGRESS;
   public static final AudioBoostReminderMode AUDIO_BOOST_REMINDER_MODE =
       AudioBoostReminderMode.ONLY_WHEN_RIDING;
   public static final ClosedCaptionMode CLOSED_CAPTION_MODE = ClosedCaptionMode.RECOLORED;
