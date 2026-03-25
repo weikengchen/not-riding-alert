@@ -138,6 +138,9 @@ public class CursorManager {
       if (shouldRestoreOnThisTick) {
         windowMinimizeHandler.restoreWindow();
       }
+      if (wasRiding && !isRiding) {
+        windowMinimizeHandler.requestAttention();
+      }
 
       if (MonkeycraftCompat.isClientConnected()
           && FabricLoader.getInstance().isModLoaded("dynamic_fps")) {
