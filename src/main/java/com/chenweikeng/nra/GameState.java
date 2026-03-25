@@ -12,6 +12,7 @@ public class GameState {
   private volatile boolean monkeyAttached = false;
   private long lastSitCommand = -400;
   private boolean sitting = false;
+  private boolean autograbFailureActive = false;
 
   private GameState() {}
 
@@ -75,6 +76,14 @@ public class GameState {
     }
   }
 
+  public boolean isAutograbFailureActive() {
+    return autograbFailureActive;
+  }
+
+  public void setAutograbFailureActive(boolean active) {
+    this.autograbFailureActive = active;
+  }
+
   public boolean isValidPassenger(LocalPlayer player) {
     if (player == null) {
       return false;
@@ -101,5 +110,6 @@ public class GameState {
     automaticallyReleasedCursor = false;
     lastSitCommand = -400;
     sitting = false;
+    autograbFailureActive = false;
   }
 }

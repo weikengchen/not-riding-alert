@@ -167,6 +167,7 @@ public class CursorManager {
       windowMinimizeHandler.restoreWindow();
       minimizedDuringAutograb = false;
     }
+    windowMinimizeHandler.requestAttention();
   }
 
   private void sendCanoeMessageIfNeeded(Minecraft client, RideName ride) {

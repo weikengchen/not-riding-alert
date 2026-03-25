@@ -30,6 +30,25 @@ public final class WindowMinimizeHandler {
     }
   }
 
+  public void requestAttention() {
+    Minecraft client = Minecraft.getInstance();
+    if (client.getWindow() == null) {
+      return;
+    }
+
+    long handle = client.getWindow().handle();
+    boolean isMinimized = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_ICONIFIED) == GLFW.GLFW_TRUE;
+
+    if (!isMinimized) {
+      client.execute(
+          () -> {
+            long h = client.getWindow().handle();
+            GLFW.glfwFocusWindow(h);
+            GLFW.glfwRequestWindowAttention(h);
+          });
+    }
+  }
+
   public void restoreWindow() {
     Minecraft client = Minecraft.getInstance();
     if (client.getWindow() == null) {

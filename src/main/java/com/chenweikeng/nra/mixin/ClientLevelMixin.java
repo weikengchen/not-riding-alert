@@ -56,7 +56,8 @@ public class ClientLevelMixin {
         }
 
         // Check if player is riding (excluding autograb region check via isRiding helper)
-        if (GameState.getInstance().isRiding()) {
+        if (GameState.getInstance().isRiding()
+            && !GameState.getInstance().isAutograbFailureActive()) {
           // Cancel sound when riding (except ride.complete)
           ci.cancel();
         }

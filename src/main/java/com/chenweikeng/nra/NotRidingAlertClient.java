@@ -3,7 +3,6 @@ package com.chenweikeng.nra;
 import com.chenweikeng.nra.audio.OpenAudioMcService;
 import com.chenweikeng.nra.compat.MonkeycraftCompat;
 import com.chenweikeng.nra.config.ModConfig;
-import com.chenweikeng.nra.config.WindowMinimizeTiming;
 import com.chenweikeng.nra.config.profile.HistoryManager;
 import com.chenweikeng.nra.config.profile.ProfileCommandHandler;
 import com.chenweikeng.nra.config.profile.ProfileManager;
@@ -166,8 +165,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
     dayTimeHandler.resetDayTimeIfNeeded(client);
     boolean autograbFailureActive =
         autograbFailureHandler.track(client, currentTick, movementTracker);
-    if (autograbFailureActive
-        && ModConfig.currentSetting.minimizeWindow != WindowMinimizeTiming.NONE) {
+    gameState.setAutograbFailureActive(autograbFailureActive);
+    if (autograbFailureActive) {
       cursorManager.handleAutograbFailureRestore();
     }
     HibernationHandler.getInstance().track(client, currentTick);
