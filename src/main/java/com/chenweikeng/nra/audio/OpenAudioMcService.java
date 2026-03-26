@@ -179,9 +179,11 @@ public class OpenAudioMcService {
     LOGGER.info("Connecting to OpenAudioMC: {}", sessionUrl);
 
     if (bridge == null) {
+      notifyUser("Starting audio engine...");
       bridge = new WebViewBridge();
       if (!bridge.start()) {
         LOGGER.error("Failed to start WebView bridge — OpenAudioMC audio will not work");
+        notifyUser("Failed to start audio engine.");
         return;
       }
     }

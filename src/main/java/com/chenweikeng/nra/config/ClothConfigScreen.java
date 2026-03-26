@@ -121,6 +121,23 @@ public class ClothConfigScreen {
             .setSaveConsumer(newValue -> profile.enableOpenAudioMc = newValue)
             .build());
 
+    general.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Component.translatable("config.not-riding-alert.rideReportNotifyMode"),
+                RideReportNotifyMode.class,
+                profile.rideReportNotifyMode)
+            .setDefaultValue(ConfigDefaults.RIDE_REPORT_NOTIFY_MODE)
+            .setTooltip(
+                Component.translatable("config.not-riding-alert.rideReportNotifyMode.tooltip"))
+            .setSaveConsumer(newValue -> profile.rideReportNotifyMode = newValue)
+            .setEnumNameProvider(
+                mode ->
+                    Component.translatable(
+                        "config.not-riding-alert.rideReportNotifyMode."
+                            + mode.name().toLowerCase()))
+            .build());
+
     ConfigCategory visual =
         builder.getOrCreateCategory(
             Component.translatable("config.not-riding-alert.category.visual"));

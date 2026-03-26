@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 
 public final class ButtonRenderer {
-  static final int BUTTON_HEIGHT = 14;
+  public static final int BUTTON_HEIGHT = 14;
   private static final int BUTTON_BORDER_COLOR = 0xFFA0A0A0;
   private static final int BUTTON_TEXT_COLOR = 0xFF202020;
 

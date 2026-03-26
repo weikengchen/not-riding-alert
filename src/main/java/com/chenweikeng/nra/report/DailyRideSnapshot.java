@@ -1,0 +1,151 @@
+package com.chenweikeng.nra.report;
+
+import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.ride.RideCountManager;
+import com.chenweikeng.nra.ride.RideName;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import net.fabricmc.loader.api.FabricLoader;
+
+public class DailyRideSnapshot {
+  private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+  private static final File DATA_FILE =
+      new File(
+          FabricLoader.getInstance().getConfigDir().toFile(),
+          "not-riding-alert-ride-snapshots.json");
+  private static final int MAX_DAYS = 90;
+  private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
+
+  private static DailyRideSnapshot instance;
+
+  private final Map<String, SnapshotEntry> snapshots = new TreeMap<>();
+
+  public static class SnapshotEntry {
+    public Map<String, Integer> rideCounts = new HashMap<>();
+    public int ridesCompleted;
+    public long totalRideTimeSeconds;
+    public long totalOnlineSeconds;
+    public int streak;
+  }
+
+  private DailyRideSnapshot() {
+    load();
+  }
+
+  public static DailyRideSnapshot getInstance() {
+    if (instance == null) {
+      instance = new DailyRideSnapshot();
+    }
+    return instance;
+  }
+
+  public void snapshotDay(
+      String date, int ridesCompleted, long totalRideTimeSeconds, long totalOnlineSeconds) {
+    if (ridesCompleted <= 0) {
+      return;
+    }
+
+    SnapshotEntry entry = new SnapshotEntry();
+    entry.ridesCompleted = ridesCompleted;
+    entry.totalRideTimeSeconds = totalRideTimeSeconds;
+    entry.totalOnlineSeconds = totalOnlineSeconds;
+
+    RideCountManager countManager = RideCountManager.getInstance();
+    Map<RideName, Integer> allCounts = countManager.getAllRideCounts();
+    for (Map.Entry<RideName, Integer> rideEntry : allCounts.entrySet()) {
+      if (rideEntry.getKey() != RideName.UNKNOWN) {
+        entry.rideCounts.put(rideEntry.getKey().toMatchString(), rideEntry.getValue());
+      }
+    }
+
+    snapshots.put(date, entry);
+    pruneOld();
+    save();
+  }
+
+  public SnapshotEntry getSnapshot(String date) {
+    return snapshots.get(date);
+  }
+
+  public List<String> getAvailableDates() {
+    List<String> dates = new ArrayList<>(snapshots.keySet());
+    dates.sort((a, b) -> b.compareTo(a));
+    return dates;
+  }
+
+  public boolean hasSnapshot(String date) {
+    return snapshots.containsKey(date);
+  }
+
+  private void pruneOld() {
+    if (snapshots.size() <= MAX_DAYS) {
+      return;
+    }
+    List<String> sortedDates = new ArrayList<>(snapshots.keySet());
+    sortedDates.sort(String::compareTo);
+    while (snapshots.size() > MAX_DAYS) {
+      snapshots.remove(sortedDates.remove(0));
+    }
+  }
+
+  private void load() {
+    if (DATA_FILE.exists()) {
+      try (FileReader reader = new FileReader(DATA_FILE)) {
+        Type type = new TypeToken<Map<String, SnapshotEntry>>() {}.getType();
+        Map<String, SnapshotEntry> loaded = GSON.fromJson(reader, type);
+        if (loaded != null) {
+          snapshots.putAll(loaded);
+        }
+      } catch (Exception e) {
+        NotRidingAlertClient.LOGGER.error("Failed to load ride snapshots", e);
+      }
+    }
+  }
+
+  private void save() {
+    try (FileWriter writer = new FileWriter(DATA_FILE)) {
+      GSON.toJson(snapshots, writer);
+    } catch (IOException e) {
+      NotRidingAlertClient.LOGGER.error("Failed to save ride snapshots", e);
+    }
+  }
+
+  public String getMostRecentDate() {
+    List<String> dates = getAvailableDates();
+    return dates.isEmpty() ? null : dates.get(0);
+  }
+
+  public String getPreviousDate(String date) {
+    try {
+      LocalDate d = LocalDate.parse(date, DATE_FORMAT);
+      String prev = d.minusDays(1).format(DATE_FORMAT);
+      return snapshots.containsKey(prev) ? prev : null;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  /** Returns the next (newer) available snapshot date, or null if none. */
+  public String getNextDate(String date) {
+    try {
+      LocalDate d = LocalDate.parse(date, DATE_FORMAT);
+      String next = d.plusDays(1).format(DATE_FORMAT);
+      return snapshots.containsKey(next) ? next : null;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+}

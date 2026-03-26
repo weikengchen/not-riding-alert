@@ -17,6 +17,9 @@ import com.chenweikeng.nra.handler.FireworkViewingHandler;
 import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.handler.ReminderHandler;
 import com.chenweikeng.nra.handler.ScoreboardHandler;
+import com.chenweikeng.nra.report.DailyRideSnapshot;
+import com.chenweikeng.nra.report.RideReportNotifier;
+import com.chenweikeng.nra.report.ui.RideReportScreen;
 import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.ClosestRideHolder;
 import com.chenweikeng.nra.ride.CurrentRideHolder;
@@ -71,6 +74,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     ModConfig.load();
     ProfileManager.load();
     HistoryManager.load();
+    DailyRideSnapshot.getInstance();
     LOGGER.info("Not Riding Alert client initialized");
     MonkeycraftCompat.init();
     AutograbRegionRenderer.register();
@@ -179,6 +183,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
     RideCountManager.getInstance().checkAndSaveIfNeeded();
     SessionTracker.getInstance().checkAndSaveIfNeeded();
+    RideReportNotifier.getInstance().tick();
 
     tickCounter++;
     if (tickCounter >= Timing.ALERT_CHECK_INTERVAL) {
@@ -206,6 +211,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
     ClosedCaptionHolder.getInstance().clear();
     cursorManager.reset();
     advanceNoticeHandler.reset();
+    RideReportNotifier.getInstance().reset();
     gameState.reset();
     tickCounter = 0;
   }
@@ -238,6 +244,33 @@ public class NotRidingAlertClient implements ClientModInitializer {
                               });
                           return 1;
                         }))
+            .then(
+                ClientCommandManager.literal("ridereport")
+                    .executes(
+                        context -> {
+                          Minecraft client = Minecraft.getInstance();
+                          client.execute(
+                              () -> {
+                                // Default: show live report for today
+                                client.setScreen(RideReportScreen.createLive(client.screen));
+                              });
+                          return 1;
+                        })
+                    .then(
+                        ClientCommandManager.argument(
+                                "date", com.mojang.brigadier.arguments.StringArgumentType.word())
+                            .executes(
+                                context -> {
+                                  String date =
+                                      com.mojang.brigadier.arguments.StringArgumentType.getString(
+                                          context, "date");
+                                  Minecraft client = Minecraft.getInstance();
+                                  client.execute(
+                                      () -> {
+                                        client.setScreen(new RideReportScreen(client.screen, date));
+                                      });
+                                  return 1;
+                                })))
             .then(
                 ClientCommandManager.literal("profile")
                     .then(

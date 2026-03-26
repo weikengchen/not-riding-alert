@@ -476,7 +476,7 @@ public class StrategyHudRendererV2 {
     }
     if (mode == ClosestRideMode.ONLY_IN_PROGRESS) {
       RideGoal goal = StrategyCalculator.getGoalForRide(ride);
-      if (goal == null || goal.getMaxRidesNeeded() <= 0) {
+      if (goal == null) {
         return null;
       }
     }

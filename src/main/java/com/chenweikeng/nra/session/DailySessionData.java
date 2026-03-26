@@ -1,6 +1,8 @@
 package com.chenweikeng.nra.session;
 
 import com.chenweikeng.nra.NotRidingAlertClient;
+import com.chenweikeng.nra.report.DailyRideSnapshot;
+import com.chenweikeng.nra.report.RideReportNotifier;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
@@ -67,6 +69,15 @@ public class DailySessionData {
     boolean wasInSession = currentSessionStartMs > 0;
     if (wasInSession) {
       endSession();
+    }
+
+    String previousDate = date;
+
+    // Snapshot the day's ride counts before resetting
+    if (ridesCompleted > 0) {
+      DailyRideSnapshot.getInstance()
+          .snapshotDay(previousDate, ridesCompleted, totalRideTimeSeconds, totalOnlineSeconds);
+      RideReportNotifier.getInstance().onDateRollover(previousDate);
     }
 
     updateStreak(todayStr);

@@ -84,6 +84,28 @@ A bottom-right HUD overlay that tracks your daily riding session:
 - **Persistent Data**: Stats are saved to disk and persist across reconnects; resets daily at midnight
 - **Online Time Only**: The "per hour" metric uses cumulative online time, not wall-clock time — offline gaps don't count against you
 
+### 📋 Daily Ride Reports (New in v2.4.5)
+End-of-day ride reports that summarize your progress and celebrate achievements:
+
+- **Automatic Snapshots**: At midnight, the previous day's ride counts are saved as a snapshot
+- **Daily Summary**: Shows total rides completed, ride time, online time, and a letter grade (S/A/B/C/D)
+- **Grade System**: Based on the better of ride count (S: 100+, A: 50+, B: 25+, C: 10+) or ride time (S: 8h+, A: 4h+, B: 2h+, C: 1h+)
+- **MVP Ride**: Highlights the ride you completed the most that day
+- **Speed Demon**: Highlights the ride with the highest rides-per-hour rate
+- **Milestone Tracking**: Shows rides that crossed key thresholds (1, 10, 100, 500, 1000, 5000, 10000)
+- **Yesterday Comparison**: Shows how your ride count compares to the previous day
+- **Fun Titles**: Each grade comes with a title (e.g., "Legendary Grinder" for S rank)
+- **First Day Handling**: Day 1 records a baseline and shows highest milestone per ride instead of flooding with every crossed threshold
+- **Live Preview**: View today's report in real-time as you ride — updates every 5 seconds with a [LIVE] badge
+- **Prev/Next Navigation**: Navigate between days directly from the report screen using `<` and `>` buttons
+- **Notification Options**: Configure how you're notified about yesterday's report:
+  - **Popup**: Automatically shows the report screen when a new day starts
+  - **Chat**: Reminds you every 10 minutes in chat with a clickable link until you view it
+  - **Never**: No notification
+- **Commands**: `/nra ridereport` opens today's live report, `/nra ridereport YYYY-MM-DD` opens a specific day
+- **Report List**: Browse all available reports from the "Ride Reports" button in `/nra`
+- **Data Retention**: Snapshots are kept for up to 90 days
+
 ### 🏆 Session Milestones (New in v2.4.5)
 Celebrates your riding achievements during each session:
 

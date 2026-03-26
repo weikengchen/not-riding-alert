@@ -5,6 +5,7 @@ import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.profile.BuiltInProfiles;
 import com.chenweikeng.nra.config.profile.ProfileManager;
 import com.chenweikeng.nra.config.profile.StoredProfile;
+import com.chenweikeng.nra.report.ui.RideReportListScreen;
 import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
@@ -27,6 +28,7 @@ public class ProfileManagementScreen extends Screen {
   private CurrentSettingsEntry currentSettingsEntry;
   private ProfileListWidget profileList;
   private Button historyButton;
+  private Button reportsButton;
   private Button resetButton;
   private Button closeButton;
 
@@ -55,7 +57,7 @@ public class ProfileManagementScreen extends Screen {
     int buttonWidth = 100;
     int buttonGap = 10;
 
-    int totalButtonWidth = buttonWidth * 3 + buttonGap * 2;
+    int totalButtonWidth = buttonWidth * 4 + buttonGap * 3;
     int startX = (width - totalButtonWidth) / 2;
 
     historyButton =
@@ -64,15 +66,21 @@ public class ProfileManagementScreen extends Screen {
             .build();
     addRenderableWidget(historyButton);
 
+    reportsButton =
+        Button.builder(Component.literal("Ride Reports"), this::onReportsClicked)
+            .bounds(startX + buttonWidth + buttonGap, footerY, buttonWidth, BUTTON_HEIGHT)
+            .build();
+    addRenderableWidget(reportsButton);
+
     resetButton =
         Button.builder(Component.literal("Reset Builtins"), this::onResetClicked)
-            .bounds(startX + buttonWidth + buttonGap, footerY, buttonWidth, BUTTON_HEIGHT)
+            .bounds(startX + (buttonWidth + buttonGap) * 2, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(resetButton);
 
     closeButton =
         Button.builder(Component.literal("Close"), this::onCloseClicked)
-            .bounds(startX + (buttonWidth + buttonGap) * 2, footerY, buttonWidth, BUTTON_HEIGHT)
+            .bounds(startX + (buttonWidth + buttonGap) * 3, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(closeButton);
 
@@ -207,6 +215,10 @@ public class ProfileManagementScreen extends Screen {
 
   private void onHistoryClicked(Button button) {
     minecraft.setScreen(new HistoryScreen(this));
+  }
+
+  private void onReportsClicked(Button button) {
+    minecraft.setScreen(new RideReportListScreen(this));
   }
 
   private void onCloseClicked(Button button) {

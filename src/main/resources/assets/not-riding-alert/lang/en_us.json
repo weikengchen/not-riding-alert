@@ -111,5 +111,10 @@
   "config.not-riding-alert.trackerDisplayMode.only_when_not_riding": "Only when not riding",
   "config.not-riding-alert.trackerDisplayMode.never": "Never",
   "config.not-riding-alert.enableOpenAudioMc": "Auto-connect OpenAudioMC",
-  "config.not-riding-alert.enableOpenAudioMc.tooltip": "Automatically connect to OpenAudioMC audio sessions using a headless browser"
+  "config.not-riding-alert.enableOpenAudioMc.tooltip": "Automatically connect to OpenAudioMC audio sessions using a headless browser",
+  "config.not-riding-alert.rideReportNotifyMode": "Daily ride report notification",
+  "config.not-riding-alert.rideReportNotifyMode.tooltip": "How to notify you when a new daily ride report is available",
+  "config.not-riding-alert.rideReportNotifyMode.popup": "Popup",
+  "config.not-riding-alert.rideReportNotifyMode.chat": "Chat reminder",
+  "config.not-riding-alert.rideReportNotifyMode.never": "Never"
 }
