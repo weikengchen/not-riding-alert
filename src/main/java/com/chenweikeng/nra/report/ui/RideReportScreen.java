@@ -11,10 +11,18 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public class RideReportScreen extends Screen {
   private static final int PANEL_PADDING = 16;
@@ -28,6 +36,17 @@ public class RideReportScreen extends Screen {
   private static final int SEPARATOR_COLOR = 0x44FFFFFF;
   private static final int LIVE_COLOR = 0xFFFF5555;
   private static final long LIVE_REFRESH_TICKS = 100; // Refresh live data every 5 seconds
+  private static final Identifier NPC_SKIN_TRUEMONKEYKING =
+      Identifier.parse("not-riding-alert:textures/npc-truemonkeyking.png");
+  private static final Identifier NPC_SKIN_SHIPUP =
+      Identifier.parse("not-riding-alert:textures/npc-shipup.png");
+  private static final Identifier NPC_SKIN_BLUEGERUDO =
+      Identifier.parse("not-riding-alert:textures/npc-bluegerudo.png");
+  private static final Identifier NPC_SKIN_GRIMREAPER =
+      Identifier.parse("not-riding-alert:textures/npc-grimreaper.png");
+  private static final int MODEL_HEIGHT = 50;
+  private static final int MODEL_WIDTH = 30;
+  private static final float MODEL_PIVOT_Y = -1.0625F;
 
   private static final int NAV_BUTTON_WIDTH = 30;
   private static final int CLOSE_BUTTON_WIDTH = 80;
@@ -44,6 +63,8 @@ public class RideReportScreen extends Screen {
   private int scrollOffset = 0;
   private int maxScroll = 0;
   private long ticksSinceRefresh = 0;
+  private PlayerModel wideModel;
+  private PlayerModel slimModel;
   private Button prevButton;
   private Button nextButton;
 
@@ -72,6 +93,9 @@ public class RideReportScreen extends Screen {
     super.init();
     refreshReport();
     RideReportNotifier.getInstance().markViewed();
+    EntityModelSet models = Minecraft.getInstance().getEntityModels();
+    wideModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER), false);
+    slimModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER_SLIM), true);
 
     panelW = (int) (width * 0.7);
     panelH = (int) (height * 0.8);
@@ -247,9 +271,71 @@ public class RideReportScreen extends Screen {
         TEXT_COLOR);
     y += LINE_HEIGHT + 6;
 
-    // Separator
-    graphics.fill(contentX, y, contentX + contentWidth, y + 1, SEPARATOR_COLOR);
-    y += 6;
+    // Player models: NPC on left, player on right
+    Identifier npcSkin =
+        switch (report.grade) {
+          case S -> NPC_SKIN_TRUEMONKEYKING;
+          case A -> NPC_SKIN_SHIPUP;
+          case B -> NPC_SKIN_BLUEGERUDO;
+          case C -> NPC_SKIN_TRUEMONKEYKING;
+          case D -> NPC_SKIN_GRIMREAPER;
+        };
+    int modelTop = contentTop - scrollOffset + 2;
+    float modelScale = 0.97F * MODEL_HEIGHT / 2.125F;
+
+    // NPC model (left)
+    int npcX0 = contentX;
+    int npcY0 = modelTop;
+    int npcX1 = npcX0 + MODEL_WIDTH;
+    int npcY1 = npcY0 + MODEL_HEIGHT;
+    float npcCenterX = (npcX0 + npcX1) / 2.0F;
+    float npcCenterY = (npcY0 + npcY1) / 2.0F;
+    float npcRotY = (float) Math.toDegrees(Math.atan((double) (npcCenterX - mouseX) / 40.0));
+    float npcRotX = -(float) Math.toDegrees(Math.atan((double) (npcCenterY - mouseY) / 40.0));
+    npcRotX = Mth.clamp(npcRotX, -50.0F, 50.0F);
+    graphics.submitSkinRenderState(
+        wideModel,
+        npcSkin,
+        modelScale,
+        npcRotX,
+        npcRotY,
+        MODEL_PIVOT_Y,
+        npcX0,
+        npcY0,
+        npcX1,
+        npcY1);
+
+    // Player model (right)
+    Minecraft client = Minecraft.getInstance();
+    if (client.player != null) {
+      PlayerSkin playerSkin = client.player.getSkin();
+      PlayerModel playerModel = playerSkin.model() == PlayerModelType.SLIM ? slimModel : wideModel;
+      int playerX1 = contentX + contentWidth;
+      int playerX0 = playerX1 - MODEL_WIDTH;
+      int playerY0 = modelTop;
+      int playerY1 = playerY0 + MODEL_HEIGHT;
+      float playerCenterX = (playerX0 + playerX1) / 2.0F;
+      float playerCenterY = (playerY0 + playerY1) / 2.0F;
+      float playerRotY =
+          (float) Math.toDegrees(Math.atan((double) (playerCenterX - mouseX) / 40.0));
+      float playerRotX =
+          -(float) Math.toDegrees(Math.atan((double) (playerCenterY - mouseY) / 40.0));
+      playerRotX = Mth.clamp(playerRotX, -50.0F, 50.0F);
+      graphics.submitSkinRenderState(
+          playerModel,
+          playerSkin.body().texturePath(),
+          modelScale,
+          playerRotX,
+          playerRotY,
+          MODEL_PIVOT_Y,
+          playerX0,
+          playerY0,
+          playerX1,
+          playerY1);
+    }
+
+    // Ensure text below clears the model area
+    y = Math.max(y, modelTop + MODEL_HEIGHT + 4);
 
     // Summary
     String rideTimeStr = TimeFormatUtil.formatDuration(report.totalRideTimeSeconds);
@@ -309,11 +395,7 @@ public class RideReportScreen extends Screen {
       }
       y += LINE_HEIGHT;
     }
-    y += 4;
-
-    // Separator
-    graphics.fill(contentX, y, contentX + contentWidth, y + 1, SEPARATOR_COLOR);
-    y += 6;
+    y += 10;
 
     // First day notice
     if (report.isFirstDay) {

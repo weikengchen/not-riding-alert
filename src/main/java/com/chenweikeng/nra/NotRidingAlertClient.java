@@ -110,6 +110,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
         (dispatcher, registryAccess) -> {
           registerNraCommand(dispatcher);
           registerOaCommand(dispatcher);
+          registerRideReportCommand(dispatcher);
         });
 
     WorldRenderEvents.AFTER_ENTITIES.register(
@@ -245,33 +246,6 @@ public class NotRidingAlertClient implements ClientModInitializer {
                           return 1;
                         }))
             .then(
-                ClientCommandManager.literal("ridereport")
-                    .executes(
-                        context -> {
-                          Minecraft client = Minecraft.getInstance();
-                          client.execute(
-                              () -> {
-                                // Default: show live report for today
-                                client.setScreen(RideReportScreen.createLive(client.screen));
-                              });
-                          return 1;
-                        })
-                    .then(
-                        ClientCommandManager.argument(
-                                "date", com.mojang.brigadier.arguments.StringArgumentType.word())
-                            .executes(
-                                context -> {
-                                  String date =
-                                      com.mojang.brigadier.arguments.StringArgumentType.getString(
-                                          context, "date");
-                                  Minecraft client = Minecraft.getInstance();
-                                  client.execute(
-                                      () -> {
-                                        client.setScreen(new RideReportScreen(client.screen, date));
-                                      });
-                                  return 1;
-                                })))
-            .then(
                 ClientCommandManager.literal("profile")
                     .then(
                         ClientCommandManager.argument(
@@ -318,6 +292,36 @@ public class NotRidingAlertClient implements ClientModInitializer {
                     .executes(
                         context -> {
                           OpenAudioMcService.getInstance().reconnectWithFallback();
+                          return 1;
+                        })));
+  }
+
+  private static void registerRideReportCommand(
+      CommandDispatcher<FabricClientCommandSource> dispatcher) {
+    dispatcher.register(
+        ClientCommandManager.literal("ridereport")
+            .executes(
+                context -> {
+                  Minecraft client = Minecraft.getInstance();
+                  client.execute(
+                      () -> {
+                        client.setScreen(RideReportScreen.createLive(client.screen));
+                      });
+                  return 1;
+                })
+            .then(
+                ClientCommandManager.argument(
+                        "date", com.mojang.brigadier.arguments.StringArgumentType.word())
+                    .executes(
+                        context -> {
+                          String date =
+                              com.mojang.brigadier.arguments.StringArgumentType.getString(
+                                  context, "date");
+                          Minecraft client = Minecraft.getInstance();
+                          client.execute(
+                              () -> {
+                                client.setScreen(new RideReportScreen(client.screen, date));
+                              });
                           return 1;
                         })));
   }
