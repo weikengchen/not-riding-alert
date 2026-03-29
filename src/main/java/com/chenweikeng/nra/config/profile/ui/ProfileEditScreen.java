@@ -3,7 +3,7 @@ package com.chenweikeng.nra.config.profile.ui;
 import com.chenweikeng.nra.config.profile.ProfileManager;
 import com.chenweikeng.nra.config.profile.StoredProfile;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -56,6 +56,9 @@ public class ProfileEditScreen extends Screen {
 
     int labelY = startY;
     int fieldY = labelY + 12;
+
+    addRenderableOnly(
+        (graphics, mouseX, mouseY, delta) -> renderContent(graphics, mouseX, mouseY, delta));
 
     nameBox =
         new EditBox(
@@ -150,20 +153,18 @@ public class ProfileEditScreen extends Screen {
     onClose();
   }
 
-  @Override
-  public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+  private void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
     renderDarkBackground(graphics);
 
     int centerX = width / 2;
     int startY = height / 2 - 60;
 
-    graphics.drawCenteredString(font, this.title, centerX, startY - 25, LABEL_COLOR);
+    graphics.centeredText(font, this.title, centerX, startY - 25, LABEL_COLOR);
 
     int labelY = startY;
     int fieldY = labelY + 12;
 
-    graphics.drawString(
-        font, "Profile Name:", centerX - FIELD_WIDTH / 2, labelY, LABEL_COLOR, false);
+    graphics.text(font, "Profile Name:", centerX - FIELD_WIDTH / 2, labelY, LABEL_COLOR, false);
 
     if (nameBox.getValue().isEmpty() && !nameBox.isFocused()) {
       nameBox.setSuggestion("Enter profile name...");
@@ -174,7 +175,7 @@ public class ProfileEditScreen extends Screen {
     int descLabelY = fieldY + FIELD_HEIGHT + 16;
     int descFieldY = descLabelY + 12;
 
-    graphics.drawString(
+    graphics.text(
         font, "Description (optional):", centerX - FIELD_WIDTH / 2, descLabelY, LABEL_COLOR, false);
 
     if (descriptionBox.getValue().isEmpty() && !descriptionBox.isFocused()) {
@@ -183,15 +184,13 @@ public class ProfileEditScreen extends Screen {
       descriptionBox.setSuggestion(null);
     }
 
-    super.render(graphics, mouseX, mouseY, delta);
-
     if (errorMessage != null) {
       int errorY = descFieldY + FIELD_HEIGHT + 8;
-      graphics.drawCenteredString(font, errorMessage, centerX, errorY, ERROR_COLOR);
+      graphics.centeredText(font, errorMessage, centerX, errorY, ERROR_COLOR);
     }
   }
 
-  private void renderDarkBackground(GuiGraphics graphics) {
+  private void renderDarkBackground(GuiGraphicsExtractor graphics) {
     graphics.fill(0, 0, this.width, this.height, 0xCC000000);
   }
 

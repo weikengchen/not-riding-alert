@@ -12,7 +12,6 @@ import com.chenweikeng.nra.handler.AutograbFailureHandler;
 import com.chenweikeng.nra.handler.AutograbRegionRenderer;
 import com.chenweikeng.nra.handler.ClosedCaptionHolder;
 import com.chenweikeng.nra.handler.ConfigReminderHandler;
-import com.chenweikeng.nra.handler.DayTimeHandler;
 import com.chenweikeng.nra.handler.FireworkViewingHandler;
 import com.chenweikeng.nra.handler.HibernationHandler;
 import com.chenweikeng.nra.handler.ReminderHandler;
@@ -35,14 +34,14 @@ import com.chenweikeng.nra.wizard.TutorialManager;
 import com.chenweikeng.nra.wizard.WizardScreen;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
@@ -56,7 +55,6 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private final PlayerMovementTracker movementTracker = new PlayerMovementTracker();
   private final RideStateTracker rideStateTracker = new RideStateTracker();
   private final SuppressionRegionTracker suppressionRegionTracker = new SuppressionRegionTracker();
-  private final DayTimeHandler dayTimeHandler = new DayTimeHandler();
   private final ConfigReminderHandler configReminderHandler = new ConfigReminderHandler();
   private final AutograbFailureHandler autograbFailureHandler = new AutograbFailureHandler();
   private final FireworkViewingHandler fireworkViewingHandler =
@@ -113,7 +111,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
           registerRideReportCommand(dispatcher);
         });
 
-    WorldRenderEvents.AFTER_ENTITIES.register(
+    LevelRenderEvents.AFTER_SOLID_FEATURES.register(
         context -> {
           if (!ServerState.isImagineFunServer()) {
             return;
@@ -167,7 +165,6 @@ public class NotRidingAlertClient implements ClientModInitializer {
     rideStateTracker.trackVehicleState(client, currentTick);
     suppressionRegionTracker.trackLincolnRegionEntryExit(client, rideStateTracker);
     fireworkViewingHandler.track(client);
-    dayTimeHandler.resetDayTimeIfNeeded(client);
     boolean autograbFailureActive =
         autograbFailureHandler.track(client, currentTick, movementTracker);
     gameState.setAutograbFailureActive(autograbFailureActive);
@@ -223,7 +220,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
   private static void registerNraCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
-        ClientCommandManager.literal("nra")
+        ClientCommands.literal("nra")
             .executes(
                 context -> {
                   Minecraft client = Minecraft.getInstance();
@@ -234,7 +231,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
                   return 1;
                 })
             .then(
-                ClientCommandManager.literal("setup")
+                ClientCommands.literal("setup")
                     .executes(
                         context -> {
                           TutorialManager.getInstance().resetTutorial();
@@ -246,9 +243,9 @@ public class NotRidingAlertClient implements ClientModInitializer {
                           return 1;
                         }))
             .then(
-                ClientCommandManager.literal("profile")
+                ClientCommands.literal("profile")
                     .then(
-                        ClientCommandManager.argument(
+                        ClientCommands.argument(
                                 "profileName",
                                 com.mojang.brigadier.arguments.StringArgumentType.greedyString())
                             .suggests(
@@ -272,30 +269,30 @@ public class NotRidingAlertClient implements ClientModInitializer {
 
   private static void registerOaCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
-        ClientCommandManager.literal("oa")
+        ClientCommands.literal("oa")
             .then(
-                ClientCommandManager.literal("connect")
+                ClientCommands.literal("connect")
                     .executes(
                         context -> {
                           OpenAudioMcService.getInstance().connectViaCommand();
                           return 1;
                         }))
             .then(
-                ClientCommandManager.literal("disconnect")
+                ClientCommands.literal("disconnect")
                     .executes(
                         context -> {
                           OpenAudioMcService.getInstance().disconnectViaCommand();
                           return 1;
                         }))
             .then(
-                ClientCommandManager.literal("reconnect")
+                ClientCommands.literal("reconnect")
                     .executes(
                         context -> {
                           OpenAudioMcService.getInstance().reconnectWithFallback();
                           return 1;
                         }))
             .then(
-                ClientCommandManager.literal("volume")
+                ClientCommands.literal("volume")
                     .executes(
                         context -> {
                           OpenAudioMcService service = OpenAudioMcService.getInstance();
@@ -311,7 +308,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
                                     client
                                         .gui
                                         .getChat()
-                                        .addMessage(
+                                        .addClientSystemMessage(
                                             net.minecraft.network.chat.Component.literal(
                                                 "\u00A7e[NRA] \u00A7f" + msg)));
                           }
@@ -322,7 +319,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
   private static void registerRideReportCommand(
       CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
-        ClientCommandManager.literal("ridereport")
+        ClientCommands.literal("ridereport")
             .executes(
                 context -> {
                   Minecraft client = Minecraft.getInstance();
@@ -333,7 +330,7 @@ public class NotRidingAlertClient implements ClientModInitializer {
                   return 1;
                 })
             .then(
-                ClientCommandManager.argument(
+                ClientCommands.argument(
                         "date", com.mojang.brigadier.arguments.StringArgumentType.word())
                     .executes(
                         context -> {

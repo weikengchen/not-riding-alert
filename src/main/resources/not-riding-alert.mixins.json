@@ -2,7 +2,7 @@
 	"required": true,
 	"minVersion": "0.8",
 	"package": "com.chenweikeng.nra.mixin",
-	"compatibilityLevel": "JAVA_21",
+	"compatibilityLevel": "JAVA_25",
 	"mixins": [],
 	"client": [
 		"LivingEntityMixin",
@@ -19,7 +19,8 @@
 		"EntityRendererMixin",
 		"GameRendererMixin",
 		"ToastManagerMixin",
-		"SoundOptionsScreenMixin"
+		"SoundOptionsScreenMixin",
+		"ClientClockManagerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

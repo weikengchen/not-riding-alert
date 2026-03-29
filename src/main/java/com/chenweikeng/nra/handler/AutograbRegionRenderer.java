@@ -7,8 +7,8 @@ import com.chenweikeng.nra.ride.AutograbHolder;
 import com.chenweikeng.nra.ride.AutograbHolder.Point;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
@@ -19,7 +19,7 @@ public class AutograbRegionRenderer {
   private static final double RENDER_DISTANCE = 50.0;
 
   public static void register() {
-    WorldRenderEvents.AFTER_ENTITIES.register(
+    LevelRenderEvents.AFTER_SOLID_FEATURES.register(
         context -> {
           if (!NotRidingAlertClient.isImagineFunServer()) {
             return;
@@ -28,7 +28,7 @@ public class AutograbRegionRenderer {
         });
   }
 
-  public static void render(WorldRenderContext context) {
+  public static void render(LevelRenderContext context) {
     if (!ModConfig.currentSetting.showAutograbRegions) {
       return;
     }
@@ -42,7 +42,7 @@ public class AutograbRegionRenderer {
       return;
     }
 
-    PoseStack poseStack = context.matrices();
+    PoseStack poseStack = context.poseStack();
     Camera camera = mc.gameRenderer.getMainCamera();
     Vec3 cam = camera.position();
 

@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 
@@ -64,7 +64,7 @@ public class StrategyHudRendererV2 {
       int numColumns, int numRows, java.util.List<int[]> columnMaxWidths) {}
 
   private record FullModeRenderContext(
-      GuiGraphics context,
+      GuiGraphicsExtractor context,
       Minecraft client,
       List<EntryComponents> entries,
       List<Integer> entryColors,
@@ -93,7 +93,7 @@ public class StrategyHudRendererV2 {
     return currentError;
   }
 
-  public static void render(GuiGraphics context, DeltaTracker tickCounter) {
+  public static void render(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -495,14 +495,14 @@ public class StrategyHudRendererV2 {
   }
 
   private static void renderFullMode(FullModeRenderContext ctx) {
-    GuiGraphics context = ctx.context();
+    GuiGraphicsExtractor context = ctx.context();
     int currentY = ctx.y();
 
     if (ctx.hasError()) {
       String errorText = "ERROR: " + currentError;
       int errorTextWidth = ctx.client().font.width(errorText);
       int errorX = (ctx.client().getWindow().getGuiScaledWidth() - errorTextWidth) / 2;
-      context.drawString(ctx.client().font, errorText, errorX, currentY, ctx.errorColor(), false);
+      context.text(ctx.client().font, errorText, errorX, currentY, ctx.errorColor(), false);
       currentY += ctx.lineHeight();
     }
 
@@ -521,12 +521,9 @@ public class StrategyHudRendererV2 {
                 ? ctx.entryColors().get(entryIdx)
                 : ctx.textColor();
 
-        context.drawString(
-            ctx.client().font, entry.name(), positions[0], currentY, entryColor, false);
-        context.drawString(
-            ctx.client().font, entry.rides(), positions[1], currentY, entryColor, false);
-        context.drawString(
-            ctx.client().font, entry.time(), positions[2], currentY, entryColor, false);
+        context.text(ctx.client().font, entry.name(), positions[0], currentY, entryColor, false);
+        context.text(ctx.client().font, entry.rides(), positions[1], currentY, entryColor, false);
+        context.text(ctx.client().font, entry.time(), positions[2], currentY, entryColor, false);
 
         entryIdx++;
       }
@@ -535,7 +532,7 @@ public class StrategyHudRendererV2 {
   }
 
   private static void renderCollapsedMode(
-      GuiGraphics context,
+      GuiGraphicsExtractor context,
       Minecraft client,
       int screenWidth,
       int y,
@@ -601,7 +598,7 @@ public class StrategyHudRendererV2 {
 
     int textWidth = client.font.width(text);
     int x = (screenWidth - textWidth) / 2;
-    context.drawString(client.font, text, x, y, color, false);
+    context.text(client.font, text, x, y, color, false);
   }
 
   private static int applyAlpha(int color, int alpha) {

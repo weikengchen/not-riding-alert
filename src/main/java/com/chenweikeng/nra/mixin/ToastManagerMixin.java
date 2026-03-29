@@ -2,7 +2,7 @@ package com.chenweikeng.nra.mixin;
 
 import com.chenweikeng.nra.report.ui.RideReportScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(ToastManager.class)
 public class ToastManagerMixin {
-  @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-  private void suppressToastsDuringRideReport(GuiGraphics graphics, CallbackInfo ci) {
+  @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
+  private void suppressToastsDuringRideReport(GuiGraphicsExtractor graphics, CallbackInfo ci) {
     if (Minecraft.getInstance().screen instanceof RideReportScreen) {
       ci.cancel();
     }

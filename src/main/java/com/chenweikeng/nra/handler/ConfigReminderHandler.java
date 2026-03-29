@@ -66,7 +66,7 @@ public class ConfigReminderHandler {
             .append(
                 Component.literal(" to open the setup wizard.").withStyle(ChatFormatting.WHITE));
 
-    client.player.displayClientMessage(message, false);
+    client.player.sendSystemMessage(message);
   }
 
   public void reset() {

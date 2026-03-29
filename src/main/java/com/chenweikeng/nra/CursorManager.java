@@ -198,7 +198,7 @@ public class CursorManager {
                     .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
             .append(Component.literal(" to ride canoes.").withStyle(ChatFormatting.WHITE));
 
-    client.player.displayClientMessage(message, false);
+    client.player.sendSystemMessage(message);
   }
 
   private void sendDynamicFpsMessageIfNeeded(Minecraft client) {
@@ -214,7 +214,7 @@ public class CursorManager {
 
     lastDynamicFpsMessageTick = state.getAbsoluteTickCounter();
 
-    client.player.displayClientMessage(DYNAMIC_FPS_COMPATIBILITY_MESSAGE, false);
+    client.player.sendSystemMessage(DYNAMIC_FPS_COMPATIBILITY_MESSAGE);
   }
 
   public void reset() {

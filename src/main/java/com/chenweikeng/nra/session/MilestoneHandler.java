@@ -38,6 +38,6 @@ public class MilestoneHandler {
             .append(
                 Component.literal(" Total ride time: " + timeStr).withStyle(ChatFormatting.YELLOW));
 
-    client.player.displayClientMessage(message, false);
+    client.player.sendSystemMessage(message);
   }
 }

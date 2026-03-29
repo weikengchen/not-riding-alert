@@ -10,7 +10,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -31,10 +31,10 @@ public abstract class GuiMixin {
   @Inject(
       at = @At("HEAD"),
       method =
-          "displayScoreboardSidebar(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/scores/Objective;)V",
+          "displayScoreboardSidebar(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/world/scores/Objective;)V",
       cancellable = true)
   private void onRenderScoreboardSidebar(
-      GuiGraphics context, Objective objective, CallbackInfo ci) {
+      GuiGraphicsExtractor context, Objective objective, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -46,9 +46,10 @@ public abstract class GuiMixin {
   @Inject(
       at = @At("HEAD"),
       method =
-          "renderChat(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V",
+          "extractChat(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V",
       cancellable = true)
-  private void onRenderChat(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
+  private void onRenderChat(
+      GuiGraphicsExtractor context, DeltaTracker tickCounter, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -57,8 +58,8 @@ public abstract class GuiMixin {
     }
   }
 
-  @Inject(at = @At("HEAD"), method = "renderPlayerHealth", cancellable = true)
-  private void onRenderPlayerHealth(GuiGraphics guiGraphics, CallbackInfo ci) {
+  @Inject(at = @At("HEAD"), method = "extractPlayerHealth", cancellable = true)
+  private void onRenderPlayerHealth(GuiGraphicsExtractor guiGraphics, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -67,8 +68,8 @@ public abstract class GuiMixin {
     }
   }
 
-  @Inject(at = @At("HEAD"), method = "renderVehicleHealth", cancellable = true)
-  private void onRenderVehicleHealth(GuiGraphics guiGraphics, CallbackInfo ci) {
+  @Inject(at = @At("HEAD"), method = "extractVehicleHealth", cancellable = true)
+  private void onRenderVehicleHealth(GuiGraphicsExtractor guiGraphics, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -77,9 +78,9 @@ public abstract class GuiMixin {
     }
   }
 
-  @Inject(at = @At("HEAD"), method = "renderItemHotbar", cancellable = true)
+  @Inject(at = @At("HEAD"), method = "extractItemHotbar", cancellable = true)
   private void onRenderItemHotbar(
-      GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+      GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -93,20 +94,20 @@ public abstract class GuiMixin {
           @At(
               value = "INVOKE",
               target =
-                  "Lnet/minecraft/client/gui/contextualbar/ContextualBarRenderer;renderExperienceLevel(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/gui/Font;I)V"),
-      method = "renderHotbarAndDecorations")
+                  "Lnet/minecraft/client/gui/contextualbar/ContextualBarRenderer;extractExperienceLevel(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;I)V"),
+      method = "extractHotbarAndDecorations")
   private void redirectRenderExperienceLevel(
-      GuiGraphics guiGraphics, net.minecraft.client.gui.Font font, int level) {
+      GuiGraphicsExtractor guiGraphics, net.minecraft.client.gui.Font font, int level) {
     if (!NotRidingAlertClient.isImagineFunServer()
         || !ModConfig.currentSetting.hideExperienceLevel) {
-      net.minecraft.client.gui.contextualbar.ContextualBarRenderer.renderExperienceLevel(
+      net.minecraft.client.gui.contextualbar.ContextualBarRenderer.extractExperienceLevel(
           guiGraphics, font, level);
     }
   }
 
-  @Inject(at = @At("HEAD"), method = "renderCrosshair", cancellable = true)
+  @Inject(at = @At("HEAD"), method = "extractCrosshair", cancellable = true)
   private void onRenderCrosshair(
-      GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+      GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -123,8 +124,9 @@ public abstract class GuiMixin {
     ci.cancel();
   }
 
-  @Inject(at = @At("HEAD"), method = "renderTitle", cancellable = true)
-  private void onRenderTitle(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+  @Inject(at = @At("HEAD"), method = "extractTitle", cancellable = true)
+  private void onRenderTitle(
+      GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -183,7 +185,7 @@ public abstract class GuiMixin {
         net.minecraft.util.FormattedCharSequence lineShadow = linesShadow.get(i);
         int lineWidth = font.width(lineShadow);
         int x = -lineWidth / 2;
-        guiGraphics.drawString(font, lineShadow, x, startY, shadowColor, false);
+        guiGraphics.text(font, lineShadow, x, startY, shadowColor, false);
         startY += lineHeight + lineSpacing;
       }
 
@@ -201,7 +203,7 @@ public abstract class GuiMixin {
       net.minecraft.util.FormattedCharSequence line = lines.get(i);
       int lineWidth = font.width(line);
       int x = -lineWidth / 2;
-      guiGraphics.drawString(font, line, x, startY, textColor, false);
+      guiGraphics.text(font, line, x, startY, textColor, false);
       startY += lineHeight + lineSpacing;
     }
 

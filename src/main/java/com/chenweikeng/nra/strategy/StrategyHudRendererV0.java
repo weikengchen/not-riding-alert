@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /** Handles rendering of strategy recommendations on the HUD. */
 public class StrategyHudRendererV0 {
@@ -93,7 +93,7 @@ public class StrategyHudRendererV0 {
    *
    * @param context The GUI graphics context
    */
-  public static void render(GuiGraphics context, DeltaTracker tickCounter) {
+  public static void render(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -217,7 +217,7 @@ public class StrategyHudRendererV0 {
     int y = yStart;
 
     if (hasError) {
-      context.drawString(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
+      context.text(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
       y += lineHeight;
     }
 
@@ -235,7 +235,7 @@ public class StrategyHudRendererV0 {
                 colorRiding,
                 colorAutograbbing,
                 colorClosest);
-        context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
+        context.text(client.font, text, xLeft, y + (i * lineHeight), color, false);
       }
 
       if (twoColumns) {
@@ -258,8 +258,7 @@ public class StrategyHudRendererV0 {
                   colorAutograbbing,
                   colorClosest);
           int textWidth = client.font.width(text);
-          context.drawString(
-              client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
+          context.text(client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
         }
       }
     }
@@ -281,7 +280,7 @@ public class StrategyHudRendererV0 {
       int color =
           getColorForStatus(
               formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing, colorClosest);
-      context.drawString(client.font, text, xLeft, extraY, color, false);
+      context.text(client.font, text, xLeft, extraY, color, false);
     }
   }
 

@@ -138,7 +138,7 @@ public class ScoreboardHandler {
                                 .withClickEvent(new ClickEvent.RunCommand("nra"))))
             .append(Component.literal(" later if you want.").withStyle(ChatFormatting.WHITE));
 
-    client.player.displayClientMessage(message, false);
+    client.player.sendSystemMessage(message);
   }
 
   private Objective getDisplayObjective(Scoreboard scoreboard, Minecraft client) {

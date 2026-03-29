@@ -10,7 +10,7 @@ import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -59,6 +59,9 @@ public class ProfileManagementScreen extends Screen {
 
     int totalButtonWidth = buttonWidth * 4 + buttonGap * 3;
     int startX = (width - totalButtonWidth) / 2;
+
+    addRenderableOnly(
+        (graphics, mouseX, mouseY, delta) -> renderContent(graphics, mouseX, mouseY, delta));
 
     historyButton =
         Button.builder(Component.literal("History"), this::onHistoryClicked)
@@ -233,14 +236,13 @@ public class ProfileManagementScreen extends Screen {
     onSettingsClicked(null);
   }
 
-  @Override
-  public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+  private void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
     renderDarkBackground(graphics);
 
     // Draw title
     Component title =
         Component.literal("Not Riding Alert").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-    graphics.drawCenteredString(font, title, width / 2, 8, LABEL_COLOR);
+    graphics.centeredText(font, title, width / 2, 8, LABEL_COLOR);
 
     // Draw progress bars below title, all in same row divided by 3
     int progressBarY = 30;
@@ -249,18 +251,17 @@ public class ProfileManagementScreen extends Screen {
     // 1k progress bar (left section)
     ProgressData progress1k = calculateProgress(1000);
     Component bar1k = createProgressBar("1k", progress1k);
-    graphics.drawCenteredString(font, bar1k, sectionWidth / 2, progressBarY, LABEL_COLOR);
+    graphics.centeredText(font, bar1k, sectionWidth / 2, progressBarY, LABEL_COLOR);
 
     // 5k progress bar (middle section)
     ProgressData progress5k = calculateProgress(5000);
     Component bar5k = createProgressBar("5k", progress5k);
-    graphics.drawCenteredString(font, bar5k, (int) (sectionWidth * 1.5), progressBarY, LABEL_COLOR);
+    graphics.centeredText(font, bar5k, (int) (sectionWidth * 1.5), progressBarY, LABEL_COLOR);
 
     // 10k progress bar (right section)
     ProgressData progress10k = calculateProgress(10000);
     Component bar10k = createProgressBar("10k", progress10k);
-    graphics.drawCenteredString(
-        font, bar10k, (int) (sectionWidth * 2.5), progressBarY, LABEL_COLOR);
+    graphics.centeredText(font, bar10k, (int) (sectionWidth * 2.5), progressBarY, LABEL_COLOR);
 
     if (currentSettingsEntry != null) {
       currentSettingsEntry.render(graphics, mouseX, mouseY);
@@ -268,8 +269,6 @@ public class ProfileManagementScreen extends Screen {
 
     int footerY = height - FOOTER_HEIGHT;
     graphics.fill(0, footerY, width, height, 0xDD000000);
-
-    super.render(graphics, mouseX, mouseY, delta);
   }
 
   private Component createProgressBar(String label, ProgressData data) {
@@ -289,7 +288,7 @@ public class ProfileManagementScreen extends Screen {
     return progressBar;
   }
 
-  private void renderDarkBackground(GuiGraphics graphics) {
+  private void renderDarkBackground(GuiGraphicsExtractor graphics) {
     graphics.fill(0, 0, this.width, this.height, 0xCC000000);
   }
 

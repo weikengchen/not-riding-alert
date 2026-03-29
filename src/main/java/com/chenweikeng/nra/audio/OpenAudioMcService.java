@@ -184,7 +184,7 @@ public class OpenAudioMcService {
    * Starts a new audio session. Launches the webview helper if needed, loads the session URL, and
    * begins DOM monitoring.
    */
-  public void connect(String sessionUrl) {
+  public synchronized void connect(String sessionUrl) {
     pendingCommandConnect = false;
     // Deduplicate: if already active with the same URL, ignore
     if (isActive && sessionUrl.equals(savedSessionUrl)) {
@@ -625,7 +625,10 @@ public class OpenAudioMcService {
     if (client != null) {
       client.execute(
           () ->
-              client.gui.getChat().addMessage(Component.literal("\u00A7e[NRA] \u00A7f" + message)));
+              client
+                  .gui
+                  .getChat()
+                  .addClientSystemMessage(Component.literal("\u00A7e[NRA] \u00A7f" + message)));
     }
   }
 }

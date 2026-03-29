@@ -259,7 +259,7 @@ When the mod starts, `WebViewBridge` resolves the helper binary in this order:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.4.5
+- **Version**: 2.4.5 (Minecraft 26.1)
 
 ## License
 

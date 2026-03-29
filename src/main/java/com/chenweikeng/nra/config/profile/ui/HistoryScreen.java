@@ -4,7 +4,7 @@ import com.chenweikeng.nra.config.ClothConfigScreen;
 import com.chenweikeng.nra.config.profile.HistoryEntry;
 import com.chenweikeng.nra.config.profile.HistoryManager;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -37,6 +37,9 @@ public class HistoryScreen extends Screen {
     int buttonWidth = 100;
     int startX = (width - buttonWidth) / 2;
 
+    addRenderableOnly(
+        (graphics, mouseX, mouseY, delta) -> renderContent(graphics, mouseX, mouseY, delta));
+
     closeButton =
         Button.builder(Component.literal("Close"), this::onCloseClicked)
             .bounds(startX, footerY, buttonWidth, BUTTON_HEIGHT)
@@ -65,21 +68,18 @@ public class HistoryScreen extends Screen {
     onClose();
   }
 
-  @Override
-  public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+  private void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
     renderDarkBackground(graphics);
 
     Component title =
         Component.literal("Profile History").withStyle(ChatFormatting.BOLD, ChatFormatting.AQUA);
-    graphics.drawCenteredString(font, title, width / 2, PADDING, LABEL_COLOR);
+    graphics.centeredText(font, title, width / 2, PADDING, LABEL_COLOR);
 
     int footerY = height - FOOTER_HEIGHT;
     graphics.fill(0, footerY, width, height, 0xDD000000);
-
-    super.render(graphics, mouseX, mouseY, delta);
   }
 
-  private void renderDarkBackground(GuiGraphics graphics) {
+  private void renderDarkBackground(GuiGraphicsExtractor graphics) {
     graphics.fill(0, 0, this.width, this.height, 0xCC000000);
   }
 

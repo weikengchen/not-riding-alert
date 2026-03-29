@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 
@@ -98,7 +98,7 @@ public class StrategyHudRendererV1 {
    *
    * @param context The GUI graphics context
    */
-  public static void render(GuiGraphics context, DeltaTracker tickCounter) {
+  public static void render(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
@@ -194,7 +194,7 @@ public class StrategyHudRendererV1 {
     int y = yStart + 2;
 
     if (hasError) {
-      context.drawString(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
+      context.text(client.font, "ERROR: " + currentError, xLeft, y, errorColor, false);
       y += lineHeight;
     }
 
@@ -212,7 +212,7 @@ public class StrategyHudRendererV1 {
                 colorRiding,
                 colorAutograbbing,
                 colorClosest);
-        context.drawString(client.font, text, xLeft, y + (i * lineHeight), color, false);
+        context.text(client.font, text, xLeft, y + (i * lineHeight), color, false);
       }
 
       for (int i = 0; i < rightGoals.size(); i++) {
@@ -229,8 +229,7 @@ public class StrategyHudRendererV1 {
                 colorAutograbbing,
                 colorClosest);
         int textWidth = client.font.width(text);
-        context.drawString(
-            client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
+        context.text(client.font, text, xRight - textWidth, y + (i * lineHeight), color, false);
       }
     }
 
@@ -251,7 +250,7 @@ public class StrategyHudRendererV1 {
       int color =
           getColorForStatus(
               formattedRide.getStatus(), colorNormal, colorRiding, colorAutograbbing, colorClosest);
-      context.drawString(client.font, text, xLeft, extraY, color, false);
+      context.text(client.font, text, xLeft, extraY, color, false);
     }
   }
 

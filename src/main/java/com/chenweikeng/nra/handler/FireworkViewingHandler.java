@@ -13,8 +13,6 @@ public class FireworkViewingHandler {
   private static final int MIN_Y_2 = 81;
   private static final int MAX_Y_2 = 82;
 
-  private static final long NIGHT = 13000L;
-
   private boolean isViewingFirework = false;
   private boolean wasViewingFirework = false;
 
@@ -51,21 +49,6 @@ public class FireworkViewingHandler {
     boolean inY = (y >= MIN_Y_1 && y <= MAX_Y_1) || (y >= MIN_Y_2 && y <= MAX_Y_2);
 
     isViewingFirework = inX && inY && inZ;
-
-    if (isViewingFirework && !wasViewingFirework) {
-      handleEnterViewingArea(client);
-    }
-  }
-
-  private void handleEnterViewingArea(Minecraft client) {
-    if (client.level == null) {
-      return;
-    }
-
-    long time = client.level.getDayTime() % 24000L;
-    if (time < NIGHT) {
-      client.level.getLevelData().setDayTime(NIGHT);
-    }
   }
 
   public boolean isViewingFirework() {

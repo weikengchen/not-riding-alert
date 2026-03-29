@@ -4,12 +4,12 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="${SCRIPT_DIR}"
-TARGET_DIR="/Users/cusgadmin/Library/Application Support/ModrinthApp/profiles/ImagineFun/mods/"
+TARGET_DIR="/Users/cusgadmin/Library/Application Support/ModrinthApp/profiles/Fabric 26.1/mods/"
 
 JAR_NAME="not-riding-alert-2.4.5.jar"
 SOURCE_JAR="${PROJECT_DIR}/build/libs/${JAR_NAME}"
 TARGET_JAR="${TARGET_DIR}/${JAR_NAME}"
-NATIVE_CACHE_DIR="/Users/cusgadmin/Library/Application Support/ModrinthApp/profiles/ImagineFun/config/not-riding-alert/native"
+NATIVE_CACHE_DIR="/Users/cusgadmin/Library/Application Support/ModrinthApp/profiles/Fabric 26.1/config/not-riding-alert/native"
 
 # Rebuild native WebView helper binary (must happen before gradlew build so the JAR includes it)
 echo "Rebuilding macOS native WebView helper..."

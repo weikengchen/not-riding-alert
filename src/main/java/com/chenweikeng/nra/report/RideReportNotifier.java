@@ -106,7 +106,7 @@ public class RideReportNotifier {
                                 new HoverEvent.ShowText(
                                     Component.literal("View yesterday's ride report")))));
 
-    client.player.displayClientMessage(message, false);
+    client.player.sendSystemMessage(message);
   }
 
   public void markViewed() {

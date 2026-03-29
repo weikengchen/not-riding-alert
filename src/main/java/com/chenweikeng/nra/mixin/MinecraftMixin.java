@@ -11,9 +11,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
-  @Inject(method = "setWindowActive", at = @At("HEAD"), cancellable = true)
-  private void onSetWindowActive(boolean bl, CallbackInfo ci) {
-    if (!bl && GameState.getInstance().isAutomaticallyReleasedCursor()) {
+  @Inject(method = "pauseIfInactive", at = @At("HEAD"), cancellable = true)
+  private void onPauseIfInactive(CallbackInfo ci) {
+    if (GameState.getInstance().isAutomaticallyReleasedCursor()) {
       ci.cancel();
     }
   }

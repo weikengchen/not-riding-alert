@@ -36,7 +36,7 @@ public final class ProfileCommandHandler {
               .append(Component.literal("Switched to profile: ").withStyle(ChatFormatting.WHITE))
               .append(Component.literal(matchedProfile.name).withStyle(ChatFormatting.YELLOW));
       if (client.player != null) {
-        client.player.displayClientMessage(message, false);
+        client.player.sendSystemMessage(message);
       }
       return 1;
     } else {
@@ -50,7 +50,7 @@ public final class ProfileCommandHandler {
                   Component.literal("Profile not found: " + profileName)
                       .withStyle(ChatFormatting.WHITE));
       if (client.player != null) {
-        client.player.displayClientMessage(message, false);
+        client.player.sendSystemMessage(message);
       }
       return 0;
     }
