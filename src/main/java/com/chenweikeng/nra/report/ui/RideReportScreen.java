@@ -17,13 +17,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.PlayerModelType;
-import net.minecraft.world.entity.player.PlayerSkin;
 
 public class RideReportScreen extends Screen {
   private static final int PANEL_PADDING = 16;
@@ -49,7 +44,6 @@ public class RideReportScreen extends Screen {
       Identifier.parse("not-riding-alert:textures/npc-arrowarrow.png");
   private static final int MODEL_HEIGHT = 90;
   private static final int MODEL_WIDTH = 50;
-  private static final float MODEL_PIVOT_Y = -1.0625F;
   private static final int MODEL_OVERFLOW = 10;
 
   private static final int NAV_BUTTON_WIDTH = 30;
@@ -68,9 +62,8 @@ public class RideReportScreen extends Screen {
   private int scrollOffset = 0;
   private int maxScroll = 0;
   private long ticksSinceRefresh = 0;
-  private PlayerModel wideModel;
-  private PlayerModel slimModel;
-  private PlayerModel npcModel;
+  private WalkingSkinWidget npcWidget;
+  private WalkingPlayerSkinWidget playerWidget;
   private Button prevButton;
   private Button nextButton;
   private int screenshotCountdown = 0;
@@ -110,9 +103,6 @@ public class RideReportScreen extends Screen {
     // the report. Rendering is also suppressed while this screen is active via ToastManagerMixin.
     Minecraft.getInstance().getToastManager().clear();
     EntityModelSet models = Minecraft.getInstance().getEntityModels();
-    wideModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER), false);
-    slimModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER_SLIM), true);
-    npcModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER), false);
 
     panelW = (int) (width * 0.7);
     panelH = (int) (height * 0.8);
@@ -121,6 +111,17 @@ public class RideReportScreen extends Screen {
 
     addRenderableOnly(
         (graphics, mouseX, mouseY, delta) -> renderContent(graphics, mouseX, mouseY, delta));
+
+    // NPC model (left) — uses a dedicated widget so each model gets its own PiP render slot
+    Identifier npcSkin = getNpcSkin();
+    npcWidget = new WalkingSkinWidget(MODEL_WIDTH, MODEL_HEIGHT, models, npcSkin, animStartNanos);
+    npcWidget.setPosition(panelX - MODEL_OVERFLOW, panelY);
+    addRenderableWidget(npcWidget);
+
+    // Player model (right)
+    playerWidget = new WalkingPlayerSkinWidget(MODEL_WIDTH, MODEL_HEIGHT, models, animStartNanos);
+    playerWidget.setPosition(panelX + panelW + MODEL_OVERFLOW - MODEL_WIDTH, panelY);
+    addRenderableWidget(playerWidget);
 
     int buttonY = panelY + panelH - 28;
 
@@ -165,6 +166,20 @@ public class RideReportScreen extends Screen {
     } else {
       report = DailyReportGenerator.generate(date);
     }
+    if (npcWidget != null) {
+      npcWidget.setTexture(getNpcSkin());
+    }
+  }
+
+  private Identifier getNpcSkin() {
+    if (report == null) return NPC_SKIN_TRUEMONKEYKING;
+    return switch (report.grade) {
+      case S -> NPC_SKIN_TRUEMONKEYKING;
+      case A -> NPC_SKIN_SHIPUP;
+      case B -> NPC_SKIN_BLUEGERUDO;
+      case C -> NPC_SKIN_ARROWARROW;
+      case D -> NPC_SKIN_GRIMREAPER;
+    };
   }
 
   private void navigatePrev() {
@@ -530,61 +545,6 @@ public class RideReportScreen extends Screen {
     int visibleHeight = contentBottom - contentTop;
     maxScroll = Math.max(0, totalContentHeight - visibleHeight);
 
-    // Player models: NPC on left, player on right (outside scissor for overflow effect)
-    Identifier npcSkin =
-        switch (report.grade) {
-          case S -> NPC_SKIN_TRUEMONKEYKING;
-          case A -> NPC_SKIN_SHIPUP;
-          case B -> NPC_SKIN_BLUEGERUDO;
-          case C -> NPC_SKIN_ARROWARROW;
-          case D -> NPC_SKIN_GRIMREAPER;
-        };
-    float modelScale = 0.97F * MODEL_HEIGHT / 2.125F;
-    Minecraft client = Minecraft.getInstance();
-    // Use wall-clock time for smooth frame-rate-independent animation.
-    // The delta parameter from Screen.render() is getDynamicDeltaTicks() (time since last frame),
-    // NOT the partial tick position, so gameTime + delta would only update at 20Hz (tick rate).
-    float walkTime = (float) ((System.nanoTime() - animStartNanos) / 1_000_000_000.0 * 20.0);
-
-    // NPC model (left) - overlaps header area, shifted up
-    int npcX0 = panelX - MODEL_OVERFLOW;
-    int npcX1 = npcX0 + MODEL_WIDTH;
-    int npcY0 = panelY;
-    int npcY1 = npcY0 + MODEL_HEIGHT;
-    float npcCenterX = (npcX0 + npcX1) / 2.0F;
-    float npcCenterY = (npcY0 + npcY1) / 2.0F;
-    float npcRotY = (float) Math.atan((double) (mouseX - npcCenterX) / 40.0) * 20.0F;
-    float npcRotX = (float) Math.atan((double) (npcCenterY - mouseY) / 40.0) * 20.0F;
-    applyWalkAnimation(npcModel, walkTime);
-    graphics.skin(
-        npcModel, npcSkin, modelScale, npcRotX, npcRotY, MODEL_PIVOT_Y, npcX0, npcY0, npcX1, npcY1);
-
-    // Player model (right) - extends beyond right panel edge
-    if (client.player != null) {
-      PlayerSkin playerSkin = client.player.getSkin();
-      PlayerModel playerModel = playerSkin.model() == PlayerModelType.SLIM ? slimModel : wideModel;
-      int playerX1 = panelX + panelW + MODEL_OVERFLOW;
-      int playerX0 = playerX1 - MODEL_WIDTH;
-      int playerY0 = panelY;
-      int playerY1 = playerY0 + MODEL_HEIGHT;
-      float playerCenterX = (playerX0 + playerX1) / 2.0F;
-      float playerCenterY = (playerY0 + playerY1) / 2.0F;
-      float playerRotY = (float) Math.atan((double) (mouseX - playerCenterX) / 40.0) * 20.0F;
-      float playerRotX = (float) Math.atan((double) (playerCenterY - mouseY) / 40.0) * 20.0F;
-      applyWalkAnimation(playerModel, walkTime);
-      graphics.skin(
-          playerModel,
-          playerSkin.body().texturePath(),
-          modelScale,
-          playerRotX,
-          playerRotY,
-          MODEL_PIVOT_Y,
-          playerX0,
-          playerY0,
-          playerX1,
-          playerY1);
-    }
-
     // Scroll indicators
     if (scrollOffset > 0) {
       graphics.centeredText(
@@ -705,23 +665,6 @@ public class RideReportScreen extends Screen {
     }
   }
 
-  private void applyWalkAnimation(PlayerModel model, float walkTime) {
-    // Reset all parts to default pose first to prevent stale state accumulation
-    resetModelPose(model);
-
-    float speed = 0.6F;
-    float cycle = walkTime * 0.3F;
-    model.rightArm.xRot = Mth.cos(cycle * 0.6662F + (float) Math.PI) * 2.0F * speed * 0.5F;
-    model.leftArm.xRot = Mth.cos(cycle * 0.6662F) * 2.0F * speed * 0.5F;
-    model.rightLeg.xRot = Mth.cos(cycle * 0.6662F) * 1.4F * speed;
-    model.leftLeg.xRot = Mth.cos(cycle * 0.6662F + (float) Math.PI) * 1.4F * speed;
-
-    // Overlay parts (sleeves, pants, jacket, hat) are CHILDREN of the base parts
-    // in the model hierarchy, so they inherit the parent's rotation automatically.
-    // resetPose() already set them to PartPose.ZERO which is correct — do NOT
-    // copy base rotations to overlays or the rotation will be doubled.
-  }
-
   /** Returns true if {@code prevDate} is exactly one calendar day before {@code reportDate}. */
   private boolean isPreviousCalendarDay(String reportDate, String prevDate) {
     if (reportDate == null || prevDate == null) return false;
@@ -732,20 +675,5 @@ public class RideReportScreen extends Screen {
     } catch (Exception e) {
       return false;
     }
-  }
-
-  private void resetModelPose(PlayerModel model) {
-    model.head.resetPose();
-    model.hat.resetPose();
-    model.body.resetPose();
-    model.jacket.resetPose();
-    model.rightArm.resetPose();
-    model.leftArm.resetPose();
-    model.rightLeg.resetPose();
-    model.leftLeg.resetPose();
-    model.rightSleeve.resetPose();
-    model.leftSleeve.resetPose();
-    model.rightPants.resetPose();
-    model.leftPants.resetPose();
   }
 }

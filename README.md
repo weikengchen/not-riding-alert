@@ -166,6 +166,7 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 - **Delete Profile**: Remove unwanted profiles
 - **Built-in Profiles**: Pre-configured profiles for common use cases
 - **Profile History**: When you apply a profile, the previous settings are automatically backed up. Browse and restore past configurations from the History screen (entries expire after 1 month)
+- **Export/Import**: Export all settings, ride history (daily snapshots), and cumulative ride counts to a single JSON file. Import on another instance to transfer your data — ride counts are merged (keeping the higher value for each ride/date)
 
 ### ⏱️ Advance Notice Settings (Advance Notice Tab, New in v2.4.5)
 - **Per-Ride Advance Notice**: Configure advance notice seconds (0-30) for each ride individually
@@ -254,7 +255,7 @@ When the mod starts, `WebViewBridge` resolves the helper binary in this order:
 
 - Progress tracking is not available for "Davy Crockett's Explorer Canoes" (ride time is player-dependent)
 - The mod requires scoreboard data to function properly
-- Ride counts are stored locally and don't sync across devices
+- Ride counts are stored locally — use Export/Import in the Profiles screen to transfer between devices
 
 ## Support
 

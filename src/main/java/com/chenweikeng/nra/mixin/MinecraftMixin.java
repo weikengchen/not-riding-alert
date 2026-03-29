@@ -13,7 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftMixin {
   @Inject(method = "pauseIfInactive", at = @At("HEAD"), cancellable = true)
   private void onPauseIfInactive(CallbackInfo ci) {
-    if (GameState.getInstance().isAutomaticallyReleasedCursor()) {
+    GameState state = GameState.getInstance();
+    if (state.isAutomaticallyReleasedCursor() || state.isWithinWindowRestoreGrace()) {
       ci.cancel();
     }
   }

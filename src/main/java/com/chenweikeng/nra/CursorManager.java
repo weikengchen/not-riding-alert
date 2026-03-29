@@ -136,6 +136,9 @@ public class CursorManager {
           };
 
       if (shouldRestoreOnThisTick) {
+        // Suppress pause-on-focus-loss for 10 ticks (500ms) to give GLFW time to
+        // process the restore/focus chain before pauseIfInactive() kicks in.
+        state.setWindowRestoreGrace(10);
         windowMinimizeHandler.restoreWindow();
       }
       if (wasRiding && !isRiding) {

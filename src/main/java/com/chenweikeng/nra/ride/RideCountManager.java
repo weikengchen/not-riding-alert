@@ -54,6 +54,14 @@ public class RideCountManager {
     return increased;
   }
 
+  /** Imports a ride count, only updating if the imported value is higher than the current. */
+  public void importRideCount(RideName ride, int count) {
+    if (ride == RideName.UNKNOWN) return;
+    if (count > getRideCount(ride)) {
+      rideCounts.put(ride, count);
+    }
+  }
+
   /** Gets the current count for a ride, or 0 if not set. */
   public int getRideCount(RideName ride) {
     return rideCounts.getOrDefault(ride, 0);

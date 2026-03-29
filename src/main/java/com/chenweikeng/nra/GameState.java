@@ -9,6 +9,7 @@ public class GameState {
   private long absoluteTickCounter = 0;
   private boolean riding = false;
   private boolean automaticallyReleasedCursor = false;
+  private long windowRestoreGraceUntilTick = -1;
   private volatile boolean monkeyAttached = false;
   private long lastSitCommand = -400;
   private boolean sitting = false;
@@ -42,6 +43,15 @@ public class GameState {
 
   public void setAutomaticallyReleasedCursor(boolean released) {
     this.automaticallyReleasedCursor = released;
+  }
+
+  /** Suppress pause-on-focus-loss until this tick, giving GLFW time to process window focus. */
+  public void setWindowRestoreGrace(int ticks) {
+    this.windowRestoreGraceUntilTick = absoluteTickCounter + ticks;
+  }
+
+  public boolean isWithinWindowRestoreGrace() {
+    return absoluteTickCounter <= windowRestoreGraceUntilTick;
   }
 
   public boolean isMonkeyAttached() {
@@ -108,6 +118,7 @@ public class GameState {
     absoluteTickCounter = 0;
     riding = false;
     automaticallyReleasedCursor = false;
+    windowRestoreGraceUntilTick = -1;
     lastSitCommand = -400;
     sitting = false;
     autograbFailureActive = false;
