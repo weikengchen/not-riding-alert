@@ -62,27 +62,33 @@ public class ProfileManagementScreen extends Screen {
     int currentSettingsY = PADDING + 30; // Move down to avoid overlap with progress bars
 
     int footerY = height - FOOTER_HEIGHT + 10;
-    int buttonWidth = 85;
-    int buttonGap = 6;
+    boolean showExportImport = DataBundleExporter.isFileDialogAvailable();
+    int buttonCount = showExportImport ? 6 : 4;
+    int buttonWidth = showExportImport ? 85 : 100;
+    int buttonGap = showExportImport ? 6 : 10;
 
-    int totalButtonWidth = buttonWidth * 6 + buttonGap * 5;
+    int totalButtonWidth = buttonWidth * buttonCount + buttonGap * (buttonCount - 1);
     int startX = (width - totalButtonWidth) / 2;
 
     addRenderableOnly(
         (graphics, mouseX, mouseY, delta) -> renderContent(graphics, mouseX, mouseY, delta));
 
     int col = 0;
-    exportButton =
-        Button.builder(Component.literal("Export"), this::onExportClicked)
-            .bounds(startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
-            .build();
-    addRenderableWidget(exportButton);
+    if (showExportImport) {
+      exportButton =
+          Button.builder(Component.literal("Export"), this::onExportClicked)
+              .bounds(
+                  startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
+              .build();
+      addRenderableWidget(exportButton);
 
-    importButton =
-        Button.builder(Component.literal("Import"), this::onImportClicked)
-            .bounds(startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
-            .build();
-    addRenderableWidget(importButton);
+      importButton =
+          Button.builder(Component.literal("Import"), this::onImportClicked)
+              .bounds(
+                  startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
+              .build();
+      addRenderableWidget(importButton);
+    }
 
     historyButton =
         Button.builder(Component.literal("History"), this::onHistoryClicked)
@@ -91,7 +97,9 @@ public class ProfileManagementScreen extends Screen {
     addRenderableWidget(historyButton);
 
     reportsButton =
-        Button.builder(Component.literal("Reports"), this::onReportsClicked)
+        Button.builder(
+                Component.literal(showExportImport ? "Reports" : "Ride Reports"),
+                this::onReportsClicked)
             .bounds(startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(reportsButton);

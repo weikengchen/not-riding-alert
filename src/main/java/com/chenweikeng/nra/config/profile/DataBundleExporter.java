@@ -18,6 +18,25 @@ import java.util.concurrent.CompletableFuture;
 
 public final class DataBundleExporter {
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+  private static final Boolean FILE_DIALOGS_AVAILABLE = checkFileDialogsAvailable();
+
+  /** Returns true if the platform supports native file dialogs. */
+  public static boolean isFileDialogAvailable() {
+    return FILE_DIALOGS_AVAILABLE;
+  }
+
+  private static boolean checkFileDialogsAvailable() {
+    String os = System.getProperty("os.name", "").toLowerCase();
+    if (os.contains("mac") || os.contains("darwin") || os.contains("win")) {
+      return true;
+    }
+    // Linux: check if zenity is installed
+    try {
+      return new ProcessBuilder("which", "zenity").redirectErrorStream(true).start().waitFor() == 0;
+    } catch (Exception e) {
+      return false;
+    }
+  }
 
   private DataBundleExporter() {}
 
@@ -114,25 +133,50 @@ public final class DataBundleExporter {
     }
   }
 
-  /** Opens a native macOS save dialog on a background thread. Returns null path on cancel. */
+  /** Opens a native save dialog on a background thread. Returns null path on cancel. */
   public static CompletableFuture<Path> pickExportFile() {
     return CompletableFuture.supplyAsync(
         () -> {
           try {
             String defaultName = "nra-export-" + LocalDate.now() + ".json";
-            Process process =
-                new ProcessBuilder(
-                        "osascript",
-                        "-e",
-                        "POSIX path of (choose file name with prompt \"Export NRA Data\""
-                            + " default name \""
-                            + defaultName
-                            + "\")")
-                    .redirectErrorStream(true)
-                    .start();
-            String output = new String(process.getInputStream().readAllBytes()).trim();
-            int exitCode = process.waitFor();
-            if (exitCode != 0 || output.isEmpty()) return null;
+            String os = System.getProperty("os.name", "").toLowerCase();
+            String output;
+
+            if (os.contains("mac") || os.contains("darwin")) {
+              output =
+                  runProcess(
+                      "osascript",
+                      "-e",
+                      "POSIX path of (choose file name with prompt \"Export NRA Data\""
+                          + " default name \""
+                          + defaultName
+                          + "\")");
+            } else if (os.contains("win")) {
+              output =
+                  runProcess(
+                      "powershell",
+                      "-NoProfile",
+                      "-Command",
+                      "Add-Type -AssemblyName System.Windows.Forms;"
+                          + "$d = New-Object System.Windows.Forms.SaveFileDialog;"
+                          + "$d.Filter = 'JSON files (*.json)|*.json';"
+                          + "$d.FileName = '"
+                          + defaultName
+                          + "';"
+                          + "if ($d.ShowDialog() -eq 'OK') { $d.FileName }");
+            } else {
+              output =
+                  runProcess(
+                      "zenity",
+                      "--file-selection",
+                      "--save",
+                      "--confirm-overwrite",
+                      "--title=Export NRA Data",
+                      "--filename=" + defaultName,
+                      "--file-filter=JSON files | *.json");
+            }
+
+            if (output == null || output.isEmpty()) return null;
             Path path = Path.of(output);
             if (!output.endsWith(".json")) {
               path = Path.of(output + ".json");
@@ -145,28 +189,56 @@ public final class DataBundleExporter {
         });
   }
 
-  /** Opens a native macOS open dialog on a background thread. Returns null path on cancel. */
+  /** Opens a native open dialog on a background thread. Returns null path on cancel. */
   public static CompletableFuture<Path> pickImportFile() {
     return CompletableFuture.supplyAsync(
         () -> {
           try {
-            Process process =
-                new ProcessBuilder(
-                        "osascript",
-                        "-e",
-                        "POSIX path of (choose file of type {\"public.json\"}"
-                            + " with prompt \"Import NRA Data\")")
-                    .redirectErrorStream(true)
-                    .start();
-            String output = new String(process.getInputStream().readAllBytes()).trim();
-            int exitCode = process.waitFor();
-            if (exitCode != 0 || output.isEmpty()) return null;
+            String os = System.getProperty("os.name", "").toLowerCase();
+            String output;
+
+            if (os.contains("mac") || os.contains("darwin")) {
+              output =
+                  runProcess(
+                      "osascript",
+                      "-e",
+                      "POSIX path of (choose file of type {\"public.json\"}"
+                          + " with prompt \"Import NRA Data\")");
+            } else if (os.contains("win")) {
+              output =
+                  runProcess(
+                      "powershell",
+                      "-NoProfile",
+                      "-Command",
+                      "Add-Type -AssemblyName System.Windows.Forms;"
+                          + "$d = New-Object System.Windows.Forms.OpenFileDialog;"
+                          + "$d.Filter = 'JSON files (*.json)|*.json';"
+                          + "$d.Title = 'Import NRA Data';"
+                          + "if ($d.ShowDialog() -eq 'OK') { $d.FileName }");
+            } else {
+              output =
+                  runProcess(
+                      "zenity",
+                      "--file-selection",
+                      "--title=Import NRA Data",
+                      "--file-filter=JSON files | *.json");
+            }
+
+            if (output == null || output.isEmpty()) return null;
             return Path.of(output);
           } catch (Exception e) {
             NotRidingAlertClient.LOGGER.warn("Failed to open file dialog", e);
             return null;
           }
         });
+  }
+
+  private static String runProcess(String... command) throws Exception {
+    Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+    String output = new String(process.getInputStream().readAllBytes()).trim();
+    int exitCode = process.waitFor();
+    if (exitCode != 0 || output.isEmpty()) return null;
+    return output;
   }
 
   public record ImportResult(boolean success, String message) {}
