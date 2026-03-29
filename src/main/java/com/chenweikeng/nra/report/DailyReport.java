@@ -16,6 +16,10 @@ public class DailyReport {
   public final Grade grade;
   public final String title;
   public final Integer previousDayRides;
+
+  /** The actual date whose snapshot was used as the baseline (may be older than date-1). */
+  public final String previousRideDate;
+
   public final boolean isFirstDay;
   public final boolean isLive;
 
@@ -32,6 +36,7 @@ public class DailyReport {
       Grade grade,
       String title,
       Integer previousDayRides,
+      String previousRideDate,
       boolean isFirstDay,
       boolean isLive) {
     this.date = date;
@@ -46,6 +51,7 @@ public class DailyReport {
     this.grade = grade;
     this.title = title;
     this.previousDayRides = previousDayRides;
+    this.previousRideDate = previousRideDate;
     this.isFirstDay = isFirstDay;
     this.isLive = isLive;
   }

@@ -22,14 +22,10 @@ public class DailyReportGenerator {
       return null;
     }
 
-    String prevDate;
-    try {
-      prevDate = LocalDate.parse(date, DATE_FORMAT).minusDays(1).format(DATE_FORMAT);
-    } catch (Exception e) {
-      return null;
-    }
-
-    DailyRideSnapshot.SnapshotEntry prevSnap = snapshots.getSnapshot(prevDate);
+    // Walk back to the most recent day that has data, skipping gap days.
+    String prevDate = snapshots.getMostRecentDateBefore(date);
+    DailyRideSnapshot.SnapshotEntry prevSnap =
+        prevDate != null ? snapshots.getSnapshot(prevDate) : null;
     boolean isFirstDay = prevSnap == null;
     Map<String, Integer> prevCounts = prevSnap != null ? prevSnap.rideCounts : new HashMap<>();
 
@@ -116,6 +112,7 @@ public class DailyReportGenerator {
         grade,
         grade.title,
         previousDayRides,
+        prevDate,
         isFirstDay,
         false);
   }
@@ -132,10 +129,11 @@ public class DailyReportGenerator {
     long rideTimeSeconds = session.getRideTimeToday();
     long onlineSeconds = session.getOnlineSeconds();
 
-    // Find yesterday's snapshot as baseline
-    String prevDate = LocalDate.now().minusDays(1).format(DATE_FORMAT);
+    // Walk back to the most recent day that has data, skipping gap days.
     DailyRideSnapshot snapshots = DailyRideSnapshot.getInstance();
-    DailyRideSnapshot.SnapshotEntry prevSnap = snapshots.getSnapshot(prevDate);
+    String prevDate = snapshots.getMostRecentDateBefore(todayDate);
+    DailyRideSnapshot.SnapshotEntry prevSnap =
+        prevDate != null ? snapshots.getSnapshot(prevDate) : null;
     boolean isFirstDay = prevSnap == null;
     Map<String, Integer> prevCounts = prevSnap != null ? prevSnap.rideCounts : new HashMap<>();
 
@@ -219,6 +217,7 @@ public class DailyReportGenerator {
         grade,
         grade.title,
         previousDayRides,
+        prevDate,
         isFirstDay,
         true);
   }

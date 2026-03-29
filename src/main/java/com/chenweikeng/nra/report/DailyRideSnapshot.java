@@ -128,22 +128,41 @@ public class DailyRideSnapshot {
     return dates.isEmpty() ? null : dates.get(0);
   }
 
-  public String getPreviousDate(String date) {
+  /**
+   * Returns the most recent snapshot date strictly before the given date, skipping any gap days
+   * with no data. Returns null if no prior snapshot exists within MAX_DAYS.
+   */
+  public String getMostRecentDateBefore(String date) {
     try {
       LocalDate d = LocalDate.parse(date, DATE_FORMAT);
-      String prev = d.minusDays(1).format(DATE_FORMAT);
-      return snapshots.containsKey(prev) ? prev : null;
+      for (int i = 1; i <= MAX_DAYS; i++) {
+        String candidate = d.minusDays(i).format(DATE_FORMAT);
+        if (snapshots.containsKey(candidate)) {
+          return candidate;
+        }
+      }
+      return null;
     } catch (Exception e) {
       return null;
     }
   }
 
-  /** Returns the next (newer) available snapshot date, or null if none. */
+  /** Returns the nearest older snapshot date, skipping gap days. */
+  public String getPreviousDate(String date) {
+    return getMostRecentDateBefore(date);
+  }
+
+  /** Returns the nearest newer snapshot date, skipping gap days. */
   public String getNextDate(String date) {
     try {
       LocalDate d = LocalDate.parse(date, DATE_FORMAT);
-      String next = d.plusDays(1).format(DATE_FORMAT);
-      return snapshots.containsKey(next) ? next : null;
+      for (int i = 1; i <= MAX_DAYS; i++) {
+        String candidate = d.plusDays(i).format(DATE_FORMAT);
+        if (snapshots.containsKey(candidate)) {
+          return candidate;
+        }
+      }
+      return null;
     } catch (Exception e) {
       return null;
     }

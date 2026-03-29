@@ -13,6 +13,7 @@ import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.session.SessionTracker;
 import java.awt.Color;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -79,12 +80,14 @@ public class ChatListenerMixin {
       return;
     }
 
-    // Check for OpenAudioMC session URLs in ClickEvents
+    // Check for OpenAudioMC session URLs in ClickEvents.
+    // connect() is run async because WebViewBridge.start() blocks up to 15s waiting for the
+    // native helper process — running it on the render thread would visibly freeze the game.
     if (ModConfig.currentSetting.enableOpenAudioMc
         || OpenAudioMcService.getInstance().isPendingCommandConnect()) {
       String sessionUrl = OpenAudioMcService.extractSessionUrl(message);
       if (sessionUrl != null) {
-        OpenAudioMcService.getInstance().connect(sessionUrl);
+        CompletableFuture.runAsync(() -> OpenAudioMcService.getInstance().connect(sessionUrl));
       }
     }
 

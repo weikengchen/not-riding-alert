@@ -293,6 +293,29 @@ public class NotRidingAlertClient implements ClientModInitializer {
                         context -> {
                           OpenAudioMcService.getInstance().reconnectWithFallback();
                           return 1;
+                        }))
+            .then(
+                ClientCommandManager.literal("volume")
+                    .executes(
+                        context -> {
+                          OpenAudioMcService service = OpenAudioMcService.getInstance();
+                          int vol = service.getCurrentVolume();
+                          Minecraft client = Minecraft.getInstance();
+                          if (client != null) {
+                            String msg =
+                                vol >= 0
+                                    ? "Current volume: " + vol + "%"
+                                    : "Volume unknown (not connected).";
+                            client.execute(
+                                () ->
+                                    client
+                                        .gui
+                                        .getChat()
+                                        .addMessage(
+                                            net.minecraft.network.chat.Component.literal(
+                                                "\u00A7e[NRA] \u00A7f" + msg)));
+                          }
+                          return 1;
                         })));
   }
 

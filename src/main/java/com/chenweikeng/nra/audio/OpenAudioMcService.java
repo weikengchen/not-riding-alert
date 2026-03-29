@@ -44,6 +44,7 @@ public class OpenAudioMcService {
       (function() {
         var rangeInput = document.querySelector('input[type="range"]');
         var hasRangeInput = !!rangeInput;
+        var rangeValue = hasRangeInput ? parseInt(rangeInput.value) : -1;
 
         var buttons = Array.prototype.slice.call(document.querySelectorAll('button, [role="button"]'));
         var hasStartButton = buttons.some(
@@ -55,6 +56,7 @@ public class OpenAudioMcService {
 
         return {
           hasRangeInput: hasRangeInput,
+          rangeValue: rangeValue,
           hasStartButton: hasStartButton,
           currentUrl: currentUrl,
           hasSession: currentUrl.indexOf('session=') !== -1 || currentUrl.indexOf('#') !== -1,
@@ -98,6 +100,23 @@ public class OpenAudioMcService {
       })();
       """;
 
+  /**
+   * JavaScript to set the volume slider value via the native HTMLInputElement setter so React's
+   * synthetic event system picks up the change and updates the audio engine. Simply assigning
+   * rangeInput.value does not trigger React's onChange handler.
+   */
+  private static final String SET_VOLUME_JS_TEMPLATE =
+      """
+      (function() {
+        var rangeInput = document.querySelector('input[type="range"]');
+        if (!rangeInput) return { success: false };
+        var nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        nativeSetter.call(rangeInput, %d);
+        rangeInput.dispatchEvent(new Event('input', { bubbles: true }));
+        return { success: true, value: parseInt(rangeInput.value) };
+      })();
+      """;
+
   private static OpenAudioMcService instance;
 
   private WebViewBridge bridge;
@@ -113,6 +132,7 @@ public class OpenAudioMcService {
   private long monitorStartTimeMs;
   private int pageLoadCount;
   private volatile boolean pendingCommandConnect;
+  private volatile int currentVolume = -1;
 
   private OpenAudioMcService() {}
 
@@ -210,6 +230,7 @@ public class OpenAudioMcService {
     stopMonitoring();
     isActive = false;
     isConnected = false;
+    currentVolume = -1;
     ReminderHandler.getInstance().setAudioConnected(false);
 
     if (bridge != null) {
@@ -394,6 +415,57 @@ public class OpenAudioMcService {
     return pageLoadCount;
   }
 
+  /** Returns the current volume (0-100), or -1 if unknown. */
+  public int getCurrentVolume() {
+    return currentVolume;
+  }
+
+  /**
+   * Sets the volume silently (no chat notification). Used by the options screen slider, which fires
+   * continuously while dragging.
+   */
+  public void setVolumeFromSlider(int volume) {
+    if (volume < 0 || volume > 100 || bridge == null || !bridge.isRunning() || !isConnected) {
+      return;
+    }
+    String js = String.format(SET_VOLUME_JS_TEMPLATE, volume);
+    bridge
+        .evaluateJs(js)
+        .thenAccept(
+            result -> {
+              if (result != null && result.optBoolean("success", false)) {
+                currentVolume = result.optInt("value", volume);
+              }
+            });
+  }
+
+  /**
+   * Sets the volume on the OpenAudioMC slider (0-100). Injects JS to update the range input and
+   * dispatch input/change events so the audio engine picks up the new value.
+   */
+  public void setVolume(int volume) {
+    if (volume < 0 || volume > 100) {
+      LOGGER.warn("Volume out of range: {}", volume);
+      return;
+    }
+    if (bridge == null || !bridge.isRunning() || !isConnected) {
+      notifyUser("Cannot set volume: not connected to audio.");
+      return;
+    }
+    String js = String.format(SET_VOLUME_JS_TEMPLATE, volume);
+    bridge
+        .evaluateJs(js)
+        .thenAccept(
+            result -> {
+              if (result != null && result.optBoolean("success", false)) {
+                currentVolume = result.optInt("value", volume);
+                notifyUser("Volume set to " + currentVolume + "%");
+              } else {
+                notifyUser("Failed to set volume — slider not found.");
+              }
+            });
+  }
+
   /**
    * Evaluates JavaScript in the webview. Returns a future that completes with the result, or null
    * if the bridge is not available.
@@ -455,13 +527,22 @@ public class OpenAudioMcService {
     boolean wasConnected = isConnected;
 
     if (hasRangeInput) {
+      // Track volume from the range input
+      int volume = result.optInt("rangeValue", -1);
+      if (volume >= 0) {
+        currentVolume = volume;
+      }
+
       // Audio session is active
       if (!isConnected) {
         LOGGER.info("OpenAudioMC audio session connected");
         isConnected = true;
         reconnectAttempts = 0;
         ReminderHandler.getInstance().setAudioConnected(true);
-        notifyUser("Audio connected! Use /volume to adjust the volume.");
+        notifyUser(
+            "Audio connected! Volume: "
+                + (volume >= 0 ? volume + "%" : "unknown")
+                + ". Adjust via /volume in-game or Options > Music & Sounds.");
       }
       // Update saved URL if it changed
       if (hasSession && !currentUrl.equals(savedSessionUrl)) {
@@ -528,6 +609,7 @@ public class OpenAudioMcService {
     hasReportedFailure = true;
     isActive = false;
     isConnected = false;
+    currentVolume = -1;
     stopMonitoring();
     ReminderHandler.getInstance().setAudioConnected(false);
 

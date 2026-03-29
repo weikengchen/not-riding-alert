@@ -202,11 +202,12 @@ Automatically connects to the ImagineFun audio system without needing a separate
 
 - **Auto-Detection**: Detects OpenAudioMC session URLs in chat messages
 - **Headless WebView**: Launches a hidden native WebView process to manage the audio session
-- **Auto-Connect**: Clicks "Start Audio Session" automatically and notifies you to adjust volume via `/volume`
+- **Auto-Connect**: Clicks "Start Audio Session" automatically and notifies you of the current volume on connection
+- **Volume Control**: Adjust volume via the in-game `/volume` command or through **Options → Music & Sounds**, where an "OpenAudioMc Volume" slider appears below Master Volume while connected
 - **Reconnection**: Retries up to 3 times if the audio session drops mid-connection
 - **Cross-Platform**: Native helpers for macOS (WKWebView) and Windows (WebView2)
 - **Configurable**: Can be enabled/disabled in the General settings tab (disabled by default, enabled in Grinding and Sightseeing built-in profiles)
-- **Chat Commands**: `/oa connect` (sends `/audio` and auto-connects), `/oa disconnect` (terminates connection), `/oa reconnect` (refreshes session or reconnects from scratch)
+- **Chat Commands**: `/oa connect` (sends `/audio` and auto-connects), `/oa disconnect` (terminates connection), `/oa reconnect` (refreshes session or reconnects from scratch), `/oa volume` (shows the current OpenAudioMc volume)
 
 ## Reproducible Build
 

@@ -116,5 +116,6 @@
   "config.not-riding-alert.rideReportNotifyMode.tooltip": "How to notify you when a new daily ride report is available",
   "config.not-riding-alert.rideReportNotifyMode.popup": "Popup",
   "config.not-riding-alert.rideReportNotifyMode.chat": "Chat reminder",
-  "config.not-riding-alert.rideReportNotifyMode.never": "Never"
+  "config.not-riding-alert.rideReportNotifyMode.never": "Never",
+  "options.nra.openaudiomc_volume": "OpenAudioMc Volume"
 }

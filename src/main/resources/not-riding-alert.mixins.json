@@ -16,7 +16,10 @@
 		"MinecraftScreenMixin",
 		"BossHealthOverlayAccessor",
 		"AvatarRendererMixin",
-		"EntityRendererMixin"
+		"EntityRendererMixin",
+		"GameRendererMixin",
+		"ToastManagerMixin",
+		"SoundOptionsScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -12,6 +12,7 @@ import java.time.format.TextStyle;
 import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -44,12 +45,16 @@ public class RideReportScreen extends Screen {
       Identifier.parse("not-riding-alert:textures/npc-bluegerudo.png");
   private static final Identifier NPC_SKIN_GRIMREAPER =
       Identifier.parse("not-riding-alert:textures/npc-grimreaper.png");
-  private static final int MODEL_HEIGHT = 50;
-  private static final int MODEL_WIDTH = 30;
+  private static final Identifier NPC_SKIN_ARROWARROW =
+      Identifier.parse("not-riding-alert:textures/npc-arrowarrow.png");
+  private static final int MODEL_HEIGHT = 90;
+  private static final int MODEL_WIDTH = 50;
   private static final float MODEL_PIVOT_Y = -1.0625F;
+  private static final int MODEL_OVERFLOW = 10;
 
   private static final int NAV_BUTTON_WIDTH = 30;
   private static final int CLOSE_BUTTON_WIDTH = 80;
+  private static final int SHARE_BUTTON_WIDTH = 50;
   private static final int BUTTON_GAP = 6;
 
   private final Screen parent;
@@ -65,8 +70,16 @@ public class RideReportScreen extends Screen {
   private long ticksSinceRefresh = 0;
   private PlayerModel wideModel;
   private PlayerModel slimModel;
+  private PlayerModel npcModel;
   private Button prevButton;
   private Button nextButton;
+  private int screenshotCountdown = 0;
+  private final long animStartNanos = System.nanoTime();
+
+  // Static capture state — set during render(), consumed by GameRendererMixin at TAIL of
+  // GameRenderer.render() when the render target has the complete frame (world + GUI).
+  private static volatile boolean pendingCapture = false;
+  private static int captCropX, captCropY, captCropW, captCropH;
 
   /** Create a report screen for a specific historical date. */
   public RideReportScreen(Screen parent, String date) {
@@ -93,9 +106,13 @@ public class RideReportScreen extends Screen {
     super.init();
     refreshReport();
     RideReportNotifier.getInstance().markViewed();
+    // Clear existing toasts (e.g. "Chat messages can't be verified") so they don't clutter
+    // the report. Rendering is also suppressed while this screen is active via ToastManagerMixin.
+    Minecraft.getInstance().getToastManager().clear();
     EntityModelSet models = Minecraft.getInstance().getEntityModels();
     wideModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER), false);
     slimModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER_SLIM), true);
+    npcModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER), false);
 
     panelW = (int) (width * 0.7);
     panelH = (int) (height * 0.8);
@@ -104,9 +121,10 @@ public class RideReportScreen extends Screen {
 
     int buttonY = panelY + panelH - 28;
 
-    // Layout: [< Prev] [Close] [Next >]
-    int totalWidth =
+    // Layout: [< Prev] [Close] [Next >]  [Share]
+    int navTotalWidth =
         NAV_BUTTON_WIDTH + BUTTON_GAP + CLOSE_BUTTON_WIDTH + BUTTON_GAP + NAV_BUTTON_WIDTH;
+    int totalWidth = navTotalWidth + BUTTON_GAP * 2 + SHARE_BUTTON_WIDTH;
     int startX = panelX + (panelW - totalWidth) / 2;
 
     prevButton =
@@ -129,6 +147,11 @@ public class RideReportScreen extends Screen {
                 20)
             .build();
     addRenderableWidget(nextButton);
+
+    addRenderableWidget(
+        Button.builder(Component.literal("Share"), btn -> screenshotCountdown = 2)
+            .bounds(startX + navTotalWidth + BUTTON_GAP * 2, buttonY, SHARE_BUTTON_WIDTH, 20)
+            .build());
 
     updateNavButtons();
   }
@@ -271,72 +294,6 @@ public class RideReportScreen extends Screen {
         TEXT_COLOR);
     y += LINE_HEIGHT + 6;
 
-    // Player models: NPC on left, player on right
-    Identifier npcSkin =
-        switch (report.grade) {
-          case S -> NPC_SKIN_TRUEMONKEYKING;
-          case A -> NPC_SKIN_SHIPUP;
-          case B -> NPC_SKIN_BLUEGERUDO;
-          case C -> NPC_SKIN_TRUEMONKEYKING;
-          case D -> NPC_SKIN_GRIMREAPER;
-        };
-    int modelTop = contentTop - scrollOffset + 2;
-    float modelScale = 0.97F * MODEL_HEIGHT / 2.125F;
-
-    // NPC model (left)
-    int npcX0 = contentX;
-    int npcY0 = modelTop;
-    int npcX1 = npcX0 + MODEL_WIDTH;
-    int npcY1 = npcY0 + MODEL_HEIGHT;
-    float npcCenterX = (npcX0 + npcX1) / 2.0F;
-    float npcCenterY = (npcY0 + npcY1) / 2.0F;
-    float npcRotY = (float) Math.toDegrees(Math.atan((double) (npcCenterX - mouseX) / 40.0));
-    float npcRotX = -(float) Math.toDegrees(Math.atan((double) (npcCenterY - mouseY) / 40.0));
-    npcRotX = Mth.clamp(npcRotX, -50.0F, 50.0F);
-    graphics.submitSkinRenderState(
-        wideModel,
-        npcSkin,
-        modelScale,
-        npcRotX,
-        npcRotY,
-        MODEL_PIVOT_Y,
-        npcX0,
-        npcY0,
-        npcX1,
-        npcY1);
-
-    // Player model (right)
-    Minecraft client = Minecraft.getInstance();
-    if (client.player != null) {
-      PlayerSkin playerSkin = client.player.getSkin();
-      PlayerModel playerModel = playerSkin.model() == PlayerModelType.SLIM ? slimModel : wideModel;
-      int playerX1 = contentX + contentWidth;
-      int playerX0 = playerX1 - MODEL_WIDTH;
-      int playerY0 = modelTop;
-      int playerY1 = playerY0 + MODEL_HEIGHT;
-      float playerCenterX = (playerX0 + playerX1) / 2.0F;
-      float playerCenterY = (playerY0 + playerY1) / 2.0F;
-      float playerRotY =
-          (float) Math.toDegrees(Math.atan((double) (playerCenterX - mouseX) / 40.0));
-      float playerRotX =
-          -(float) Math.toDegrees(Math.atan((double) (playerCenterY - mouseY) / 40.0));
-      playerRotX = Mth.clamp(playerRotX, -50.0F, 50.0F);
-      graphics.submitSkinRenderState(
-          playerModel,
-          playerSkin.body().texturePath(),
-          modelScale,
-          playerRotX,
-          playerRotY,
-          MODEL_PIVOT_Y,
-          playerX0,
-          playerY0,
-          playerX1,
-          playerY1);
-    }
-
-    // Ensure text below clears the model area
-    y = Math.max(y, modelTop + MODEL_HEIGHT + 4);
-
     // Summary
     String rideTimeStr = TimeFormatUtil.formatDuration(report.totalRideTimeSeconds);
     String onlineStr = TimeFormatUtil.formatDuration(report.totalOnlineSeconds);
@@ -368,27 +325,31 @@ public class RideReportScreen extends Screen {
         TEXT_COLOR);
     y += LINE_HEIGHT;
 
-    // Comparison with previous day
+    // Comparison with previous ride day (may be older than yesterday if there were gap days)
     if (report.previousDayRides != null) {
+      boolean wasYesterday = isPreviousCalendarDay(report.date, report.previousRideDate);
+      String compLabel = wasYesterday ? "yesterday" : "last ride day";
       int diff = report.totalRides - report.previousDayRides;
       if (diff > 0) {
         graphics.drawCenteredString(
             font,
-            Component.literal(diff + " more rides than yesterday!").withColor(MILESTONE_COLOR),
+            Component.literal(diff + " more rides than " + compLabel + "!")
+                .withColor(MILESTONE_COLOR),
             width / 2,
             y,
             TEXT_COLOR);
       } else if (diff < 0) {
         graphics.drawCenteredString(
             font,
-            Component.literal(Math.abs(diff) + " fewer rides than yesterday").withColor(DIM_COLOR),
+            Component.literal(Math.abs(diff) + " fewer rides than " + compLabel)
+                .withColor(DIM_COLOR),
             width / 2,
             y,
             TEXT_COLOR);
       } else {
         graphics.drawCenteredString(
             font,
-            Component.literal("Same as yesterday - consistency!").withColor(ACCENT_COLOR),
+            Component.literal("Same as " + compLabel + " - consistency!").withColor(ACCENT_COLOR),
             width / 2,
             y,
             TEXT_COLOR);
@@ -568,6 +529,61 @@ public class RideReportScreen extends Screen {
     int visibleHeight = contentBottom - contentTop;
     maxScroll = Math.max(0, totalContentHeight - visibleHeight);
 
+    // Player models: NPC on left, player on right (outside scissor for overflow effect)
+    Identifier npcSkin =
+        switch (report.grade) {
+          case S -> NPC_SKIN_TRUEMONKEYKING;
+          case A -> NPC_SKIN_SHIPUP;
+          case B -> NPC_SKIN_BLUEGERUDO;
+          case C -> NPC_SKIN_ARROWARROW;
+          case D -> NPC_SKIN_GRIMREAPER;
+        };
+    float modelScale = 0.97F * MODEL_HEIGHT / 2.125F;
+    Minecraft client = Minecraft.getInstance();
+    // Use wall-clock time for smooth frame-rate-independent animation.
+    // The delta parameter from Screen.render() is getDynamicDeltaTicks() (time since last frame),
+    // NOT the partial tick position, so gameTime + delta would only update at 20Hz (tick rate).
+    float walkTime = (float) ((System.nanoTime() - animStartNanos) / 1_000_000_000.0 * 20.0);
+
+    // NPC model (left) - overlaps header area, shifted up
+    int npcX0 = panelX - MODEL_OVERFLOW;
+    int npcX1 = npcX0 + MODEL_WIDTH;
+    int npcY0 = panelY;
+    int npcY1 = npcY0 + MODEL_HEIGHT;
+    float npcCenterX = (npcX0 + npcX1) / 2.0F;
+    float npcCenterY = (npcY0 + npcY1) / 2.0F;
+    float npcRotY = (float) Math.atan((double) (mouseX - npcCenterX) / 40.0) * 20.0F;
+    float npcRotX = (float) Math.atan((double) (npcCenterY - mouseY) / 40.0) * 20.0F;
+    applyWalkAnimation(npcModel, walkTime);
+    graphics.submitSkinRenderState(
+        npcModel, npcSkin, modelScale, npcRotX, npcRotY, MODEL_PIVOT_Y, npcX0, npcY0, npcX1, npcY1);
+
+    // Player model (right) - extends beyond right panel edge
+    if (client.player != null) {
+      PlayerSkin playerSkin = client.player.getSkin();
+      PlayerModel playerModel = playerSkin.model() == PlayerModelType.SLIM ? slimModel : wideModel;
+      int playerX1 = panelX + panelW + MODEL_OVERFLOW;
+      int playerX0 = playerX1 - MODEL_WIDTH;
+      int playerY0 = panelY;
+      int playerY1 = playerY0 + MODEL_HEIGHT;
+      float playerCenterX = (playerX0 + playerX1) / 2.0F;
+      float playerCenterY = (playerY0 + playerY1) / 2.0F;
+      float playerRotY = (float) Math.atan((double) (mouseX - playerCenterX) / 40.0) * 20.0F;
+      float playerRotX = (float) Math.atan((double) (playerCenterY - mouseY) / 40.0) * 20.0F;
+      applyWalkAnimation(playerModel, walkTime);
+      graphics.submitSkinRenderState(
+          playerModel,
+          playerSkin.body().texturePath(),
+          modelScale,
+          playerRotX,
+          playerRotY,
+          MODEL_PIVOT_Y,
+          playerX0,
+          playerY0,
+          playerX1,
+          playerY1);
+    }
+
     // Scroll indicators
     if (scrollOffset > 0) {
       graphics.drawCenteredString(
@@ -583,6 +599,80 @@ public class RideReportScreen extends Screen {
     }
 
     super.render(graphics, mouseX, mouseY, delta);
+
+    // Deferred screenshot capture for Discord sharing.
+    // We can't capture here because GUI draws are still batched in guiRenderState and haven't
+    // been committed to the render target yet. Instead, set a static flag that is consumed by
+    // GameRendererMixin at the TAIL of GameRenderer.render(), after guiRenderer.render() has
+    // committed all GUI draws — the render target then has the complete frame.
+    if (screenshotCountdown > 0) {
+      screenshotCountdown--;
+      if (screenshotCountdown == 0) {
+        int guiScale = Minecraft.getInstance().getWindow().getGuiScale();
+        captCropX = Math.max(0, (panelX - MODEL_OVERFLOW) * guiScale);
+        captCropY = Math.max(0, panelY * guiScale);
+        captCropW = (panelW + MODEL_OVERFLOW * 2) * guiScale;
+        captCropH = panelH * guiScale;
+        pendingCapture = true;
+      }
+    }
+  }
+
+  /**
+   * Called by {@link com.chenweikeng.nra.mixin.GameRendererMixin} at the TAIL of {@code
+   * GameRenderer.render()}, after {@code guiRenderer.render()} has committed all GUI draws to the
+   * render target. At this point the framebuffer has the complete frame (world + screen + models).
+   */
+  public static void executePendingCapture() {
+    if (!pendingCapture) return;
+    pendingCapture = false;
+
+    Minecraft client = Minecraft.getInstance();
+    // Don't capture if the game is shutting down — async GPU callback would crash on destroyed
+    // native resources
+    if (client.getWindow() == null || !(client.screen instanceof RideReportScreen)) {
+      return;
+    }
+    int cropX = captCropX;
+    int cropY = captCropY;
+    int cropW = captCropW;
+    int cropH = captCropH;
+
+    Screenshot.takeScreenshot(
+        client.getMainRenderTarget(),
+        image -> {
+          try {
+            java.awt.image.BufferedImage cropped =
+                DiscordShareUtil.nativeImageToBufferedImage(image, cropX, cropY, cropW, cropH);
+            boolean copied = DiscordShareUtil.copyImageToClipboard(cropped);
+            if (copied) {
+              DiscordShareUtil.openDiscordChannel();
+            }
+            client.execute(
+                () -> {
+                  if (client.player != null) {
+                    client.player.displayClientMessage(
+                        Component.literal(
+                                copied
+                                    ? "Report copied! Paste in Discord to share."
+                                    : "Failed to copy to clipboard.")
+                            .withColor(copied ? ACCENT_COLOR : 0xFFFF5555),
+                        false);
+                  }
+                });
+          } catch (Exception e) {
+            // Silently ignore errors during shutdown (native resources may be gone)
+            if (client.getWindow() != null) {
+              com.chenweikeng.nra.NotRidingAlertClient.LOGGER.warn(
+                  "Failed to share report to Discord", e);
+            }
+          } finally {
+            try {
+              image.close();
+            } catch (Exception ignored) {
+            }
+          }
+        });
   }
 
   @Override
@@ -610,8 +700,54 @@ public class RideReportScreen extends Screen {
 
   @Override
   public void onClose() {
+    pendingCapture = false;
+    screenshotCountdown = 0;
     if (minecraft != null) {
       minecraft.setScreen(parent);
     }
+  }
+
+  private void applyWalkAnimation(PlayerModel model, float walkTime) {
+    // Reset all parts to default pose first to prevent stale state accumulation
+    resetModelPose(model);
+
+    float speed = 0.6F;
+    float cycle = walkTime * 0.3F;
+    model.rightArm.xRot = Mth.cos(cycle * 0.6662F + (float) Math.PI) * 2.0F * speed * 0.5F;
+    model.leftArm.xRot = Mth.cos(cycle * 0.6662F) * 2.0F * speed * 0.5F;
+    model.rightLeg.xRot = Mth.cos(cycle * 0.6662F) * 1.4F * speed;
+    model.leftLeg.xRot = Mth.cos(cycle * 0.6662F + (float) Math.PI) * 1.4F * speed;
+
+    // Overlay parts (sleeves, pants, jacket, hat) are CHILDREN of the base parts
+    // in the model hierarchy, so they inherit the parent's rotation automatically.
+    // resetPose() already set them to PartPose.ZERO which is correct — do NOT
+    // copy base rotations to overlays or the rotation will be doubled.
+  }
+
+  /** Returns true if {@code prevDate} is exactly one calendar day before {@code reportDate}. */
+  private boolean isPreviousCalendarDay(String reportDate, String prevDate) {
+    if (reportDate == null || prevDate == null) return false;
+    try {
+      LocalDate report = LocalDate.parse(reportDate, DateTimeFormatter.ISO_LOCAL_DATE);
+      LocalDate prev = LocalDate.parse(prevDate, DateTimeFormatter.ISO_LOCAL_DATE);
+      return prev.equals(report.minusDays(1));
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private void resetModelPose(PlayerModel model) {
+    model.head.resetPose();
+    model.hat.resetPose();
+    model.body.resetPose();
+    model.jacket.resetPose();
+    model.rightArm.resetPose();
+    model.leftArm.resetPose();
+    model.rightLeg.resetPose();
+    model.leftLeg.resetPose();
+    model.rightSleeve.resetPose();
+    model.leftSleeve.resetPose();
+    model.rightPants.resetPose();
+    model.leftPants.resetPose();
   }
 }
