@@ -3,7 +3,7 @@ package com.chenweikeng.nra.tracker;
 public class OtherPlayerStatsTracker {
   private static final OtherPlayerStatsTracker INSTANCE = new OtherPlayerStatsTracker();
 
-  private boolean suppressUpdates = false;
+  private boolean rideStatsActive = false;
 
   private OtherPlayerStatsTracker() {}
 
@@ -11,15 +11,15 @@ public class OtherPlayerStatsTracker {
     return INSTANCE;
   }
 
-  public void setSuppressUpdates(boolean suppress) {
-    this.suppressUpdates = suppress;
+  public void setRideStatsActive(boolean active) {
+    this.rideStatsActive = active;
   }
 
-  public boolean shouldSuppressUpdates() {
-    return suppressUpdates;
+  public boolean isRideStatsActive() {
+    return rideStatsActive;
   }
 
   public void reset() {
-    suppressUpdates = false;
+    rideStatsActive = false;
   }
 }

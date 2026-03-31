@@ -211,7 +211,7 @@ public class WebViewBridge {
         String msg = response.optString("message", "");
         if ("error".equals(level) || "uncaught".equals(level) || "rejection".equals(level)) {
           LOGGER.warn("[JS {}] {}", level, msg);
-        } else {
+        } else if ("warn".equals(level)) {
           LOGGER.info("[JS {}] {}", level, msg);
         }
         break;

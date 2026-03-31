@@ -16,6 +16,7 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -101,6 +102,7 @@ public class RideReportScreen extends Screen {
     // Clear existing toasts (e.g. "Chat messages can't be verified") so they don't clutter
     // the report. Rendering is also suppressed while this screen is active via ToastManagerMixin.
     Minecraft.getInstance().getToastManager().clear();
+    EntityModelSet models = Minecraft.getInstance().getEntityModels();
 
     panelW = (int) (width * 0.7);
     panelH = (int) (height * 0.8);
@@ -110,14 +112,14 @@ public class RideReportScreen extends Screen {
     addRenderableOnly(
         (graphics, mouseX, mouseY, delta) -> renderContent(graphics, mouseX, mouseY, delta));
 
-    // NPC model (left) — uses graphics.entity() (the working PiP path in 26.1)
+    // NPC model (left) — uses a dedicated widget so each model gets its own PiP render slot
     Identifier npcSkin = getNpcSkin();
-    npcWidget = new WalkingSkinWidget(MODEL_WIDTH, MODEL_HEIGHT, npcSkin, animStartNanos);
+    npcWidget = new WalkingSkinWidget(MODEL_WIDTH, MODEL_HEIGHT, models, npcSkin, animStartNanos);
     npcWidget.setPosition(panelX - MODEL_OVERFLOW, panelY);
     addRenderableWidget(npcWidget);
 
-    // Player model (right) — uses the exact InventoryScreen rendering path
-    playerWidget = new WalkingPlayerSkinWidget(MODEL_WIDTH, MODEL_HEIGHT);
+    // Player model (right)
+    playerWidget = new WalkingPlayerSkinWidget(MODEL_WIDTH, MODEL_HEIGHT, models, animStartNanos);
     playerWidget.setPosition(panelX + panelW + MODEL_OVERFLOW - MODEL_WIDTH, panelY);
     addRenderableWidget(playerWidget);
 

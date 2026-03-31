@@ -86,7 +86,7 @@ public class HibernationHandler {
   }
 
   private void onRideStart(RideName ride, boolean hibernationEnabled) {
-    if (ride == RideName.DAVY_CROCKETTS_EXPLORER_CANOES) {
+    if (ride == RideName.DAVY_CROCKETTS_EXPLORER_CANOES || ride == RideName.UNKNOWN) {
       wasHibernationEligibleRide = false;
       return;
     }

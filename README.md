@@ -49,7 +49,7 @@ All HUD versions support customizable colors for different states:
 - **Persistent Storage**: Ride counts are saved to disk and persist across sessions
 - **Goal Milestones**: Supports goals at 1, 10, 100, 500, 1000, 5000, and 10000 rides per ride
 
-You need to open /ridestats and go through all the pages in all the tabs (including Page 2 of Disneyland Park) to load the initial stats to the mod.
+Ride counts are only loaded when you type `/ridestats` (with no arguments) in chat. Go through all the pages in all the tabs (including Page 2 of Disneyland Park) to load the initial stats to the mod. Opening `/ridestats <player>` or other container screens will not trigger ride count loading.
 
 ### 🎨 Visual Customization
 - **Hide Scoreboard**: Option to hide the scoreboard while still tracking ride data
@@ -191,8 +191,9 @@ The mod provides a comprehensive configuration screen accessible via the `/nra` 
 ### 📍 Closest Ride Detection (New in v2.4.5)
 Highlights the ride nearest to the player's current position:
 
-- **Coordinate-Based**: Uses a bundled `ride-coordinates.json` with multiple coordinate points per ride (ride start locations and IFone teleport points)
+- **Coordinate-Based**: Uses a bundled `ride-coordinates.json` with multiple coordinate points per ride (ride start locations, IFone teleport points, and autograb region centers)
 - **Multi-Point Matching**: Each ride can have multiple coordinate entries; the closest point across all entries is used
+- **Y-Restricted Rides**: Disneyland Monorail and Finding Nemo Submarine Voyage (vertically stacked) require the player to be within ±3 blocks of the ride's Y level to be considered as a match, preventing cross-floor misdetection
 - **V0 & V1**: If the closest ride is already in the tracker list, appends "(Closest)" with the closest ride color. If not in the list, shows it on a separate line (like autograbbing)
 - **V2**: Highlights matching rides in the list. If the closest ride is not in the list, replaces the last entry with it
 - **Filtering**: Configurable to show always, only for in-progress rides (default), or never

@@ -32,7 +32,7 @@ public class ClientPacketListenerMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (OtherPlayerStatsTracker.getInstance().shouldSuppressUpdates()) {
+    if (!OtherPlayerStatsTracker.getInstance().isRideStatsActive()) {
       return;
     }
     var player = Minecraft.getInstance().player;
@@ -109,7 +109,7 @@ public class ClientPacketListenerMixin {
     if (!NotRidingAlertClient.isImagineFunServer()) {
       return;
     }
-    if (OtherPlayerStatsTracker.getInstance().shouldSuppressUpdates()) {
+    if (!OtherPlayerStatsTracker.getInstance().isRideStatsActive()) {
       return;
     }
     var player = Minecraft.getInstance().player;
