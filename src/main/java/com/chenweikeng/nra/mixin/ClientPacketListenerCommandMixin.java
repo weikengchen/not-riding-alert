@@ -18,9 +18,8 @@ public class ClientPacketListenerCommandMixin {
     }
 
     String trimmed = command.trim();
-    String[] parts = trimmed.split("\\s+");
-    if (parts.length >= 2 && parts[0].equalsIgnoreCase("ridestats")) {
-      OtherPlayerStatsTracker.getInstance().setSuppressUpdates(true);
+    if (trimmed.equalsIgnoreCase("ridestats")) {
+      OtherPlayerStatsTracker.getInstance().setRideStatsActive(true);
     }
   }
 }

@@ -3,6 +3,7 @@ package com.chenweikeng.nra.config.profile.ui;
 import com.chenweikeng.nra.config.ClothConfigScreen;
 import com.chenweikeng.nra.config.ModConfig;
 import com.chenweikeng.nra.config.profile.BuiltInProfiles;
+import com.chenweikeng.nra.config.profile.DataBundleExporter;
 import com.chenweikeng.nra.config.profile.ProfileManager;
 import com.chenweikeng.nra.config.profile.StoredProfile;
 import com.chenweikeng.nra.report.ui.RideReportListScreen;
@@ -10,6 +11,7 @@ import com.chenweikeng.nra.ride.RideCountManager;
 import com.chenweikeng.nra.ride.RideName;
 import com.chenweikeng.nra.util.TimeFormatUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -27,10 +29,16 @@ public class ProfileManagementScreen extends Screen {
   private final Screen parent;
   private CurrentSettingsEntry currentSettingsEntry;
   private ProfileListWidget profileList;
+  private Button exportButton;
+  private Button importButton;
   private Button historyButton;
   private Button reportsButton;
   private Button resetButton;
   private Button closeButton;
+
+  private String statusMessage = null;
+  private boolean statusSuccess = true;
+  private long statusMessageExpiry = 0;
 
   private StoredProfile pendingDeleteProfile = null;
 
@@ -54,33 +62,54 @@ public class ProfileManagementScreen extends Screen {
     int currentSettingsY = PADDING + 30; // Move down to avoid overlap with progress bars
 
     int footerY = height - FOOTER_HEIGHT + 10;
-    int buttonWidth = 100;
-    int buttonGap = 10;
+    boolean showExportImport = DataBundleExporter.isFileDialogAvailable();
+    int buttonCount = showExportImport ? 6 : 4;
+    int buttonWidth = showExportImport ? 85 : 100;
+    int buttonGap = showExportImport ? 6 : 10;
 
-    int totalButtonWidth = buttonWidth * 4 + buttonGap * 3;
+    int totalButtonWidth = buttonWidth * buttonCount + buttonGap * (buttonCount - 1);
     int startX = (width - totalButtonWidth) / 2;
+
+    int col = 0;
+    if (showExportImport) {
+      exportButton =
+          Button.builder(Component.literal("Export"), this::onExportClicked)
+              .bounds(
+                  startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
+              .build();
+      addRenderableWidget(exportButton);
+
+      importButton =
+          Button.builder(Component.literal("Import"), this::onImportClicked)
+              .bounds(
+                  startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
+              .build();
+      addRenderableWidget(importButton);
+    }
 
     historyButton =
         Button.builder(Component.literal("History"), this::onHistoryClicked)
-            .bounds(startX, footerY, buttonWidth, BUTTON_HEIGHT)
+            .bounds(startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(historyButton);
 
     reportsButton =
-        Button.builder(Component.literal("Ride Reports"), this::onReportsClicked)
-            .bounds(startX + buttonWidth + buttonGap, footerY, buttonWidth, BUTTON_HEIGHT)
+        Button.builder(
+                Component.literal(showExportImport ? "Reports" : "Ride Reports"),
+                this::onReportsClicked)
+            .bounds(startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(reportsButton);
 
     resetButton =
         Button.builder(Component.literal("Reset Builtins"), this::onResetClicked)
-            .bounds(startX + (buttonWidth + buttonGap) * 2, footerY, buttonWidth, BUTTON_HEIGHT)
+            .bounds(startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(resetButton);
 
     closeButton =
         Button.builder(Component.literal("Close"), this::onCloseClicked)
-            .bounds(startX + (buttonWidth + buttonGap) * 3, footerY, buttonWidth, BUTTON_HEIGHT)
+            .bounds(startX + (buttonWidth + buttonGap) * col++, footerY, buttonWidth, BUTTON_HEIGHT)
             .build();
     addRenderableWidget(closeButton);
 
@@ -213,6 +242,78 @@ public class ProfileManagementScreen extends Screen {
     profileList.refreshProfiles();
   }
 
+  private void onExportClicked(Button button) {
+    exportButton.active = false;
+    setStatus("Opening save dialog...", true);
+    DataBundleExporter.pickExportFile()
+        .thenAccept(
+            path -> {
+              if (path == null) {
+                Minecraft.getInstance()
+                    .execute(
+                        () -> {
+                          exportButton.active = true;
+                          clearStatus();
+                        });
+                return;
+              }
+              try {
+                DataBundleExporter.exportToFile(path);
+                Minecraft.getInstance()
+                    .execute(
+                        () -> {
+                          exportButton.active = true;
+                          setStatus("Exported to " + path.getFileName(), true);
+                        });
+              } catch (Exception e) {
+                Minecraft.getInstance()
+                    .execute(
+                        () -> {
+                          exportButton.active = true;
+                          setStatus("Export failed: " + e.getMessage(), false);
+                        });
+              }
+            });
+  }
+
+  private void onImportClicked(Button button) {
+    importButton.active = false;
+    setStatus("Opening file dialog...", true);
+    DataBundleExporter.pickImportFile()
+        .thenAccept(
+            path -> {
+              if (path == null) {
+                Minecraft.getInstance()
+                    .execute(
+                        () -> {
+                          importButton.active = true;
+                          clearStatus();
+                        });
+                return;
+              }
+              DataBundleExporter.ImportResult result = DataBundleExporter.importFromFile(path);
+              Minecraft.getInstance()
+                  .execute(
+                      () -> {
+                        importButton.active = true;
+                        setStatus(result.message(), result.success());
+                        if (result.success()) {
+                          profileList.refreshProfiles();
+                        }
+                      });
+            });
+  }
+
+  private void setStatus(String message, boolean success) {
+    this.statusMessage = message;
+    this.statusSuccess = success;
+    this.statusMessageExpiry = System.currentTimeMillis() + 5000;
+  }
+
+  private void clearStatus() {
+    this.statusMessage = null;
+  }
+
   private void onHistoryClicked(Button button) {
     minecraft.setScreen(new HistoryScreen(this));
   }
@@ -268,6 +369,14 @@ public class ProfileManagementScreen extends Screen {
 
     int footerY = height - FOOTER_HEIGHT;
     graphics.fill(0, footerY, width, height, 0xDD000000);
+
+    // Render status message above footer
+    if (statusMessage != null && System.currentTimeMillis() < statusMessageExpiry) {
+      int statusColor = statusSuccess ? 0xFF55FF55 : 0xFFFF5555;
+      graphics.drawCenteredString(font, statusMessage, width / 2, footerY - 12, statusColor);
+    } else if (statusMessage != null) {
+      statusMessage = null;
+    }
 
     super.render(graphics, mouseX, mouseY, delta);
   }

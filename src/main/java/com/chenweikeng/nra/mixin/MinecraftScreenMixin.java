@@ -39,8 +39,8 @@ public abstract class MinecraftScreenMixin {
 
     if (newScreen == null
         && screen instanceof AbstractContainerScreen
-        && OtherPlayerStatsTracker.getInstance().shouldSuppressUpdates()) {
-      OtherPlayerStatsTracker.getInstance().setSuppressUpdates(false);
+        && OtherPlayerStatsTracker.getInstance().isRideStatsActive()) {
+      OtherPlayerStatsTracker.getInstance().setRideStatsActive(false);
     }
   }
 

@@ -90,6 +90,28 @@ public class DailyRideSnapshot {
     return snapshots.containsKey(date);
   }
 
+  /** Returns a defensive copy of all snapshots for export. */
+  public Map<String, SnapshotEntry> getAllSnapshots() {
+    return new TreeMap<>(snapshots);
+  }
+
+  /**
+   * Merges imported snapshots. For each date, keeps the entry with the higher ridesCompleted count.
+   */
+  public void mergeSnapshots(Map<String, SnapshotEntry> imported) {
+    if (imported == null) return;
+    for (Map.Entry<String, SnapshotEntry> entry : imported.entrySet()) {
+      String date = entry.getKey();
+      SnapshotEntry importedEntry = entry.getValue();
+      SnapshotEntry existing = snapshots.get(date);
+      if (existing == null || importedEntry.ridesCompleted > existing.ridesCompleted) {
+        snapshots.put(date, importedEntry);
+      }
+    }
+    pruneOld();
+    save();
+  }
+
   private void pruneOld() {
     if (snapshots.size() <= MAX_DAYS) {
       return;

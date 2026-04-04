@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 
@@ -16,6 +17,11 @@ public class ClosestRideHolder {
       "/assets/not-riding-alert/ride-coordinates.json";
   private static final List<RideCoordinate> COORDINATES = new ArrayList<>();
   private static RideName closestRide = null;
+
+  private static final double Y_RANGE = 3.0;
+
+  private static final Set<RideName> Y_RESTRICTED_RIDES =
+      Set.of(RideName.DISNEYLAND_MONORAIL, RideName.FINDING_NEMO_SUBMARINE_VOYAGE);
 
   static {
     loadCoordinates();
@@ -76,6 +82,9 @@ public class ClosestRideHolder {
 
     for (RideCoordinate coord : COORDINATES) {
       if (!coord.dimension.equals(currentDimension)) {
+        continue;
+      }
+      if (Y_RESTRICTED_RIDES.contains(coord.ride) && Math.abs(py - coord.y) > Y_RANGE) {
         continue;
       }
       double dx = px - coord.x;

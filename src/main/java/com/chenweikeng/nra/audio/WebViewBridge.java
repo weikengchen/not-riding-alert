@@ -211,7 +211,7 @@ public class WebViewBridge {
         String msg = response.optString("message", "");
         if ("error".equals(level) || "uncaught".equals(level) || "rejection".equals(level)) {
           LOGGER.warn("[JS {}] {}", level, msg);
-        } else {
+        } else if ("warn".equals(level)) {
           LOGGER.info("[JS {}] {}", level, msg);
         }
         break;
@@ -296,8 +296,20 @@ public class WebViewBridge {
       }
 
       Files.createDirectories(targetPath.getParent());
-      Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
-      targetPath.toFile().setExecutable(true);
+      // Write to a temp file first, then atomically replace the target. This avoids
+      // the FileAlreadyExistsException race that occurs when multiple threads call
+      // Files.copy(..., REPLACE_EXISTING) concurrently (it internally does
+      // deleteIfExists + CREATE_NEW, which races).
+      Path tempPath =
+          targetPath.resolveSibling(
+              targetPath.getFileName() + ".tmp" + Thread.currentThread().getId());
+      try {
+        Files.copy(in, tempPath, StandardCopyOption.REPLACE_EXISTING);
+        tempPath.toFile().setExecutable(true);
+        Files.move(tempPath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+      } finally {
+        Files.deleteIfExists(tempPath);
+      }
 
       LOGGER.info("Extracted resource {} to {}", resourcePath, targetPath);
       return targetPath;

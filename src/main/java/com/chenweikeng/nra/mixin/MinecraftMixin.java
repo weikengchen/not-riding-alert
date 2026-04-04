@@ -13,7 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftMixin {
   @Inject(method = "setWindowActive", at = @At("HEAD"), cancellable = true)
   private void onSetWindowActive(boolean bl, CallbackInfo ci) {
-    if (!bl && GameState.getInstance().isAutomaticallyReleasedCursor()) {
+    GameState state = GameState.getInstance();
+    if (!bl && (state.isAutomaticallyReleasedCursor() || state.isWithinWindowRestoreGrace())) {
       ci.cancel();
     }
   }
