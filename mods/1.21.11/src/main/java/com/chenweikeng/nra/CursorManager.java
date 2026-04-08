@@ -29,6 +29,7 @@ public class CursorManager {
   private boolean wasOnVehicle = false;
   private boolean wasPassenger = false;
   private boolean minimizedDuringAutograb = false;
+  private boolean autograbFailureRestored = false;
   private RideName previousAutograbRide = null;
   private long lastCanoeMessageTick = -Timing.CANOE_MESSAGE_COOLDOWN_TICKS;
   private long lastDynamicFpsMessageTick = -Timing.DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;
@@ -168,7 +169,15 @@ public class CursorManager {
     return wasPassenger;
   }
 
+  public void clearAutograbFailureRestored() {
+    autograbFailureRestored = false;
+  }
+
   public void handleAutograbFailureRestore() {
+    if (autograbFailureRestored) {
+      return;
+    }
+    autograbFailureRestored = true;
     if (ModConfig.currentSetting.minimizeWindow != WindowMinimizeTiming.NONE) {
       windowMinimizeHandler.restoreWindow();
       minimizedDuringAutograb = false;
@@ -225,6 +234,7 @@ public class CursorManager {
     wasOnVehicle = false;
     wasPassenger = false;
     minimizedDuringAutograb = false;
+    autograbFailureRestored = false;
     previousAutograbRide = null;
     lastCanoeMessageTick = -Timing.CANOE_MESSAGE_COOLDOWN_TICKS;
     lastDynamicFpsMessageTick = -Timing.DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;

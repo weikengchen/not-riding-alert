@@ -173,6 +173,8 @@ public class NotRidingAlertClient implements ClientModInitializer {
     gameState.setAutograbFailureActive(autograbFailureActive);
     if (autograbFailureActive) {
       cursorManager.handleAutograbFailureRestore();
+    } else {
+      cursorManager.clearAutograbFailureRestored();
     }
     HibernationHandler.getInstance().track(client, currentTick);
     configReminderHandler.track(client, currentTick);
