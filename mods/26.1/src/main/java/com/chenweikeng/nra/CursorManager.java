@@ -30,6 +30,7 @@ public class CursorManager {
   private boolean wasPassenger = false;
   private boolean minimizedDuringAutograb = false;
   private boolean autograbFailureRestored = false;
+  private long pendingZoneMinimizeTick = -1;
   private RideName previousAutograbRide = null;
   private long lastCanoeMessageTick = -Timing.CANOE_MESSAGE_COOLDOWN_TICKS;
   private long lastDynamicFpsMessageTick = -Timing.DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;
@@ -102,7 +103,25 @@ public class CursorManager {
 
     if (ModConfig.currentSetting.minimizeWindow != WindowMinimizeTiming.NONE) {
       WindowMinimizeTiming minimizeTiming = ModConfig.currentSetting.minimizeWindow;
-      boolean shouldMinimizeOnZoneEntry = !wasRiding && isRiding;
+      long currentTick = state.getAbsoluteTickCounter();
+
+      // Arm the zone-entry minimize timer the tick the player first enters an
+      // autograb zone. The actual minimize is deferred by
+      // ZONE_ENTRY_MINIMIZE_DELAY_TICKS so the player has a moment to walk past
+      // the risky border of the zone before the window drops.
+      if (!wasRiding && isRiding && minimizeTiming == WindowMinimizeTiming.ON_ZONE_ENTRY) {
+        pendingZoneMinimizeTick = currentTick;
+      }
+      // Cancel the pending minimize if the player leaves the zone before the
+      // delay elapses.
+      if (!isRiding) {
+        pendingZoneMinimizeTick = -1;
+      }
+
+      boolean shouldMinimizeOnZoneEntry =
+          pendingZoneMinimizeTick != -1
+              && (currentTick - pendingZoneMinimizeTick)
+                  >= Timing.ZONE_ENTRY_MINIMIZE_DELAY_TICKS;
       boolean shouldMinimizeOnVehicleMount =
           !wasOnVehicle && isOnVehicle && !minimizedDuringAutograb;
 
@@ -123,6 +142,9 @@ public class CursorManager {
           }
           windowMinimizeHandler.minimizeWindow();
         }
+        // Any minimize path that fires satisfies the pending zone minimize, so
+        // clear it to avoid re-triggering after the delay elapses.
+        pendingZoneMinimizeTick = -1;
       }
 
       if (!isRiding) {
@@ -235,6 +257,7 @@ public class CursorManager {
     wasPassenger = false;
     minimizedDuringAutograb = false;
     autograbFailureRestored = false;
+    pendingZoneMinimizeTick = -1;
     previousAutograbRide = null;
     lastCanoeMessageTick = -Timing.CANOE_MESSAGE_COOLDOWN_TICKS;
     lastDynamicFpsMessageTick = -Timing.DYNAMIC_FPS_MESSAGE_COOLDOWN_TICKS;
