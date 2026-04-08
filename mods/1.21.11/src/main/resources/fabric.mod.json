@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "not-riding-alert",
+	"version": "${version}",
+	"name": "Not Riding Alert",
+	"description": "A mod for the ImagineFun server that helps with players who want to grind for ride counts on certain rides in that server.",
+	"authors": [
+		"Weikeng Chen"
+	],
+	"contact": {
+		"sources": "https://github.com/weikengchen/not-riding-alert"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/not-riding-alert/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"com.chenweikeng.nra.NotRidingAlertClient"
+		],
+		"modmenu": [
+			"com.chenweikeng.nra.config.ModMenuApiImpl"
+		]
+	},
+	"mixins": [
+		"not-riding-alert.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*",
+		"cloth-config": ">=21.11.153"
+	},
+	"suggests": {
+		"monkeycraft": "*"
+	}
+}

@@ -1,0 +1,30 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.chenweikeng.nra.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [],
+	"client": [
+		"LivingEntityMixin",
+		"ClientPacketListenerMixin",
+		"ClientPacketListenerCommandMixin",
+		"CommandMixin",
+		"GuiMixin",
+		"ChatListenerMixin",
+		"ClientLevelMixin",
+		"MinecraftMixin",
+		"MinecraftScreenMixin",
+		"BossHealthOverlayAccessor",
+		"AvatarRendererMixin",
+		"EntityRendererMixin",
+		"GameRendererMixin",
+		"ToastManagerMixin",
+		"SoundOptionsScreenMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

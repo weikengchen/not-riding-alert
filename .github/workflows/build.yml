@@ -61,6 +61,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: '26.1'
+            java: '25'
+            distribution: 'microsoft'
+          - version: '1.21.11'
+            java: '21'
+            distribution: 'microsoft'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -79,42 +89,45 @@ jobs:
 
       - name: Assemble native resources
         run: |
-          mkdir -p src/main/resources/native/macos
-          mkdir -p src/main/resources/native/windows
+          MOD_DIR="mods/${{ matrix.version }}"
+          mkdir -p "$MOD_DIR/src/main/resources/native/macos"
+          mkdir -p "$MOD_DIR/src/main/resources/native/windows"
 
           # Source files for reviewability
-          cp native/macos/WebViewHelper.swift src/main/resources/native/macos/
-          cp native/windows/WebViewHelper.cs src/main/resources/native/windows/
-          cp native/windows/WebViewHelper.csproj src/main/resources/native/windows/
+          cp native/macos/WebViewHelper.swift "$MOD_DIR/src/main/resources/native/macos/"
+          cp native/windows/WebViewHelper.cs "$MOD_DIR/src/main/resources/native/windows/"
+          cp native/windows/WebViewHelper.csproj "$MOD_DIR/src/main/resources/native/windows/"
 
           # Compiled binaries
-          cp native-macos/webview-helper src/main/resources/native/macos/
-          chmod +x src/main/resources/native/macos/webview-helper
-          cp native-windows/webview-helper.exe src/main/resources/native/windows/
-          cp native-windows/WebView2Loader.dll src/main/resources/native/windows/
+          cp native-macos/webview-helper "$MOD_DIR/src/main/resources/native/macos/"
+          chmod +x "$MOD_DIR/src/main/resources/native/macos/webview-helper"
+          cp native-windows/webview-helper.exe "$MOD_DIR/src/main/resources/native/windows/"
+          cp native-windows/WebView2Loader.dll "$MOD_DIR/src/main/resources/native/windows/"
 
           echo "=== Native resources ==="
-          ls -lhR src/main/resources/native/
+          ls -lhR "$MOD_DIR/src/main/resources/native/"
           echo "=== Verifying key files exist ==="
-          test -f src/main/resources/native/macos/webview-helper
-          test -f src/main/resources/native/windows/webview-helper.exe
+          test -f "$MOD_DIR/src/main/resources/native/macos/webview-helper"
+          test -f "$MOD_DIR/src/main/resources/native/windows/webview-helper.exe"
 
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v4
 
-      - name: Setup JDK 25
+      - name: Setup JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
-          java-version: '25'
-          distribution: 'microsoft'
+          java-version: ${{ matrix.java }}
+          distribution: ${{ matrix.distribution }}
 
       - name: Make gradlew executable
-        run: chmod +x ./gradlew
+        run: chmod +x mods/${{ matrix.version }}/gradlew
 
       - name: Build with Gradle
+        working-directory: mods/${{ matrix.version }}
         run: ./gradlew build
 
       - name: Verify native binaries in JAR
+        working-directory: mods/${{ matrix.version }}
         run: |
           JAR=$(ls build/libs/*.jar | grep -v sources | head -1)
           echo "Checking $JAR"
@@ -123,15 +136,15 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: JAR files
-          path: build/libs/*.jar
+          name: JAR files - ${{ matrix.version }}
+          path: mods/${{ matrix.version }}/build/libs/*.jar
           retention-days: 7
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: build/libs/*.jar
+          files: mods/${{ matrix.version }}/build/libs/*.jar
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

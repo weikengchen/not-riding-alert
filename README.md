@@ -2,6 +2,24 @@
 
 A thid-party quality-of-life mod for the ImagineFun server (https://modrinth.com/modpack/imaginefun) designed to help players efficiently grind rides and track their progress.
 
+## Repository Layout
+
+This repo hosts two parallel codebases for two Minecraft versions:
+
+| Version | Path | JDK | Notes |
+|---------|------|-----|-------|
+| Minecraft 26.1 | `mods/26.1/` | 25 | Primary, current development |
+| Minecraft 1.21.11 | `mods/1.21.11/` | 21 | Backport branch (uses yarn mappings) |
+
+Both versions share `native/` (WebView helper sources, compiled per-platform in CI) and `processing/` (Python data scripts).
+
+To build a specific version:
+
+```bash
+cd mods/26.1 && ./gradlew build         # for Minecraft 26.1
+cd mods/1.21.11 && ./gradlew build      # for Minecraft 1.21.11
+```
+
 ## Features
 
 ### 🎯 Smart Alert System
@@ -231,10 +249,10 @@ The mod JAR includes native helper binaries for macOS and Windows. These binarie
 
 ### Local development
 
-To build the native binaries locally (e.g., before `./gradlew build`):
+To build the native binaries locally (e.g., before `cd mods/26.1 && ./gradlew build`):
 
 ```bash
-# Builds both platforms and copies to src/main/resources/native/
+# Builds both platforms and copies into mods/{26.1,1.21.11}/src/main/resources/native/
 ./native/build-all.sh
 
 # macOS only (requires Xcode CLI tools)
@@ -261,7 +279,7 @@ When the mod starts, `WebViewBridge` resolves the helper binary in this order:
 ## Support
 
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/weikengchen/not-riding-alert)
-- **Version**: 2.4.5 (Minecraft 26.1)
+- **Version**: 2.4.5 (Minecraft 26.1 and 1.21.11)
 
 ## License
 
