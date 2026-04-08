@@ -409,14 +409,12 @@ public class StrategyHudRendererV2 {
         totalWidth += colWidth;
       }
 
-      if (totalWidth <= screenWidth) {
+      // Always accept the 1-column layout as a fallback so that rendering
+      // still works on very narrow windows where no layout fits the screen.
+      if (totalWidth <= screenWidth || numCols == 1) {
         int numRows = (entries.size() + numCols - 1) / numCols;
         validCandidates.add(new LayoutCandidate(numCols, numRows, columnMaxWidths));
       }
-    }
-
-    if (validCandidates.isEmpty()) {
-      return new LayoutResult(1, List.of(), List.of(), 0);
     }
 
     LayoutCandidate best = validCandidates.get(0);
@@ -514,6 +512,10 @@ public class StrategyHudRendererV2 {
 
     for (int row = 0; row < numRows; row++) {
       for (int col = 0; col < ctx.numColumns() && entryIdx < ctx.entries().size(); col++) {
+        if (entryIdx >= ctx.entryXPositions().size()) {
+          entryIdx++;
+          continue;
+        }
         int[] positions = ctx.entryXPositions().get(entryIdx);
         EntryComponents entry = ctx.entries().get(entryIdx);
         int entryColor =
