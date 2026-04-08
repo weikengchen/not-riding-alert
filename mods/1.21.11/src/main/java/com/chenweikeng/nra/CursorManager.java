@@ -120,8 +120,7 @@ public class CursorManager {
 
       boolean shouldMinimizeOnZoneEntry =
           pendingZoneMinimizeTick != -1
-              && (currentTick - pendingZoneMinimizeTick)
-                  >= Timing.ZONE_ENTRY_MINIMIZE_DELAY_TICKS;
+              && (currentTick - pendingZoneMinimizeTick) >= Timing.ZONE_ENTRY_MINIMIZE_DELAY_TICKS;
       boolean shouldMinimizeOnVehicleMount =
           !wasOnVehicle && isOnVehicle && !minimizedDuringAutograb;
 
